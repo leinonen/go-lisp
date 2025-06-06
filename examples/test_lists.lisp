@@ -1,0 +1,11 @@
+; Test list operations
+(list 1 2 3)
+(first (list 1 2 3))
+(rest (list 1 2 3))
+(cons 0 (list 1 2))
+(length (list 1 2 3 4))
+(empty? (list))
+(empty? (list 1))
+(define my-list (list 10 20 30))
+(first my-list)
+(rest my-list)

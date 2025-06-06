@@ -107,6 +107,30 @@ func (f FunctionValue) String() string {
 	return fmt.Sprintf("#<function(%v)>", f.Params)
 }
 
+// ListValue represents a list of values
+type ListValue struct {
+	Elements []Value
+}
+
+func (l *ListValue) String() string {
+	if len(l.Elements) == 0 {
+		return "()"
+	}
+	var elements []string
+	for _, elem := range l.Elements {
+		elements = append(elements, elem.String())
+	}
+	result := "("
+	for i, elem := range elements {
+		if i > 0 {
+			result += " "
+		}
+		result += elem
+	}
+	result += ")"
+	return result
+}
+
 // Environment interface for closures
 type Environment interface {
 	Get(name string) (Value, bool)

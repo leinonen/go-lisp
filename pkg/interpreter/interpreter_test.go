@@ -1,10 +1,60 @@
 package interpreter
 
 import (
+	"math"
 	"testing"
 
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
+
+// Helper function to compare values
+func valuesEqual(a, b types.Value) bool {
+	switch va := a.(type) {
+	case types.NumberValue:
+		if vb, ok := b.(types.NumberValue); ok {
+			return math.Abs(float64(va-vb)) < 1e-9
+		}
+	case types.StringValue:
+		if vb, ok := b.(types.StringValue); ok {
+			return va == vb
+		}
+	case types.BooleanValue:
+		if vb, ok := b.(types.BooleanValue); ok {
+			return va == vb
+		}
+	case *types.ListValue:
+		if vb, ok := b.(*types.ListValue); ok {
+			if len(va.Elements) != len(vb.Elements) {
+				return false
+			}
+			for i, elem := range va.Elements {
+				if !valuesEqual(elem, vb.Elements[i]) {
+					return false
+				}
+			}
+			return true
+		}
+	case types.FunctionValue:
+		if vb, ok := b.(types.FunctionValue); ok {
+			// For functions, compare parameter lists and body string representation
+			if len(va.Params) != len(vb.Params) {
+				return false
+			}
+			for i, param := range va.Params {
+				if param != vb.Params[i] {
+					return false
+				}
+			}
+			return va.Body.String() == vb.Body.String()
+		}
+	}
+	return false
+}
+
+// Helper function to compare functions specifically
+func functionsEqual(a, b types.Value) bool {
+	return valuesEqual(a, b)
+}
 
 func TestInterpreter(t *testing.T) {
 	tests := []struct {
@@ -397,51 +447,6 @@ func TestInterpreterClosure(t *testing.T) {
 	}
 }
 
-// Helper function to compare values
-func valuesEqual(a, b types.Value) bool {
-	switch va := a.(type) {
-	case types.NumberValue:
-		if vb, ok := b.(types.NumberValue); ok {
-			return va == vb
-		}
-	case types.StringValue:
-		if vb, ok := b.(types.StringValue); ok {
-			return va == vb
-		}
-	case types.BooleanValue:
-		if vb, ok := b.(types.BooleanValue); ok {
-			return va == vb
-		}
-	}
-	return false
-}
-
-// Helper function to compare function values
-func functionsEqual(a, b types.Value) bool {
-	fa, ok1 := a.(types.FunctionValue)
-	fb, ok2 := b.(types.FunctionValue)
-
-	if !ok1 || !ok2 {
-		return valuesEqual(a, b)
-	}
-
-	// Compare parameters count
-	if len(fa.Params) != len(fb.Params) {
-		return false
-	}
-
-	// Compare parameter names
-	for i, param := range fa.Params {
-		if param != fb.Params[i] {
-			return false
-		}
-	}
-
-	// For simplicity, we'll assume bodies are equal if they have the same string representation
-	// In a more sophisticated implementation, we'd do structural comparison
-	return fa.Body.String() == fb.Body.String()
-}
-
 func TestInterpreterComplexFunctionExample(t *testing.T) {
 	interpreter := NewInterpreter()
 
@@ -483,6 +488,175 @@ func TestInterpreterComplexFunctionExample(t *testing.T) {
 		}
 
 		// For function definitions, we can't easily compare the result, so we skip detailed comparison
+		if _, ok := result.(types.FunctionValue); ok {
+			continue
+		}
+
+		if !valuesEqual(result, expr.expected) {
+			t.Errorf("step %d: for input %q, expected %v, got %v", i+1, expr.input, expr.expected, result)
+		}
+	}
+}
+
+func TestInterpreterListOperations(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected types.Value
+	}{
+		{
+			name:     "empty list creation",
+			input:    "(list)",
+			expected: &types.ListValue{Elements: []types.Value{}},
+		},
+		{
+			name:     "single element list",
+			input:    "(list 42)",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(42)}},
+		},
+		{
+			name:     "multi-element list",
+			input:    "(list 1 2 3)",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2), types.NumberValue(3)}},
+		},
+		{
+			name:     "mixed type list",
+			input:    `(list 42 "hello" #t)`,
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(42), types.StringValue("hello"), types.BooleanValue(true)}},
+		},
+		{
+			name:     "empty check on empty list",
+			input:    "(empty? (list))",
+			expected: types.BooleanValue(true),
+		},
+		{
+			name:     "empty check on non-empty list",
+			input:    "(empty? (list 1))",
+			expected: types.BooleanValue(false),
+		},
+		{
+			name:     "length of empty list",
+			input:    "(length (list))",
+			expected: types.NumberValue(0),
+		},
+		{
+			name:     "length of non-empty list",
+			input:    "(length (list 1 2 3))",
+			expected: types.NumberValue(3),
+		},
+		{
+			name:     "first of list",
+			input:    "(first (list 1 2 3))",
+			expected: types.NumberValue(1),
+		},
+		{
+			name:     "rest of list",
+			input:    "(rest (list 1 2 3))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(2), types.NumberValue(3)}},
+		},
+		{
+			name:     "rest of single element list",
+			input:    "(rest (list 42))",
+			expected: &types.ListValue{Elements: []types.Value{}},
+		},
+		{
+			name:     "cons to list",
+			input:    "(cons 0 (list 1 2))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(0), types.NumberValue(1), types.NumberValue(2)}},
+		},
+		{
+			name:     "cons to empty list",
+			input:    "(cons 42 (list))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(42)}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interpreter := NewInterpreter()
+			result, err := interpreter.Interpret(tt.input)
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestInterpreterListOperationsComplex(t *testing.T) {
+	interpreter := NewInterpreter()
+
+	// Test complex list operations with variables and functions
+	expressions := []struct {
+		input    string
+		expected types.Value
+	}{
+		// Define a list
+		{"(define my-list (list 1 2 3))", &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2), types.NumberValue(3)}}},
+
+		// Test operations on the defined list
+		{"(length my-list)", types.NumberValue(3)},
+		{"(first my-list)", types.NumberValue(1)},
+		{"(rest my-list)", &types.ListValue{Elements: []types.Value{types.NumberValue(2), types.NumberValue(3)}}},
+
+		// Build a new list using cons
+		{"(define extended-list (cons 0 my-list))", &types.ListValue{Elements: []types.Value{types.NumberValue(0), types.NumberValue(1), types.NumberValue(2), types.NumberValue(3)}}},
+		{"(length extended-list)", types.NumberValue(4)},
+
+		// Nested list operations
+		{"(first (rest extended-list))", types.NumberValue(1)},
+		{"(rest (rest extended-list))", &types.ListValue{Elements: []types.Value{types.NumberValue(2), types.NumberValue(3)}}},
+
+		// List with expressions
+		{"(list (+ 1 2) (* 3 4) (if #t 5 6))", &types.ListValue{Elements: []types.Value{types.NumberValue(3), types.NumberValue(12), types.NumberValue(5)}}},
+	}
+
+	for i, expr := range expressions {
+		result, err := interpreter.Interpret(expr.input)
+		if err != nil {
+			t.Fatalf("step %d: unexpected error for %q: %v", i+1, expr.input, err)
+		}
+
+		if !valuesEqual(result, expr.expected) {
+			t.Errorf("step %d: for input %q, expected %v, got %v", i+1, expr.input, expr.expected, result)
+		}
+	}
+}
+
+func TestInterpreterListsWithFunctions(t *testing.T) {
+	interpreter := NewInterpreter()
+
+	// Test lists with functions
+	expressions := []struct {
+		input    string
+		expected types.Value
+	}{
+		// Define a function that works with lists
+		{"(define list-add1 (lambda (lst) (cons (+ (first lst) 1) (rest lst))))", types.NumberValue(0)}, // Function definition
+
+		// Test the function
+		{"(list-add1 (list 5 10 15))", &types.ListValue{Elements: []types.Value{types.NumberValue(6), types.NumberValue(10), types.NumberValue(15)}}},
+
+		// Define a function that creates lists
+		{"(define make-range (lambda (n) (if (= n 0) (list) (cons n (make-range (- n 1))))))", types.NumberValue(0)},
+		{"(make-range 3)", &types.ListValue{Elements: []types.Value{types.NumberValue(3), types.NumberValue(2), types.NumberValue(1)}}},
+
+		// Function that processes list recursively
+		{"(define sum-list (lambda (lst) (if (empty? lst) 0 (+ (first lst) (sum-list (rest lst))))))", types.NumberValue(0)},
+		{"(sum-list (list 1 2 3 4))", types.NumberValue(10)},
+	}
+
+	for i, expr := range expressions {
+		result, err := interpreter.Interpret(expr.input)
+		if err != nil {
+			t.Fatalf("step %d: unexpected error for %q: %v", i+1, expr.input, err)
+		}
+
+		// Skip function value comparison
 		if _, ok := result.(types.FunctionValue); ok {
 			continue
 		}

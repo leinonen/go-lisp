@@ -45,6 +45,46 @@ func TestValueTypes(t *testing.T) {
 	}
 }
 
+func TestListValue(t *testing.T) {
+	// Test that ListValue implements the Value interface
+	var _ Value = &ListValue{}
+
+	// Test empty list
+	emptyList := &ListValue{Elements: []Value{}}
+	if emptyList.String() != "()" {
+		t.Errorf("Empty list should be '()', got %q", emptyList.String())
+	}
+
+	// Test list with single element
+	singleList := &ListValue{Elements: []Value{NumberValue(42)}}
+	expected := "(42)"
+	if singleList.String() != expected {
+		t.Errorf("Single element list should be %q, got %q", expected, singleList.String())
+	}
+
+	// Test list with multiple elements
+	multiList := &ListValue{Elements: []Value{
+		NumberValue(1),
+		NumberValue(2),
+		NumberValue(3),
+	}}
+	expected = "(1 2 3)"
+	if multiList.String() != expected {
+		t.Errorf("Multi element list should be %q, got %q", expected, multiList.String())
+	}
+
+	// Test mixed type list
+	mixedList := &ListValue{Elements: []Value{
+		NumberValue(42),
+		StringValue("hello"),
+		BooleanValue(true),
+	}}
+	expected = "(42 hello #t)"
+	if mixedList.String() != expected {
+		t.Errorf("Mixed type list should be %q, got %q", expected, mixedList.String())
+	}
+}
+
 func TestExprTypes(t *testing.T) {
 	// Test that expression types implement the Expr interface
 	var _ Expr = &NumberExpr{}

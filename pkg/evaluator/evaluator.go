@@ -102,6 +102,18 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalDefine(list.Elements[1:])
 		case "lambda":
 			return e.evalLambda(list.Elements[1:])
+		case "list":
+			return e.evalListConstruction(list.Elements[1:])
+		case "first":
+			return e.evalFirst(list.Elements[1:])
+		case "rest":
+			return e.evalRest(list.Elements[1:])
+		case "cons":
+			return e.evalCons(list.Elements[1:])
+		case "length":
+			return e.evalLength(list.Elements[1:])
+		case "empty?":
+			return e.evalEmpty(list.Elements[1:])
 		default:
 			// Try to call it as a user-defined function
 			return e.evalFunctionCall(symbolExpr.Name, list.Elements[1:])
@@ -363,4 +375,126 @@ func (e *Evaluator) callFunction(funcValue types.Value, args []types.Expr) (type
 
 	// Evaluate the function body
 	return funcEvaluator.Eval(function.Body)
+}
+
+// List operation methods
+
+func (e *Evaluator) evalListConstruction(args []types.Expr) (types.Value, error) {
+	elements := make([]types.Value, len(args))
+	for i, arg := range args {
+		value, err := e.Eval(arg)
+		if err != nil {
+			return nil, err
+		}
+		elements[i] = value
+	}
+	return &types.ListValue{Elements: elements}, nil
+}
+
+func (e *Evaluator) evalFirst(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("first requires exactly 1 argument")
+	}
+
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("first requires a list, got %T", listValue)
+	}
+
+	if len(list.Elements) == 0 {
+		return nil, fmt.Errorf("first: list is empty")
+	}
+
+	return list.Elements[0], nil
+}
+
+func (e *Evaluator) evalRest(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("rest requires exactly 1 argument")
+	}
+
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("rest requires a list, got %T", listValue)
+	}
+
+	if len(list.Elements) == 0 {
+		return nil, fmt.Errorf("rest: list is empty")
+	}
+
+	restElements := make([]types.Value, len(list.Elements)-1)
+	copy(restElements, list.Elements[1:])
+	return &types.ListValue{Elements: restElements}, nil
+}
+
+func (e *Evaluator) evalCons(args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("cons requires exactly 2 arguments")
+	}
+
+	elementValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	listValue, err := e.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("cons second argument must be a list, got %T", listValue)
+	}
+
+	newElements := make([]types.Value, len(list.Elements)+1)
+	newElements[0] = elementValue
+	copy(newElements[1:], list.Elements)
+	return &types.ListValue{Elements: newElements}, nil
+}
+
+func (e *Evaluator) evalLength(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("length requires exactly 1 argument")
+	}
+
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("length requires a list, got %T", listValue)
+	}
+
+	return types.NumberValue(float64(len(list.Elements))), nil
+}
+
+func (e *Evaluator) evalEmpty(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("empty? requires exactly 1 argument")
+	}
+
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("empty? requires a list, got %T", listValue)
+	}
+
+	return types.BooleanValue(len(list.Elements) == 0), nil
 }

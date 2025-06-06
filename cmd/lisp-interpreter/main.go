@@ -22,6 +22,9 @@ func main() {
 	fmt.Println("  (lambda (x) (+ x 1))")
 	fmt.Println("  (define add1 (lambda (x) (+ x 1)))")
 	fmt.Println("  (add1 5)")
+	fmt.Println("  (list 1 2 3)")
+	fmt.Println("  (first (list 1 2 3))")
+	fmt.Println("  (cons 0 (list 1 2))")
 	fmt.Println()
 
 	interpreter := interpreter.NewInterpreter()

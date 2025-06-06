@@ -32,6 +32,15 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 - `(lambda (params) body)` - Create an anonymous function
 - `(funcname args...)` - Call a user-defined function
 
+### Lists
+- `(list)` - Create an empty list
+- `(list 1 2 3)` - Create a list with elements
+- `(first lst)` - Get the first element of a list
+- `(rest lst)` - Get all elements except the first
+- `(cons elem lst)` - Prepend an element to a list
+- `(length lst)` - Get the number of elements in a list
+- `(empty? lst)` - Check if a list is empty
+
 ### Advanced Function Features
 - **First-class functions**: Functions can be stored in variables, passed as arguments, and returned from other functions
 - **Closures**: Functions capture and remember variables from their creation environment
@@ -42,6 +51,7 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 - Numbers: `42`, `-3.14`
 - Strings: `"hello world"`
 - Booleans: `#t`, `#f`
+- Lists: `(1 2 3)`, `("a" "b" "c")`, `()`
 - Symbols: `+`, `-`, `x`, `my-var`
 - Functions: `#<function([param1 param2])>`
 
@@ -126,6 +136,42 @@ lisp> (define add10 (make-adder 10))
 
 lisp> (add10 7)
 => 17
+
+lisp> (list 1 2 3)
+=> (1 2 3)
+
+lisp> (list)
+=> ()
+
+lisp> (list "hello" 42 #t)
+=> (hello 42 #t)
+
+lisp> (define my-list (list 10 20 30))
+=> (10 20 30)
+
+lisp> (first my-list)
+=> 10
+
+lisp> (rest my-list)
+=> (20 30)
+
+lisp> (length my-list)
+=> 3
+
+lisp> (empty? my-list)
+=> #f
+
+lisp> (empty? (list))
+=> #t
+
+lisp> (cons 5 my-list)
+=> (5 10 20 30)
+
+lisp> (define sum-list (lambda (lst) (if (empty? lst) 0 (+ (first lst) (sum-list (rest lst))))))
+=> #<function([lst])>
+
+lisp> (sum-list (list 1 2 3 4))
+=> 10
 ```
 
 ## Architecture
@@ -184,10 +230,12 @@ lisp-interpreter/
 
 ## Future Enhancements
 
-- List data structures and operations
-- More built-in functions (map, filter, reduce)
+- ✅ List data structures and operations (implemented: `list`, `first`, `rest`, `cons`, `length`, `empty?`)
+- More built-in list functions (map, filter, reduce)
+- Additional list operations (append, reverse, nth)
 - Error recovery in parser
 - Better error messages with line numbers
 - Support for comments
 - Tail call optimization for recursive functions
 - Module system for code organization
+- Macro system for code transformation
