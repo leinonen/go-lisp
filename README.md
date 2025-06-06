@@ -30,6 +30,7 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 
 ### Functions
 - `(lambda (params) body)` - Create an anonymous function
+- `(defun name (params) body)` - Define a named function (combines define and lambda)
 - `(funcname args...)` - Call a user-defined function
 
 ### Lists
@@ -82,12 +83,63 @@ make test     # Run all tests
 
 ## Examples
 
+### Basic Function Definition
+
+Traditional way (using define + lambda):
+```lisp
+lisp> (define square (lambda (x) (* x x)))
+=> <function>
+
+lisp> (square 5)
+=> 25
+```
+
+New convenient way (using defun):
+```lisp
+lisp> (defun square (x) (* x x))
+=> <function>
+
+lisp> (square 5)
+=> 25
+```
+
+### Multi-parameter Functions
+```lisp
+lisp> (defun add (x y) (+ x y))
+=> <function>
+
+lisp> (add 3 4)
+=> 7
+```
+
+### Recursive Functions
+```lisp
+lisp> (defun factorial (n) 
+        (if (= n 0) 
+          1 
+          (* n (factorial (- n 1)))))
+=> <function>
+
+lisp> (factorial 5)
+=> 120
+```
+
+### Basic Operations
 ```lisp
 lisp> 42
 => 42
 
 lisp> (+ 1 2 3)
 => 6
+
+lisp> (define x 10)
+=> 10
+
+lisp> (+ x 5)
+=> 15
+```
+
+Note: Comments (starting with `;`) are not yet supported in this implementation.
 
 lisp> (* (+ 2 3) 4)
 => 20

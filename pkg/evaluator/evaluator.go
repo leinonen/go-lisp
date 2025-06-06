@@ -102,6 +102,8 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalDefine(list.Elements[1:])
 		case "lambda":
 			return e.evalLambda(list.Elements[1:])
+		case "defun":
+			return e.evalDefun(list.Elements[1:])
 		case "list":
 			return e.evalListConstruction(list.Elements[1:])
 		case "first":
@@ -323,6 +325,59 @@ func (e *Evaluator) evalLambda(args []types.Expr) (types.Value, error) {
 		Body:   args[1],
 		Env:    e.env, // capture current environment for closures
 	}, nil
+}
+
+func (e *Evaluator) evalDefun(args []types.Expr) (types.Value, error) {
+	if len(args) < 3 {
+		return nil, fmt.Errorf("defun requires at least 3 arguments: name, parameters, and body")
+	}
+
+	// First argument must be a symbol (function name)
+	nameExpr, ok := args[0].(*types.SymbolExpr)
+	if !ok {
+		return nil, fmt.Errorf("defun first argument must be a symbol")
+	}
+
+	// Second argument must be a list of parameter names
+	paramsExpr, ok := args[1].(*types.ListExpr)
+	if !ok {
+		return nil, fmt.Errorf("defun second argument must be a parameter list")
+	}
+
+	// Extract parameter names
+	params := make([]string, len(paramsExpr.Elements))
+	for i, paramExpr := range paramsExpr.Elements {
+		symbolExpr, ok := paramExpr.(*types.SymbolExpr)
+		if !ok {
+			return nil, fmt.Errorf("defun parameter must be a symbol, got %T", paramExpr)
+		}
+		params[i] = symbolExpr.Name
+	}
+
+	// If there's only one body expression, use it directly
+	// If there are multiple, wrap them in a 'do' form (we'll need to implement this)
+	var body types.Expr
+	if len(args) == 3 {
+		body = args[2]
+	} else {
+		// For now, we'll just use the last expression as the body
+		// In a more complete implementation, we'd want to evaluate all expressions
+		// and return the last one (similar to a 'do' or 'progn' form)
+		body = args[len(args)-1]
+	}
+
+	// Create the function value with captured environment
+	function := types.FunctionValue{
+		Params: params,
+		Body:   body,
+		Env:    e.env, // capture current environment for closures
+	}
+
+	// Set the function in the environment
+	e.env.Set(nameExpr.Name, function)
+
+	// Return the function that was defined
+	return function, nil
 }
 
 func (e *Evaluator) evalFunctionCall(funcName string, args []types.Expr) (types.Value, error) {
