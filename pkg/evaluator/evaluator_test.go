@@ -471,6 +471,259 @@ func valuesEqual(a, b types.Value) bool {
 		if vb, ok := b.(types.BooleanValue); ok {
 			return va == vb
 		}
+	case types.FunctionValue:
+		if vb, ok := b.(types.FunctionValue); ok {
+			// For functions, compare parameter lists and body string representation
+			if len(va.Params) != len(vb.Params) {
+				return false
+			}
+			for i, param := range va.Params {
+				if param != vb.Params[i] {
+					return false
+				}
+			}
+			return va.Body.String() == vb.Body.String()
+		}
 	}
 	return false
+}
+
+func TestEvaluatorLambda(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	// Test lambda creation
+	lambdaExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "lambda"},
+			&types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "y"},
+				},
+			},
+			&types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "+"},
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "y"},
+				},
+			},
+		},
+	}
+
+	result, err := evaluator.Eval(lambdaExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	function, ok := result.(types.FunctionValue)
+	if !ok {
+		t.Fatalf("expected FunctionValue, got %T", result)
+	}
+
+	if len(function.Params) != 2 {
+		t.Errorf("expected 2 parameters, got %d", len(function.Params))
+	}
+
+	if function.Params[0] != "x" || function.Params[1] != "y" {
+		t.Errorf("unexpected parameters: %v", function.Params)
+	}
+}
+
+func TestEvaluatorFunctionCall(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	// Define a function
+	function := types.FunctionValue{
+		Params: []string{"x"},
+		Body: &types.ListExpr{
+			Elements: []types.Expr{
+				&types.SymbolExpr{Name: "+"},
+				&types.SymbolExpr{Name: "x"},
+				&types.NumberExpr{Value: 1},
+			},
+		},
+		Env: env,
+	}
+	env.Set("add1", function)
+
+	// Call the function
+	callExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "add1"},
+			&types.NumberExpr{Value: 5},
+		},
+	}
+
+	result, err := evaluator.Eval(callExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !valuesEqual(result, types.NumberValue(6)) {
+		t.Errorf("expected 6, got %v", result)
+	}
+}
+
+func TestEvaluatorClosure(t *testing.T) {
+	env := NewEnvironment()
+	env.Set("n", types.NumberValue(10))
+
+	// Create a closure that captures 'n'
+	function := types.FunctionValue{
+		Params: []string{"x"},
+		Body: &types.ListExpr{
+			Elements: []types.Expr{
+				&types.SymbolExpr{Name: "+"},
+				&types.SymbolExpr{Name: "x"},
+				&types.SymbolExpr{Name: "n"}, // captured variable
+			},
+		},
+		Env: env, // captured environment
+	}
+
+	// Call the function in a new environment that doesn't have 'n'
+	newEnv := NewEnvironment()
+	newEvaluator := NewEvaluator(newEnv)
+
+	result, err := newEvaluator.callFunction(function, []types.Expr{&types.NumberExpr{Value: 5}})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !valuesEqual(result, types.NumberValue(15)) {
+		t.Errorf("expected 15, got %v", result)
+	}
+}
+
+func TestEvaluatorLambdaErrors(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	tests := []struct {
+		name string
+		expr types.Expr
+	}{
+		{
+			name: "lambda with wrong number of arguments",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "lambda"},
+					&types.ListExpr{Elements: []types.Expr{}}, // empty params
+					// missing body
+				},
+			},
+		},
+		{
+			name: "lambda with non-list parameters",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "lambda"},
+					&types.SymbolExpr{Name: "x"}, // should be a list
+					&types.NumberExpr{Value: 42},
+				},
+			},
+		},
+		{
+			name: "lambda with non-symbol parameter",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "lambda"},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.NumberExpr{Value: 42}, // should be symbol
+						},
+					},
+					&types.NumberExpr{Value: 42},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := evaluator.Eval(tt.expr)
+			if err == nil {
+				t.Errorf("expected error for %s", tt.name)
+			}
+		})
+	}
+}
+
+func TestEvaluatorFunctionCallErrors(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	// Define a function that expects 2 arguments
+	function := types.FunctionValue{
+		Params: []string{"x", "y"},
+		Body: &types.ListExpr{
+			Elements: []types.Expr{
+				&types.SymbolExpr{Name: "+"},
+				&types.SymbolExpr{Name: "x"},
+				&types.SymbolExpr{Name: "y"},
+			},
+		},
+		Env: env,
+	}
+	env.Set("add2", function)
+
+	tests := []struct {
+		name string
+		expr types.Expr
+	}{
+		{
+			name: "too few arguments",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "add2"},
+					&types.NumberExpr{Value: 5},
+					// missing second argument
+				},
+			},
+		},
+		{
+			name: "too many arguments",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "add2"},
+					&types.NumberExpr{Value: 5},
+					&types.NumberExpr{Value: 10},
+					&types.NumberExpr{Value: 15}, // extra argument
+				},
+			},
+		},
+		{
+			name: "calling undefined function",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "undefined"},
+					&types.NumberExpr{Value: 5},
+				},
+			},
+		},
+		{
+			name: "calling non-function value",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "notafunc"},
+					&types.NumberExpr{Value: 5},
+				},
+			},
+		},
+	}
+
+	// Set a non-function value for the last test
+	env.Set("notafunc", types.NumberValue(42))
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := evaluator.Eval(tt.expr)
+			if err == nil {
+				t.Errorf("expected error for %s", tt.name)
+			}
+		})
+	}
 }

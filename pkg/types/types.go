@@ -95,3 +95,21 @@ func (b BooleanValue) String() string {
 	}
 	return "#f"
 }
+
+// FunctionValue represents a function with parameters and body
+type FunctionValue struct {
+	Params []string    // parameter names
+	Body   Expr        // function body expression
+	Env    Environment // captured environment for closures
+}
+
+func (f FunctionValue) String() string {
+	return fmt.Sprintf("#<function(%v)>", f.Params)
+}
+
+// Environment interface for closures
+type Environment interface {
+	Get(name string) (Value, bool)
+	Set(name string, value Value)
+	NewChildEnvironment() Environment
+}

@@ -28,11 +28,22 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 ### Variables
 - `(define name value)` - Define a variable with a name and value
 
+### Functions
+- `(lambda (params) body)` - Create an anonymous function
+- `(funcname args...)` - Call a user-defined function
+
+### Advanced Function Features
+- **First-class functions**: Functions can be stored in variables, passed as arguments, and returned from other functions
+- **Closures**: Functions capture and remember variables from their creation environment
+- **Recursion**: Functions can call themselves for recursive algorithms
+- **Higher-order functions**: Functions that take other functions as arguments or return functions
+
 ### Data Types
 - Numbers: `42`, `-3.14`
 - Strings: `"hello world"`
 - Booleans: `#t`, `#f`
 - Symbols: `+`, `-`, `x`, `my-var`
+- Functions: `#<function([param1 param2])>`
 
 ## Usage
 
@@ -91,6 +102,30 @@ lisp> (define y (* x 3))
 
 lisp> (+ x y)
 => 40
+
+lisp> (lambda (x) (+ x 1))
+=> #<function([x])>
+
+lisp> (define add1 (lambda (x) (+ x 1)))
+=> #<function([x])>
+
+lisp> (add1 5)
+=> 6
+
+lisp> (define factorial (lambda (n) (if (= n 0) 1 (* n (factorial (- n 1))))))
+=> #<function([n])>
+
+lisp> (factorial 5)
+=> 120
+
+lisp> (define make-adder (lambda (n) (lambda (x) (+ x n))))
+=> #<function([n])>
+
+lisp> (define add10 (make-adder 10))
+=> #<function([x])>
+
+lisp> (add10 7)
+=> 17
 ```
 
 ## Architecture
@@ -149,8 +184,10 @@ lisp-interpreter/
 
 ## Future Enhancements
 
-- Function definitions with `(lambda (args) body)`
-- More built-in functions
+- List data structures and operations
+- More built-in functions (map, filter, reduce)
 - Error recovery in parser
-- Better error messages
+- Better error messages with line numbers
 - Support for comments
+- Tail call optimization for recursive functions
+- Module system for code organization

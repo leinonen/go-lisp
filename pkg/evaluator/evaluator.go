@@ -33,6 +33,14 @@ func (e *Environment) Get(name string) (types.Value, bool) {
 	return nil, false
 }
 
+// NewChildEnvironment creates a new environment with this environment as parent
+func (e *Environment) NewChildEnvironment() types.Environment {
+	return &Environment{
+		bindings: make(map[string]types.Value),
+		parent:   e,
+	}
+}
+
 // Evaluator evaluates expressions
 type Evaluator struct {
 	env *Environment
@@ -68,35 +76,46 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 		return nil, fmt.Errorf("empty list cannot be evaluated")
 	}
 
-	// The first element should be a function name
+	// The first element could be a special form, built-in function, or user-defined function
 	firstExpr := list.Elements[0]
-	symbolExpr, ok := firstExpr.(*types.SymbolExpr)
-	if !ok {
-		return nil, fmt.Errorf("first element must be a symbol")
+
+	// Check if it's a symbol (special form or function name)
+	if symbolExpr, ok := firstExpr.(*types.SymbolExpr); ok {
+		switch symbolExpr.Name {
+		case "+":
+			return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a + b })
+		case "-":
+			return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a - b })
+		case "*":
+			return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a * b })
+		case "/":
+			return e.evalDivision(list.Elements[1:])
+		case "=":
+			return e.evalEquality(list.Elements[1:])
+		case "<":
+			return e.evalComparison(list.Elements[1:], func(a, b float64) bool { return a < b })
+		case ">":
+			return e.evalComparison(list.Elements[1:], func(a, b float64) bool { return a > b })
+		case "if":
+			return e.evalIf(list.Elements[1:])
+		case "define":
+			return e.evalDefine(list.Elements[1:])
+		case "lambda":
+			return e.evalLambda(list.Elements[1:])
+		default:
+			// Try to call it as a user-defined function
+			return e.evalFunctionCall(symbolExpr.Name, list.Elements[1:])
+		}
 	}
 
-	switch symbolExpr.Name {
-	case "+":
-		return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a + b })
-	case "-":
-		return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a - b })
-	case "*":
-		return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a * b })
-	case "/":
-		return e.evalDivision(list.Elements[1:])
-	case "=":
-		return e.evalEquality(list.Elements[1:])
-	case "<":
-		return e.evalComparison(list.Elements[1:], func(a, b float64) bool { return a < b })
-	case ">":
-		return e.evalComparison(list.Elements[1:], func(a, b float64) bool { return a > b })
-	case "if":
-		return e.evalIf(list.Elements[1:])
-	case "define":
-		return e.evalDefine(list.Elements[1:])
-	default:
-		return nil, fmt.Errorf("unknown function: %s", symbolExpr.Name)
+	// If first element is not a symbol, evaluate it (could be a lambda expression)
+	funcValue, err := e.Eval(firstExpr)
+	if err != nil {
+		return nil, err
 	}
+
+	// Call the function
+	return e.callFunction(funcValue, list.Elements[1:])
 }
 
 func (e *Evaluator) evalArithmetic(args []types.Expr, op func(float64, float64) float64) (types.Value, error) {
@@ -263,4 +282,85 @@ func (e *Evaluator) evalDefine(args []types.Expr) (types.Value, error) {
 
 	// Return the value that was defined
 	return value, nil
+}
+
+func (e *Evaluator) evalLambda(args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("lambda requires exactly 2 arguments: parameters and body")
+	}
+
+	// First argument must be a list of parameter names
+	paramsExpr, ok := args[0].(*types.ListExpr)
+	if !ok {
+		return nil, fmt.Errorf("lambda first argument must be a parameter list")
+	}
+
+	// Extract parameter names
+	params := make([]string, len(paramsExpr.Elements))
+	for i, paramExpr := range paramsExpr.Elements {
+		symbolExpr, ok := paramExpr.(*types.SymbolExpr)
+		if !ok {
+			return nil, fmt.Errorf("lambda parameter must be a symbol, got %T", paramExpr)
+		}
+		params[i] = symbolExpr.Name
+	}
+
+	// Create the function value with captured environment
+	return types.FunctionValue{
+		Params: params,
+		Body:   args[1],
+		Env:    e.env, // capture current environment for closures
+	}, nil
+}
+
+func (e *Evaluator) evalFunctionCall(funcName string, args []types.Expr) (types.Value, error) {
+	// Look up the function in the environment
+	funcValue, ok := e.env.Get(funcName)
+	if !ok {
+		return nil, fmt.Errorf("undefined function: %s", funcName)
+	}
+
+	return e.callFunction(funcValue, args)
+}
+
+func (e *Evaluator) callFunction(funcValue types.Value, args []types.Expr) (types.Value, error) {
+	function, ok := funcValue.(types.FunctionValue)
+	if !ok {
+		return nil, fmt.Errorf("value is not a function: %T", funcValue)
+	}
+
+	// Check argument count
+	if len(args) != len(function.Params) {
+		return nil, fmt.Errorf("function expects %d arguments, got %d", len(function.Params), len(args))
+	}
+
+	// Create a new environment for the function call, extending the captured environment
+	var funcEnv types.Environment
+	if function.Env != nil {
+		// Use the captured environment as the parent (for closures)
+		funcEnv = function.Env.NewChildEnvironment()
+	} else {
+		// Fallback to current environment as parent
+		funcEnv = e.env.NewChildEnvironment()
+	}
+
+	// Evaluate arguments and bind them to parameters
+	for i, arg := range args {
+		argValue, err := e.Eval(arg)
+		if err != nil {
+			return nil, err
+		}
+		funcEnv.Set(function.Params[i], argValue)
+	}
+
+	// Create a new evaluator with the function environment
+	// We need to convert back to concrete type for the evaluator
+	concreteEnv, ok := funcEnv.(*Environment)
+	if !ok {
+		return nil, fmt.Errorf("internal error: environment type conversion failed")
+	}
+	funcEvaluator := NewEvaluator(concreteEnv)
+
+	// Evaluate the function body
+	return funcEvaluator.Eval(function.Body)
 }
