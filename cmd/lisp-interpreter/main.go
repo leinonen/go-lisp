@@ -17,6 +17,8 @@ func main() {
 	fmt.Println("  (+ 1 2 3)")
 	fmt.Println("  (* (+ 2 3) 4)")
 	fmt.Println("  (if (< 3 5) \"yes\" \"no\")")
+	fmt.Println("  (define x 10)")
+	fmt.Println("  (+ x 5)")
 	fmt.Println()
 
 	interpreter := interpreter.NewInterpreter()

@@ -92,6 +92,8 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 		return e.evalComparison(list.Elements[1:], func(a, b float64) bool { return a > b })
 	case "if":
 		return e.evalIf(list.Elements[1:])
+	case "define":
+		return e.evalDefine(list.Elements[1:])
 	default:
 		return nil, fmt.Errorf("unknown function: %s", symbolExpr.Name)
 	}
@@ -237,4 +239,28 @@ func (e *Evaluator) evalIf(args []types.Expr) (types.Value, error) {
 	} else {
 		return e.Eval(args[2])
 	}
+}
+
+func (e *Evaluator) evalDefine(args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("define requires exactly 2 arguments: name and value")
+	}
+
+	// First argument must be a symbol (variable name)
+	nameExpr, ok := args[0].(*types.SymbolExpr)
+	if !ok {
+		return nil, fmt.Errorf("define first argument must be a symbol")
+	}
+
+	// Evaluate the second argument (the value)
+	value, err := e.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	// Set the variable in the environment
+	e.env.Set(nameExpr.Name, value)
+
+	// Return the value that was defined
+	return value, nil
 }

@@ -25,6 +25,9 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 ### Conditional
 - `(if condition then-expr else-expr)` - If expression
 
+### Variables
+- `(define name value)` - Define a variable with a name and value
+
 ### Data Types
 - Numbers: `42`, `-3.14`
 - Strings: `"hello world"`
@@ -76,6 +79,18 @@ lisp> "hello world"
 
 lisp> (= 5 5)
 => #t
+
+lisp> (define x 10)
+=> 10
+
+lisp> x
+=> 10
+
+lisp> (define y (* x 3))
+=> 30
+
+lisp> (+ x y)
+=> 40
 ```
 
 ## Architecture
@@ -134,7 +149,6 @@ lisp-interpreter/
 
 ## Future Enhancements
 
-- Variable definitions with `(define name value)`
 - Function definitions with `(lambda (args) body)`
 - More built-in functions
 - Error recovery in parser

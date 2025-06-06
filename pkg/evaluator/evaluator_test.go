@@ -279,6 +279,183 @@ func TestEvaluatorError(t *testing.T) {
 	}
 }
 
+func TestEvaluatorDefine(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	// Test basic variable definition
+	defineExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "define"},
+			&types.SymbolExpr{Name: "x"},
+			&types.NumberExpr{Value: 42},
+		},
+	}
+
+	result, err := evaluator.Eval(defineExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// define should return the value that was defined
+	if !valuesEqual(result, types.NumberValue(42)) {
+		t.Errorf("expected 42, got %v", result)
+	}
+
+	// Test that the variable was actually defined
+	symbolExpr := &types.SymbolExpr{Name: "x"}
+	result, err = evaluator.Eval(symbolExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !valuesEqual(result, types.NumberValue(42)) {
+		t.Errorf("expected 42, got %v", result)
+	}
+}
+
+func TestEvaluatorDefineWithExpression(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	// Define a variable with a computed expression
+	defineExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "define"},
+			&types.SymbolExpr{Name: "y"},
+			&types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "+"},
+					&types.NumberExpr{Value: 10},
+					&types.NumberExpr{Value: 20},
+				},
+			},
+		},
+	}
+
+	result, err := evaluator.Eval(defineExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !valuesEqual(result, types.NumberValue(30)) {
+		t.Errorf("expected 30, got %v", result)
+	}
+
+	// Test that the variable can be used in other expressions
+	useExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "*"},
+			&types.SymbolExpr{Name: "y"},
+			&types.NumberExpr{Value: 2},
+		},
+	}
+
+	result, err = evaluator.Eval(useExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !valuesEqual(result, types.NumberValue(60)) {
+		t.Errorf("expected 60, got %v", result)
+	}
+}
+
+func TestEvaluatorDefineOverwrite(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	// Define a variable
+	defineExpr1 := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "define"},
+			&types.SymbolExpr{Name: "z"},
+			&types.NumberExpr{Value: 100},
+		},
+	}
+
+	_, err := evaluator.Eval(defineExpr1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Redefine the same variable with a different value
+	defineExpr2 := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "define"},
+			&types.SymbolExpr{Name: "z"},
+			&types.StringExpr{Value: "hello"},
+		},
+	}
+
+	result, err := evaluator.Eval(defineExpr2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !valuesEqual(result, types.StringValue("hello")) {
+		t.Errorf("expected 'hello', got %v", result)
+	}
+
+	// Check that the variable now has the new value
+	symbolExpr := &types.SymbolExpr{Name: "z"}
+	result, err = evaluator.Eval(symbolExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !valuesEqual(result, types.StringValue("hello")) {
+		t.Errorf("expected 'hello', got %v", result)
+	}
+}
+
+func TestEvaluatorDefineErrors(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	tests := []struct {
+		name string
+		expr types.Expr
+	}{
+		{
+			name: "too few arguments",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "define"},
+					&types.SymbolExpr{Name: "x"},
+				},
+			},
+		},
+		{
+			name: "too many arguments",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "define"},
+					&types.SymbolExpr{Name: "x"},
+					&types.NumberExpr{Value: 1},
+					&types.NumberExpr{Value: 2},
+				},
+			},
+		},
+		{
+			name: "first argument not a symbol",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "define"},
+					&types.NumberExpr{Value: 42}, // should be a symbol
+					&types.NumberExpr{Value: 1},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := evaluator.Eval(tt.expr)
+			if err == nil {
+				t.Errorf("expected error for %s", tt.name)
+			}
+		})
+	}
+}
+
 // Helper function to compare values
 func valuesEqual(a, b types.Value) bool {
 	switch va := a.(type) {
