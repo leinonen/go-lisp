@@ -666,3 +666,184 @@ func TestInterpreterListsWithFunctions(t *testing.T) {
 		}
 	}
 }
+
+func TestMapFunction(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected types.Value
+	}{
+		{
+			name:     "map with square function",
+			input:    "(map (lambda (x) (* x x)) (list 1 2 3 4))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(4), types.NumberValue(9), types.NumberValue(16)}},
+		},
+		{
+			name:     "map with add one function",
+			input:    "(map (lambda (x) (+ x 1)) (list 10 20 30))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(11), types.NumberValue(21), types.NumberValue(31)}},
+		},
+		{
+			name:     "map with empty list",
+			input:    "(map (lambda (x) (* x 2)) (list))",
+			expected: &types.ListValue{Elements: []types.Value{}},
+		},
+		{
+			name:     "map with string transformation",
+			input:    "(map (lambda (s) s) (list \"a\" \"b\" \"c\"))",
+			expected: &types.ListValue{Elements: []types.Value{types.StringValue("a"), types.StringValue("b"), types.StringValue("c")}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interpreter := NewInterpreter()
+			result, err := interpreter.Interpret(tt.input)
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestFilterFunction(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected types.Value
+	}{
+		{
+			name:     "filter positive numbers",
+			input:    "(filter (lambda (x) (> x 0)) (list -1 2 -3 4 5))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(2), types.NumberValue(4), types.NumberValue(5)}},
+		},
+		{
+			name:     "filter numbers greater than 3",
+			input:    "(filter (lambda (x) (> x 3)) (list 1 2 3 4 5 6))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(4), types.NumberValue(5), types.NumberValue(6)}},
+		},
+		{
+			name:     "filter with empty list",
+			input:    "(filter (lambda (x) (> x 0)) (list))",
+			expected: &types.ListValue{Elements: []types.Value{}},
+		},
+		{
+			name:     "filter all elements match",
+			input:    "(filter (lambda (x) (> x 0)) (list 1 2 3))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2), types.NumberValue(3)}},
+		},
+		{
+			name:     "filter no elements match",
+			input:    "(filter (lambda (x) (< x 0)) (list 1 2 3))",
+			expected: &types.ListValue{Elements: []types.Value{}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interpreter := NewInterpreter()
+			result, err := interpreter.Interpret(tt.input)
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestReduceFunction(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected types.Value
+	}{
+		{
+			name:     "reduce sum with initial value",
+			input:    "(reduce (lambda (acc x) (+ acc x)) 0 (list 1 2 3 4))",
+			expected: types.NumberValue(10),
+		},
+		{
+			name:     "reduce product with initial value",
+			input:    "(reduce (lambda (acc x) (* acc x)) 1 (list 2 3 4))",
+			expected: types.NumberValue(24),
+		},
+		{
+			name:     "reduce with empty list",
+			input:    "(reduce (lambda (acc x) (+ acc x)) 0 (list))",
+			expected: types.NumberValue(0),
+		},
+		{
+			name:     "reduce with single element",
+			input:    "(reduce (lambda (acc x) (+ acc x)) 10 (list 5))",
+			expected: types.NumberValue(15),
+		},
+		{
+			name:     "reduce with lambda function",
+			input:    "(reduce (lambda (acc x) (+ acc (* x x))) 0 (list 1 2 3))",
+			expected: types.NumberValue(14), // 0 + 1² + 2² + 3² = 14
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interpreter := NewInterpreter()
+			result, err := interpreter.Interpret(tt.input)
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestHigherOrderFunctionCombinations(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected types.Value
+	}{
+		{
+			name:     "map then reduce",
+			input:    "(reduce (lambda (acc x) (+ acc x)) 0 (map (lambda (x) (* x x)) (list 1 2 3)))",
+			expected: types.NumberValue(14), // sum of squares: 1 + 4 + 9 = 14
+		},
+		{
+			name:     "filter then map",
+			input:    "(map (lambda (x) (* x 2)) (filter (lambda (x) (> x 0)) (list -1 2 -3 4)))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(4), types.NumberValue(8)}},
+		},
+		{
+			name:     "filter then reduce",
+			input:    "(reduce (lambda (acc x) (+ acc x)) 0 (filter (lambda (x) (> x 0)) (list -1 2 -3 4 5)))",
+			expected: types.NumberValue(11), // 2 + 4 + 5 = 11
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interpreter := NewInterpreter()
+			result, err := interpreter.Interpret(tt.input)
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}

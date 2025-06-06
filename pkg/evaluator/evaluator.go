@@ -116,6 +116,12 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalLength(list.Elements[1:])
 		case "empty?":
 			return e.evalEmpty(list.Elements[1:])
+		case "map":
+			return e.evalMap(list.Elements[1:])
+		case "filter":
+			return e.evalFilter(list.Elements[1:])
+		case "reduce":
+			return e.evalReduce(list.Elements[1:])
 		default:
 			// Try to call it as a user-defined function
 			return e.evalFunctionCall(symbolExpr.Name, list.Elements[1:])
@@ -552,4 +558,213 @@ func (e *Evaluator) evalEmpty(args []types.Expr) (types.Value, error) {
 	}
 
 	return types.BooleanValue(len(list.Elements) == 0), nil
+}
+
+func (e *Evaluator) evalMap(args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("map requires exactly 2 arguments")
+	}
+
+	// Evaluate the function
+	funcValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate the list
+	listValue, err := e.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("map second argument must be a list, got %T", listValue)
+	}
+
+	function, ok := funcValue.(types.FunctionValue)
+	if !ok {
+		return nil, fmt.Errorf("map first argument must be a function, got %T", funcValue)
+	}
+
+	if len(function.Params) != 1 {
+		return nil, fmt.Errorf("map function must take exactly 1 parameter, got %d", len(function.Params))
+	}
+
+	// Apply function to each element
+	resultElements := make([]types.Value, len(list.Elements))
+	for i, elem := range list.Elements {
+		// Create a new environment for the function call
+		var funcEnv types.Environment
+		if function.Env != nil {
+			funcEnv = function.Env.NewChildEnvironment()
+		} else {
+			funcEnv = e.env.NewChildEnvironment()
+		}
+		funcEnv.Set(function.Params[0], elem)
+
+		// Create evaluator with function environment
+		concreteEnv, ok := funcEnv.(*Environment)
+		if !ok {
+			return nil, fmt.Errorf("internal error: environment type conversion failed")
+		}
+		funcEvaluator := NewEvaluator(concreteEnv)
+
+		// Evaluate function body
+		result, err := funcEvaluator.Eval(function.Body)
+		if err != nil {
+			return nil, err
+		}
+		resultElements[i] = result
+	}
+
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalFilter(args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("filter requires exactly 2 arguments")
+	}
+
+	// Evaluate the predicate function
+	funcValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate the list
+	listValue, err := e.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("filter second argument must be a list, got %T", listValue)
+	}
+
+	function, ok := funcValue.(types.FunctionValue)
+	if !ok {
+		return nil, fmt.Errorf("filter first argument must be a function, got %T", funcValue)
+	}
+
+	if len(function.Params) != 1 {
+		return nil, fmt.Errorf("filter function must take exactly 1 parameter, got %d", len(function.Params))
+	}
+
+	// Filter elements based on predicate
+	var resultElements []types.Value
+	for _, elem := range list.Elements {
+		// Create a new environment for the function call
+		var funcEnv types.Environment
+		if function.Env != nil {
+			funcEnv = function.Env.NewChildEnvironment()
+		} else {
+			funcEnv = e.env.NewChildEnvironment()
+		}
+		funcEnv.Set(function.Params[0], elem)
+
+		// Create evaluator with function environment
+		concreteEnv, ok := funcEnv.(*Environment)
+		if !ok {
+			return nil, fmt.Errorf("internal error: environment type conversion failed")
+		}
+		funcEvaluator := NewEvaluator(concreteEnv)
+
+		// Evaluate predicate function
+		result, err := funcEvaluator.Eval(function.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		// Check if result is truthy
+		if isTruthy(result) {
+			resultElements = append(resultElements, elem)
+		}
+	}
+
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalReduce(args []types.Expr) (types.Value, error) {
+	if len(args) != 3 {
+		return nil, fmt.Errorf("reduce requires exactly 3 arguments")
+	}
+
+	// Evaluate the function
+	funcValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate the initial value
+	accumulator, err := e.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate the list
+	listValue, err := e.Eval(args[2])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("reduce third argument must be a list, got %T", listValue)
+	}
+
+	function, ok := funcValue.(types.FunctionValue)
+	if !ok {
+		return nil, fmt.Errorf("reduce first argument must be a function, got %T", funcValue)
+	}
+
+	if len(function.Params) != 2 {
+		return nil, fmt.Errorf("reduce function must take exactly 2 parameters, got %d", len(function.Params))
+	}
+
+	// Reduce over the list
+	for _, elem := range list.Elements {
+		// Create a new environment for the function call
+		var funcEnv types.Environment
+		if function.Env != nil {
+			funcEnv = function.Env.NewChildEnvironment()
+		} else {
+			funcEnv = e.env.NewChildEnvironment()
+		}
+		funcEnv.Set(function.Params[0], accumulator)
+		funcEnv.Set(function.Params[1], elem)
+
+		// Create evaluator with function environment
+		concreteEnv, ok := funcEnv.(*Environment)
+		if !ok {
+			return nil, fmt.Errorf("internal error: environment type conversion failed")
+		}
+		funcEvaluator := NewEvaluator(concreteEnv)
+
+		// Evaluate function body
+		result, err := funcEvaluator.Eval(function.Body)
+		if err != nil {
+			return nil, err
+		}
+		accumulator = result
+	}
+
+	return accumulator, nil
+}
+
+// Helper function to check if a value is truthy
+func isTruthy(value types.Value) bool {
+	switch v := value.(type) {
+	case types.BooleanValue:
+		return bool(v)
+	case types.NumberValue:
+		return v != 0
+	case types.StringValue:
+		return v != ""
+	case *types.ListValue:
+		return len(v.Elements) > 0
+	default:
+		return true // Functions and other values are truthy
+	}
 }

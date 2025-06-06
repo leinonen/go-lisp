@@ -43,6 +43,11 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 - `(length lst)` - Get the number of elements in a list
 - `(empty? lst)` - Check if a list is empty
 
+### Higher-Order Functions
+- `(map func lst)` - Apply a function to each element of a list
+- `(filter predicate lst)` - Keep only elements that satisfy a predicate
+- `(reduce func init lst)` - Reduce a list to a single value using a function
+
 ### Comments
 - `;` - Line comments (from semicolon to end of line are ignored)
 - Comments can appear anywhere in the code
@@ -249,6 +254,34 @@ lisp> (sum-list (list 1 2 3 4))
 => 10
 ```
 
+### Higher-Order Function Examples
+
+```lisp
+; Map: apply a function to each element
+lisp> (map (lambda (x) (* x x)) (list 1 2 3 4 5))
+=> (1 4 9 16 25)
+
+; Filter: keep only elements that satisfy a predicate
+lisp> (filter (lambda (x) (> x 0)) (list -1 2 -3 4 5))
+=> (2 4 5)
+
+; Reduce: combine all elements using a function
+lisp> (reduce (lambda (acc x) (+ acc x)) 0 (list 1 2 3 4 5))
+=> 15
+
+; Complex combination: squares of positive numbers
+lisp> (map (lambda (x) (* x x)) (filter (lambda (x) (> x 0)) (list -2 -1 0 1 2 3)))
+=> (1 4 9)
+
+; Sum of squares using map and reduce
+lisp> (reduce (lambda (acc x) (+ acc x)) 0 (map (lambda (x) (* x x)) (list 1 2 3)))
+=> 14
+
+; Count elements using reduce
+lisp> (reduce (lambda (acc x) (+ acc 1)) 0 (list "a" "b" "c" "d"))
+=> 4
+```
+
 ## Architecture
 
 The interpreter follows a traditional three-phase design:
@@ -306,7 +339,7 @@ lisp-interpreter/
 ## Future Enhancements
 
 - ✅ List data structures and operations (implemented: `list`, `first`, `rest`, `cons`, `length`, `empty?`)
-- More built-in list functions (map, filter, reduce)
+- ✅ More built-in list functions (implemented: `map`, `filter`, `reduce`)
 - Additional list operations (append, reverse, nth)
 - Error recovery in parser
 - Better error messages with line numbers
