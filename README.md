@@ -5,9 +5,10 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 ## Features
 
 - **Tokenizer/Lexer**: Converts input text into tokens
-- **Parser**: Builds an Abstract Syntax Tree (AST) from tokens
+- **Parser**: Builds an Abstract Syntax Tree (AST) from tokens  
 - **Evaluator**: Evaluates the AST to produce results
 - **REPL**: Interactive Read-Eval-Print Loop
+- **Comments**: Support for line comments using semicolons
 
 ## Supported Operations
 
@@ -41,6 +42,11 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 - `(cons elem lst)` - Prepend an element to a list
 - `(length lst)` - Get the number of elements in a list
 - `(empty? lst)` - Check if a list is empty
+
+### Comments
+- `;` - Line comments (from semicolon to end of line are ignored)
+- Comments can appear anywhere in the code
+- Useful for documenting code and adding explanations
 
 ### Advanced Function Features
 - **First-class functions**: Functions can be stored in variables, passed as arguments, and returned from other functions
@@ -139,7 +145,24 @@ lisp> (+ x 5)
 => 15
 ```
 
-Note: Comments (starting with `;`) are not yet supported in this implementation.
+### Examples with Comments
+```lisp
+; This is a comment - it will be ignored
+lisp> (+ 1 2 3) ; Comments can appear at the end of lines
+=> 6
+
+; Define a function with comments
+lisp> (defun factorial (n) ; Calculate factorial recursively
+        (if (= n 0)        ; Base case: 0! = 1
+          1 
+          (* n (factorial (- n 1))))) ; Recursive case
+=> <function>
+
+lisp> (factorial 5) ; Test the function
+=> 120
+```
+
+### More Examples
 
 lisp> (* (+ 2 3) 4)
 => 20
@@ -287,7 +310,7 @@ lisp-interpreter/
 - Additional list operations (append, reverse, nth)
 - Error recovery in parser
 - Better error messages with line numbers
-- Support for comments
+- ✅ Support for comments
 - Tail call optimization for recursive functions
 - Module system for code organization
 - Macro system for code transformation

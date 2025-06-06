@@ -43,6 +43,13 @@ func (t *Tokenizer) skipWhitespace() {
 	}
 }
 
+func (t *Tokenizer) skipComment() {
+	// Skip until end of line or end of input
+	for t.current != '\n' && t.current != 0 {
+		t.readChar()
+	}
+}
+
 func (t *Tokenizer) readString() (string, error) {
 	position := t.position
 	for {
@@ -104,6 +111,12 @@ func (t *Tokenizer) TokenizeWithError() ([]types.Token, error) {
 
 		if t.current == 0 {
 			break
+		}
+
+		// Handle comments
+		if t.current == ';' {
+			t.skipComment()
+			continue
 		}
 
 		switch t.current {

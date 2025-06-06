@@ -94,6 +94,46 @@ func TestTokenizer(t *testing.T) {
 				{Type: types.RPAREN, Value: ")"},
 			},
 		},
+		{
+			name:  "comments ignored",
+			input: "; this is a comment\n(+ 1 2)",
+			expected: []types.Token{
+				{Type: types.LPAREN, Value: "("},
+				{Type: types.SYMBOL, Value: "+"},
+				{Type: types.NUMBER, Value: "1"},
+				{Type: types.NUMBER, Value: "2"},
+				{Type: types.RPAREN, Value: ")"},
+			},
+		},
+		{
+			name:  "inline comments",
+			input: "(+ 1 2) ; this is an inline comment",
+			expected: []types.Token{
+				{Type: types.LPAREN, Value: "("},
+				{Type: types.SYMBOL, Value: "+"},
+				{Type: types.NUMBER, Value: "1"},
+				{Type: types.NUMBER, Value: "2"},
+				{Type: types.RPAREN, Value: ")"},
+			},
+		},
+		{
+			name:  "multiple comments",
+			input: "; comment 1\n(+ 1 2) ; comment 2\n; comment 3",
+			expected: []types.Token{
+				{Type: types.LPAREN, Value: "("},
+				{Type: types.SYMBOL, Value: "+"},
+				{Type: types.NUMBER, Value: "1"},
+				{Type: types.NUMBER, Value: "2"},
+				{Type: types.RPAREN, Value: ")"},
+			},
+		},
+		{
+			name:  "comment with special characters",
+			input: "; comment with ()#\"symbols\n42",
+			expected: []types.Token{
+				{Type: types.NUMBER, Value: "42"},
+			},
+		},
 	}
 
 	for _, tt := range tests {
