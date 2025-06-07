@@ -163,6 +163,10 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalReverse(list.Elements[1:])
 		case "nth":
 			return e.evalNth(list.Elements[1:])
+		case "env":
+			return e.evalEnv(list.Elements[1:])
+		case "modules":
+			return e.evalModules(list.Elements[1:])
 		default:
 			// Try to call it as a user-defined function
 			return e.evalFunctionCall(symbolExpr.Name, list.Elements[1:])
@@ -917,6 +921,58 @@ func (e *Evaluator) evalNth(args []types.Expr) (types.Value, error) {
 	}
 
 	return list.Elements[idx], nil
+}
+
+// Environment inspection methods
+
+func (e *Evaluator) evalEnv(args []types.Expr) (types.Value, error) {
+	if len(args) != 0 {
+		return nil, fmt.Errorf("env requires no arguments")
+	}
+
+	// Create a list of (name value) pairs for all bindings in the environment
+	var elements []types.Value
+
+	for name, value := range e.env.bindings {
+		// Create a pair (name value)
+		pair := &types.ListValue{
+			Elements: []types.Value{
+				types.StringValue(name),
+				value,
+			},
+		}
+		elements = append(elements, pair)
+	}
+
+	return &types.ListValue{Elements: elements}, nil
+}
+
+func (e *Evaluator) evalModules(args []types.Expr) (types.Value, error) {
+	if len(args) != 0 {
+		return nil, fmt.Errorf("modules requires no arguments")
+	}
+
+	// Create a list of (module-name exports-list) pairs for all modules
+	var elements []types.Value
+
+	for name, module := range e.env.modules {
+		// Create a list of exported symbol names
+		var exports []types.Value
+		for exportName := range module.Exports {
+			exports = append(exports, types.StringValue(exportName))
+		}
+
+		// Create a pair (module-name exports-list)
+		pair := &types.ListValue{
+			Elements: []types.Value{
+				types.StringValue(name),
+				&types.ListValue{Elements: exports},
+			},
+		}
+		elements = append(elements, pair)
+	}
+
+	return &types.ListValue{Elements: elements}, nil
 }
 
 // Module system methods

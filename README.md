@@ -62,6 +62,10 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 - `(load "filename.lisp")` - Load and execute a Lisp file
 - `module.symbol` - Qualified access to module symbols without importing
 
+### Environment Inspection
+- `(env)` - Show all variables and functions in the current environment
+- `(modules)` - Show all loaded modules and their exported symbols
+
 ### Advanced Function Features
 - **First-class functions**: Functions can be stored in variables, passed as arguments, and returned from other functions
 - **Closures**: Functions capture and remember variables from their creation environment
@@ -366,6 +370,60 @@ lisp> (reduce (lambda (acc x) (+ acc x)) 0 (map (lambda (x) (* x x)) (list 1 2 3
 ; Count elements using reduce
 lisp> (reduce (lambda (acc x) (+ acc 1)) 0 (list "a" "b" "c" "d"))
 => 4
+```
+
+### Environment Inspection Examples
+```lisp
+; Check what's in the current environment
+lisp> (env)
+=> ()
+
+; Define some variables and functions
+lisp> (define x 42)
+=> 42
+
+lisp> (define greeting "Hello, World!")
+=> Hello, World!
+
+lisp> (defun square (n) (* n n))
+=> #<function([n])>
+
+; Now check the environment again
+lisp> (env)
+=> ((x 42) (greeting Hello, World!) (square #<function([n])>))
+
+; Check loaded modules (initially empty)
+lisp> (modules)
+=> ()
+
+; Create a module
+lisp> (module math-utils
+        (export add multiply)
+        (defun add (a b) (+ a b))
+        (defun multiply (a b) (* a b)))
+=> #<module:math-utils>
+
+; Check modules now
+lisp> (modules)
+=> ((math-utils (add multiply)))
+
+; Create another module
+lisp> (module string-utils
+        (export concat length)
+        (defun concat (a b) a)
+        (defun length (s) 0))
+=> #<module:string-utils>
+
+; Check all modules
+lisp> (modules)
+=> ((math-utils (add multiply)) (string-utils (concat length)))
+
+; Import a module and check environment
+lisp> (import math-utils)
+=> #<module:math-utils>
+
+lisp> (env)
+=> ((x 42) (greeting Hello, World!) (square #<function([n])>) (add #<function([a b])>) (multiply #<function([a b])>))
 ```
 
 ### Additional List Operations Examples
