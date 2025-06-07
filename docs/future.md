@@ -10,6 +10,7 @@ This document outlines planned improvements and potential future directions for 
 - ✅ **Comments**: Full support for line comments using semicolons
 - ✅ **Module System**: Complete implementation with `module`, `import`, `load`, and qualified access
 - ✅ **Environment Inspection**: Tools for debugging and exploration (`env`, `modules`, `builtins`)
+- ✅ **Tail Call Optimization**: Eliminates stack growth for tail-recursive functions
 
 ## Planned Enhancements
 
@@ -22,7 +23,6 @@ This document outlines planned improvements and potential future directions for 
 
 ### Performance Optimizations
 
-- **Tail Call Optimization**: Eliminate stack growth for tail-recursive functions
 - **Bytecode Compilation**: Compile to intermediate representation for faster execution
 - **Just-In-Time Compilation**: Hot path optimization for frequently used functions
 - **Parallel Evaluation**: Safe parallel execution of pure functions
@@ -82,11 +82,7 @@ This document outlines planned improvements and potential future directions for 
    - Allow continued parsing after syntax errors
    - Better error reporting with context
 
-2. **Tail Call Optimization**
-   - Critical for recursive algorithms
-   - Prevents stack overflow on deep recursion
-
-3. **Improved Error Messages**
+2. **Improved Error Messages**
    - Line numbers and position information
    - Contextual error reporting
 

@@ -29,6 +29,26 @@ This document provides a comprehensive reference for all operations supported by
 - `(defun name (params) body)` - Define a named function (combines define and lambda)
 - `(funcname args...)` - Call a user-defined function
 
+## Tail Call Optimization
+
+The interpreter automatically optimizes tail-recursive functions to prevent stack overflow:
+
+- **Tail Calls**: Function calls in tail position (last expression) are optimized
+- **Stack Safety**: Large recursive computations won't cause stack overflow
+- **Automatic**: No special syntax required - optimization is transparent
+- **Preserves Semantics**: Non-tail recursive functions work normally
+
+Examples of tail-recursive functions:
+```lisp
+; Tail-recursive factorial
+(defun fact-tail (n acc)
+  (if (= n 0) acc (fact-tail (- n 1) (* n acc))))
+
+; Tail-recursive countdown
+(defun countdown (n)
+  (if (= n 0) 0 (countdown (- n 1))))
+```
+
 ## Lists
 
 - `(list)` - Create an empty list

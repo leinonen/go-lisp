@@ -16,6 +16,7 @@ This Lisp interpreter provides a comprehensive set of features for functional pr
 - **First-class Functions**: Functions can be stored in variables, passed as arguments, and returned from other functions
 - **Closures**: Functions capture and remember variables from their creation environment
 - **Recursion**: Functions can call themselves for recursive algorithms
+- **Tail Call Optimization**: Prevents stack overflow in tail-recursive functions by eliminating stack growth
 - **Higher-order Functions**: Functions that take other functions as arguments or return functions
 
 ## Data Types

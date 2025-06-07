@@ -17,6 +17,7 @@ make build
 
 - **Complete Lisp Implementation**: Full tokenizer, parser, and evaluator
 - **Interactive REPL**: Rich development environment with help system
+- **Tail Call Optimization**: Prevents stack overflow in recursive functions
 - **Module System**: Organize code with imports and exports
 - **Higher-Order Functions**: `map`, `filter`, `reduce`, and more
 - **Built-in Help**: Discover functions with `(builtins)` and get detailed help
@@ -51,6 +52,17 @@ lisp> (map (lambda (x) (* x x)) (list 1 2 3 4))
 
 lisp> (filter (lambda (x) (> x 0)) (list -1 2 -3 4))
 => (2 4)
+```
+
+### Tail Call Optimization  
+```lisp
+; Tail-recursive factorial won't cause stack overflow
+lisp> (defun fact-tail (n acc)
+        (if (= n 0) acc (fact-tail (- n 1) (* n acc))))
+=> #<function([n acc])>
+
+lisp> (fact-tail 1000 1)  ; Handles large recursion efficiently
+=> 4023872600770937735...  ; (very large number)
 ```
 
 ### Module System

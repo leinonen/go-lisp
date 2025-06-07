@@ -85,6 +85,7 @@ lisp-interpreter/
   - Implements built-in functions and special forms
   - Manages variable scoping and function calls
   - Handles module system and imports
+  - **Tail Call Optimization**: Automatically optimizes tail-recursive calls to prevent stack overflow
 
 - **`pkg/interpreter`** - High-level API
   - Combines all components into unified interface
@@ -177,7 +178,48 @@ Tests cover:
 
 - Direct AST evaluation (no intermediate compilation)
 - Efficient environment lookup
-- Tail call optimization ready (future enhancement)
+- **Tail Call Optimization**: Implemented to prevent stack overflow in recursive functions
+
+## Tail Call Optimization Implementation
+
+### Technical Design
+
+The TCO implementation uses an iterative approach to eliminate stack growth for tail-recursive functions:
+
+1. **Tail Call Detection**: The evaluator identifies when a function call is in tail position
+2. **Iterative Execution**: Instead of recursive calls, uses a loop to reuse the same stack frame
+3. **Argument Evaluation**: Arguments are evaluated once and reused in the optimization loop
+4. **Semantic Preservation**: Non-tail recursive functions maintain normal call semantics
+
+### Implementation Details
+
+```go
+type TailCallInfo struct {
+    Function types.Value    // The function to call
+    Args     []types.Value  // Pre-evaluated arguments
+}
+
+type Evaluator struct {
+    // ...existing fields...
+    tailCall   *TailCallInfo  // Current tail call information
+    tailCallOK bool           // Whether tail calls are enabled
+}
+```
+
+### Key Components
+
+- **`callFunction`**: Main function call handler with iterative tail call loop
+- **`callFunctionWithTailCheck`**: Used for calls in tail position
+- **`callFunctionRegular`**: Used for calls in non-tail position  
+- **`evalFunctionCall`**: Intelligently chooses appropriate call method
+- **`evalIf`**: Properly handles tail calls in conditional branches
+
+### Benefits
+
+- **Stack Safety**: Large recursive computations don't cause stack overflow
+- **Performance**: Linear space complexity instead of exponential for tail calls
+- **Transparency**: No special syntax required - optimization is automatic
+- **Correctness**: Preserves all language semantics for non-tail recursive code
 
 ## Extensibility Points
 

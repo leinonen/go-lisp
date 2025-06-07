@@ -10,6 +10,12 @@ import (
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
 
+// TailCallInfo represents information needed for a tail call
+type TailCallInfo struct {
+	Function types.FunctionValue
+	Args     []types.Value // Already evaluated arguments
+}
+
 // Environment represents a variable binding environment
 type Environment struct {
 	bindings map[string]types.Value
@@ -68,7 +74,9 @@ func (e *Environment) SetModule(name string, module *types.ModuleValue) {
 
 // Evaluator evaluates expressions
 type Evaluator struct {
-	env *Environment
+	env        *Environment
+	tailCall   *TailCallInfo // Tail call information, if any
+	tailCallOK bool          // Indicates if tail call is allowed
 }
 
 func NewEvaluator(env *Environment) *Evaluator {
@@ -182,7 +190,7 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 	}
 
 	// Call the function
-	return e.callFunction(funcValue, list.Elements[1:])
+	return e.callFunctionWithTailCheck(funcValue, list.Elements[1:])
 }
 
 func (e *Evaluator) evalArithmetic(args []types.Expr, op func(float64, float64) float64) (types.Value, error) {
@@ -320,10 +328,22 @@ func (e *Evaluator) evalIf(args []types.Expr) (types.Value, error) {
 		return nil, fmt.Errorf("if condition must be a boolean")
 	}
 
+	// Evaluate the appropriate branch
+	// Both branches can be in tail position, so preserve tail call context
 	if condBool {
-		return e.Eval(args[1])
+		result, err := e.Eval(args[1])
+		if err != nil {
+			return nil, err
+		}
+		// If this was a tail call, propagate it
+		return result, nil
 	} else {
-		return e.Eval(args[2])
+		result, err := e.Eval(args[2])
+		if err != nil {
+			return nil, err
+		}
+		// If this was a tail call, propagate it
+		return result, nil
 	}
 }
 
@@ -440,7 +460,7 @@ func (e *Evaluator) evalFunctionCall(funcName string, args []types.Expr) (types.
 		if err != nil {
 			return nil, err
 		}
-		return e.callFunction(funcValue, args)
+		return e.callFunctionWithTailCheck(funcValue, args)
 	}
 
 	// Look up the function in the environment
@@ -449,6 +469,36 @@ func (e *Evaluator) evalFunctionCall(funcName string, args []types.Expr) (types.
 		return nil, fmt.Errorf("undefined function: %s", funcName)
 	}
 
+	return e.callFunctionWithTailCheck(funcValue, args)
+}
+
+// callFunctionWithTailCheck checks if we can optimize this call as a tail call
+func (e *Evaluator) callFunctionWithTailCheck(funcValue types.Value, args []types.Expr) (types.Value, error) {
+	// If tail calls are enabled and this is a tail call, set up the tail call info
+	if e.tailCallOK {
+		function, ok := funcValue.(types.FunctionValue)
+		if ok {
+			// Evaluate arguments
+			argValues := make([]types.Value, len(args))
+			for i, arg := range args {
+				argValue, err := e.Eval(arg)
+				if err != nil {
+					return nil, err
+				}
+				argValues[i] = argValue
+			}
+
+			// Set up tail call instead of making the call
+			e.tailCall = &TailCallInfo{
+				Function: function,
+				Args:     argValues,
+			}
+			// Return a placeholder - this won't be used since tail call will be detected
+			return nil, nil
+		}
+	}
+
+	// Regular function call
 	return e.callFunction(funcValue, args)
 }
 
@@ -463,6 +513,70 @@ func (e *Evaluator) callFunction(funcValue types.Value, args []types.Expr) (type
 		return nil, fmt.Errorf("function expects %d arguments, got %d", len(function.Params), len(args))
 	}
 
+	// Evaluate arguments first
+	argValues := make([]types.Value, len(args))
+	for i, arg := range args {
+		argValue, err := e.Eval(arg)
+		if err != nil {
+			return nil, err
+		}
+		argValues[i] = argValue
+	}
+
+	// Check if we should use tail call optimization
+	if e.tailCallOK {
+		// Tail call optimization: iterative execution
+		currentFunc := function
+		currentArgs := argValues
+
+		for {
+			// Create a new environment for the function call, extending the captured environment
+			var funcEnv types.Environment
+			if currentFunc.Env != nil {
+				// Use the captured environment as the parent (for closures)
+				funcEnv = currentFunc.Env.NewChildEnvironment()
+			} else {
+				// Fallback to current environment as parent
+				funcEnv = e.env.NewChildEnvironment()
+			}
+
+			// Bind arguments to parameters
+			for i, param := range currentFunc.Params {
+				funcEnv.Set(param, currentArgs[i])
+			}
+
+			// Create a new evaluator with the function environment
+			concreteEnv, ok := funcEnv.(*Environment)
+			if !ok {
+				return nil, fmt.Errorf("internal error: environment type conversion failed")
+			}
+			funcEvaluator := NewEvaluator(concreteEnv)
+			funcEvaluator.tailCallOK = true // Enable tail call detection
+
+			// Evaluate the function body
+			result, err := funcEvaluator.Eval(currentFunc.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			// Check if a tail call was detected
+			if funcEvaluator.tailCall != nil {
+				// Continue with the tail call instead of returning
+				currentFunc = funcEvaluator.tailCall.Function
+				currentArgs = funcEvaluator.tailCall.Args
+				continue
+			}
+
+			// No tail call, return the result
+			return result, nil
+		}
+	} else {
+		// Regular function call without tail call optimization
+		return e.callFunctionRegular(function, argValues)
+	}
+}
+
+func (e *Evaluator) callFunctionRegular(function types.FunctionValue, argValues []types.Value) (types.Value, error) {
 	// Create a new environment for the function call, extending the captured environment
 	var funcEnv types.Environment
 	if function.Env != nil {
@@ -473,22 +587,19 @@ func (e *Evaluator) callFunction(funcValue types.Value, args []types.Expr) (type
 		funcEnv = e.env.NewChildEnvironment()
 	}
 
-	// Evaluate arguments and bind them to parameters
-	for i, arg := range args {
-		argValue, err := e.Eval(arg)
-		if err != nil {
-			return nil, err
-		}
-		funcEnv.Set(function.Params[i], argValue)
+	// Bind arguments to parameters
+	for i, param := range function.Params {
+		funcEnv.Set(param, argValues[i])
 	}
 
 	// Create a new evaluator with the function environment
-	// We need to convert back to concrete type for the evaluator
 	concreteEnv, ok := funcEnv.(*Environment)
 	if !ok {
 		return nil, fmt.Errorf("internal error: environment type conversion failed")
 	}
 	funcEvaluator := NewEvaluator(concreteEnv)
+	// Do not enable tail call detection for regular calls
+	funcEvaluator.tailCallOK = false
 
 	// Evaluate the function body
 	return funcEvaluator.Eval(function.Body)

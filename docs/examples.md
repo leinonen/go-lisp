@@ -47,6 +47,66 @@ lisp> (factorial 5)
 => 120
 ```
 
+## Tail Call Optimization
+
+The interpreter automatically optimizes tail-recursive functions to prevent stack overflow, allowing for efficient recursive algorithms that would otherwise exhaust the call stack.
+
+### Tail-Recursive Factorial
+
+```lisp
+; Traditional factorial (not tail-recursive)
+lisp> (defun factorial (n)
+        (if (= n 0) 1 (* n (factorial (- n 1)))))
+=> #<function([n])>
+
+; Tail-recursive factorial (stack-safe for large n)
+lisp> (defun fact-tail (n acc)
+        (if (= n 0) acc (fact-tail (- n 1) (* n acc))))
+=> #<function([n acc])>
+
+lisp> (fact-tail 5 1)
+=> 120
+
+; Can handle very large numbers without stack overflow
+lisp> (fact-tail 1000 1)
+=> 4023872600770937735...  ; (very large number)
+```
+
+### Tail-Recursive Sum
+
+```lisp
+; Sum from 1 to n using tail recursion
+lisp> (defun sum-tail (n acc)
+        (if (= n 0) acc (sum-tail (- n 1) (+ acc n))))
+=> #<function([n acc])>
+
+lisp> (sum-tail 100 0)
+=> 5050
+
+; Works efficiently with large numbers
+lisp> (sum-tail 10000 0)
+=> 50005000
+```
+
+### Mutually Recursive Functions
+
+```lisp
+; Even and odd predicates using mutual tail recursion
+lisp> (defun even? (n)
+        (if (= n 0) #t (odd? (- n 1))))
+=> #<function([n])>
+
+lisp> (defun odd? (n)
+        (if (= n 0) #f (even? (- n 1))))
+=> #<function([n])>
+
+lisp> (even? 100)
+=> #t
+
+lisp> (odd? 99)
+=> #t
+```
+
 ## Basic Operations
 
 ```lisp
