@@ -1,7 +1,10 @@
 ; Environment Inspection Demo
-; This file demonstrates the new environment inspection functions
+; This file demonstrates the environment inspection functions
 
-; Start with empty environment
+; Start by checking available built-in functions
+(builtins) ; Shows all available built-in functions
+
+; Check initial environment state
 (env)      ; Should show empty list: ()
 (modules)  ; Should show empty list: ()
 
@@ -63,3 +66,6 @@
 ; Final environment and module inspection
 (env)
 (modules)
+
+; Check available built-ins again (they should be the same)
+(builtins)

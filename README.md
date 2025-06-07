@@ -65,6 +65,7 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 ### Environment Inspection
 - `(env)` - Show all variables and functions in the current environment
 - `(modules)` - Show all loaded modules and their exported symbols
+- `(builtins)` - Show all available built-in functions and special forms
 
 ### Advanced Function Features
 - **First-class functions**: Functions can be stored in variables, passed as arguments, and returned from other functions

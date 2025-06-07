@@ -1394,4 +1394,52 @@ func TestEnvironmentInspection(t *testing.T) {
 			t.Error("function 'square' not found in environment listing")
 		}
 	})
+
+	t.Run("builtins function shows all built-in functions", func(t *testing.T) {
+		env := NewEnvironment()
+		evaluator := NewEvaluator(env)
+
+		// Call (builtins) to get list of built-in functions
+		builtinsExpr := &types.ListExpr{
+			Elements: []types.Expr{
+				&types.SymbolExpr{Name: "builtins"},
+			},
+		}
+
+		result, err := evaluator.Eval(builtinsExpr)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Result should be a list of string values
+		listResult, ok := result.(*types.ListValue)
+		if !ok {
+			t.Fatalf("expected ListValue, got %T", result)
+		}
+
+		// Check that we have a reasonable number of built-in functions
+		if len(listResult.Elements) < 20 {
+			t.Errorf("expected at least 20 built-in functions, got %d", len(listResult.Elements))
+		}
+
+		// Check that some essential built-in functions are included
+		builtinMap := make(map[string]bool)
+		for _, elem := range listResult.Elements {
+			if name, ok := elem.(types.StringValue); ok {
+				builtinMap[string(name)] = true
+			}
+		}
+
+		essentialBuiltins := []string{"+", "-", "*", "/", "if", "define", "lambda", "defun", "list", "env", "modules"}
+		for _, builtin := range essentialBuiltins {
+			if !builtinMap[builtin] {
+				t.Errorf("essential built-in function '%s' not found in builtins listing", builtin)
+			}
+		}
+
+		// Check that 'builtins' itself is included (meta!)
+		if !builtinMap["builtins"] {
+			t.Error("'builtins' function should include itself in the listing")
+		}
+	})
 }

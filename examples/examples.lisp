@@ -29,3 +29,8 @@
     1 
     (* n (factorial (- n 1))))))
 (factorial 6)
+
+; Environment inspection
+(builtins)  ; List all available built-in functions
+(env)       ; Show current environment variables/functions
+(modules)   ; Show available modules

@@ -167,6 +167,8 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalEnv(list.Elements[1:])
 		case "modules":
 			return e.evalModules(list.Elements[1:])
+		case "builtins":
+			return e.evalBuiltins(list.Elements[1:])
 		default:
 			// Try to call it as a user-defined function
 			return e.evalFunctionCall(symbolExpr.Name, list.Elements[1:])
@@ -970,6 +972,42 @@ func (e *Evaluator) evalModules(args []types.Expr) (types.Value, error) {
 			},
 		}
 		elements = append(elements, pair)
+	}
+
+	return &types.ListValue{Elements: elements}, nil
+}
+
+// Built-in functions
+
+func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
+	if len(args) != 0 {
+		return nil, fmt.Errorf("builtins requires no arguments")
+	}
+
+	// List all built-in functions and special forms
+	builtinNames := []string{
+		// Arithmetic operations
+		"+", "-", "*", "/",
+		// Comparison operations
+		"=", "<", ">",
+		// Control flow
+		"if",
+		// Variable and function definition
+		"define", "lambda", "defun",
+		// List operations
+		"list", "first", "rest", "cons", "length", "empty?",
+		// Higher-order functions
+		"map", "filter", "reduce",
+		// List manipulation
+		"append", "reverse", "nth",
+		// Environment inspection
+		"env", "modules", "builtins",
+	}
+
+	// Convert to list of string values
+	var elements []types.Value
+	for _, name := range builtinNames {
+		elements = append(elements, types.StringValue(name))
 	}
 
 	return &types.ListValue{Elements: elements}, nil
