@@ -82,8 +82,6 @@ go build -o lisp-interpreter ./cmd/lisp-interpreter
 
 ## Project Structure
 
-## Project Structure
-
 Built with Go using clean architecture principles:
 
 ```
