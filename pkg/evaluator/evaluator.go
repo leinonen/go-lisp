@@ -81,6 +81,16 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalComparison(list.Elements[1:], func(a, b float64) bool { return a < b })
 		case ">":
 			return e.evalComparison(list.Elements[1:], func(a, b float64) bool { return a > b })
+		case "<=":
+			return e.evalComparison(list.Elements[1:], func(a, b float64) bool { return a <= b })
+		case ">=":
+			return e.evalComparison(list.Elements[1:], func(a, b float64) bool { return a >= b })
+		case "and":
+			return e.evalAnd(list.Elements[1:])
+		case "or":
+			return e.evalOr(list.Elements[1:])
+		case "not":
+			return e.evalNot(list.Elements[1:])
 		case "if":
 			return e.evalIf(list.Elements[1:])
 		case "define":

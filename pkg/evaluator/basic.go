@@ -166,3 +166,71 @@ func (e *Evaluator) evalIf(args []types.Expr) (types.Value, error) {
 		return result, nil
 	}
 }
+
+// Logical operations
+
+func (e *Evaluator) evalAnd(args []types.Expr) (types.Value, error) {
+	if len(args) == 0 {
+		return types.BooleanValue(true), nil // empty and is true
+	}
+
+	for _, arg := range args {
+		val, err := e.Eval(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		boolVal, ok := val.(types.BooleanValue)
+		if !ok {
+			return nil, fmt.Errorf("and requires boolean arguments")
+		}
+
+		if !boolVal {
+			return types.BooleanValue(false), nil
+		}
+	}
+
+	return types.BooleanValue(true), nil
+}
+
+func (e *Evaluator) evalOr(args []types.Expr) (types.Value, error) {
+	if len(args) == 0 {
+		return types.BooleanValue(false), nil // empty or is false
+	}
+
+	for _, arg := range args {
+		val, err := e.Eval(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		boolVal, ok := val.(types.BooleanValue)
+		if !ok {
+			return nil, fmt.Errorf("or requires boolean arguments")
+		}
+
+		if boolVal {
+			return types.BooleanValue(true), nil
+		}
+	}
+
+	return types.BooleanValue(false), nil
+}
+
+func (e *Evaluator) evalNot(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("not requires exactly 1 argument")
+	}
+
+	val, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	boolVal, ok := val.(types.BooleanValue)
+	if !ok {
+		return nil, fmt.Errorf("not requires a boolean argument")
+	}
+
+	return types.BooleanValue(!boolVal), nil
+}

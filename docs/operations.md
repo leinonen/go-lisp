@@ -14,6 +14,14 @@ This document provides a comprehensive reference for all operations supported by
 - `(= 5 5)` - Equality
 - `(< 3 5)` - Less than
 - `(> 7 3)` - Greater than
+- `(<= 3 5)` - Less than or equal
+- `(>= 7 3)` - Greater than or equal
+
+## Logical
+
+- `(and #t #f)` - Logical AND (returns #t if all arguments are #t)
+- `(or #t #f)` - Logical OR (returns #t if any argument is #t)
+- `(not #t)` - Logical NOT (returns the opposite boolean value)
 
 ## Conditional
 

@@ -69,7 +69,9 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			// Arithmetic operations
 			"+", "-", "*", "/",
 			// Comparison operations
-			"=", "<", ">",
+			"=", "<", ">", "<=", ">=",
+			// Logical operations
+			"and", "or", "not",
 			// Control flow
 			"if",
 			// Variable and function definition
@@ -117,9 +119,16 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"/": "(/ num1 num2)\nDivision of two numbers.\nExample: (/ 15 3) => 5",
 
 		// Comparison operations
-		"=": "(= val1 val2)\nEquality comparison.\nExample: (= 5 5) => #t",
-		"<": "(< num1 num2)\nLess than comparison.\nExample: (< 3 5) => #t",
-		">": "(> num1 num2)\nGreater than comparison.\nExample: (> 7 3) => #t",
+		"=":  "(= val1 val2)\nEquality comparison.\nExample: (= 5 5) => #t",
+		"<":  "(< num1 num2)\nLess than comparison.\nExample: (< 3 5) => #t",
+		">":  "(> num1 num2)\nGreater than comparison.\nExample: (> 7 3) => #t",
+		"<=": "(<= num1 num2)\nLess than or equal comparison.\nExample: (<= 3 5) => #t, (<= 5 5) => #t",
+		">=": "(>= num1 num2)\nGreater than or equal comparison.\nExample: (>= 7 3) => #t, (>= 5 5) => #t",
+
+		// Logical operations
+		"and": "(and expr1 expr2 ...)\nLogical AND - returns #t if all expressions are true.\nExample: (and #t #t) => #t, (and #t #f) => #f",
+		"or":  "(or expr1 expr2 ...)\nLogical OR - returns #t if any expression is true.\nExample: (or #f #t) => #t, (or #f #f) => #f",
+		"not": "(not expr)\nLogical NOT - returns the opposite of the expression.\nExample: (not #t) => #f, (not #f) => #t",
 
 		// Control flow
 		"if": "(if condition then-expr else-expr)\nConditional expression.\nExample: (if (< 3 5) \"yes\" \"no\") => \"yes\"",

@@ -151,28 +151,80 @@ func TestEvaluator(t *testing.T) {
 			expected: types.BooleanValue(true),
 		},
 		{
-			name: "if expression - true condition",
+			name: "less than or equal - true",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "if"},
-					&types.BooleanExpr{Value: true},
-					&types.NumberExpr{Value: 42},
-					&types.NumberExpr{Value: 0},
+					&types.SymbolExpr{Name: "<="},
+					&types.NumberExpr{Value: 3},
+					&types.NumberExpr{Value: 5},
 				},
 			},
-			expected: types.NumberValue(42),
+			expected: types.BooleanValue(true),
 		},
 		{
-			name: "if expression - false condition",
+			name: "less than or equal - equal",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "if"},
-					&types.BooleanExpr{Value: false},
-					&types.NumberExpr{Value: 42},
-					&types.NumberExpr{Value: 0},
+					&types.SymbolExpr{Name: "<="},
+					&types.NumberExpr{Value: 5},
+					&types.NumberExpr{Value: 5},
 				},
 			},
-			expected: types.NumberValue(0),
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "greater than or equal - true",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: ">="},
+					&types.NumberExpr{Value: 7},
+					&types.NumberExpr{Value: 3},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "and - true",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "and"},
+					&types.BooleanExpr{Value: true},
+					&types.BooleanExpr{Value: true},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "and - false",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "and"},
+					&types.BooleanExpr{Value: true},
+					&types.BooleanExpr{Value: false},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "or - true",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "or"},
+					&types.BooleanExpr{Value: false},
+					&types.BooleanExpr{Value: true},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "not - true to false",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "not"},
+					&types.BooleanExpr{Value: true},
+				},
+			},
+			expected: types.BooleanValue(false),
 		},
 	}
 
