@@ -7,8 +7,9 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 - **Tokenizer/Lexer**: Converts input text into tokens
 - **Parser**: Builds an Abstract Syntax Tree (AST) from tokens  
 - **Evaluator**: Evaluates the AST to produce results
-- **REPL**: Interactive Read-Eval-Print Loop
+- **REPL**: Interactive Read-Eval-Print Loop with helpful startup commands
 - **Comments**: Support for line comments using semicolons
+- **Built-in Help System**: Discover functions with `(builtins)` and get help with `(builtins func-name)`
 
 ## Supported Operations
 
@@ -66,6 +67,7 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 - `(env)` - Show all variables and functions in the current environment
 - `(modules)` - Show all loaded modules and their exported symbols
 - `(builtins)` - Show all available built-in functions and special forms
+- `(builtins func-name)` - Get detailed help for a specific built-in function
 
 ### Advanced Function Features
 - **First-class functions**: Functions can be stored in variables, passed as arguments, and returned from other functions
@@ -86,6 +88,18 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 ### Running the REPL
 ```bash
 go run ./cmd/lisp-interpreter
+```
+
+The interpreter starts with a helpful message showing key commands:
+```
+Welcome to the Lisp Interpreter!
+Type expressions to evaluate them, or 'quit' to exit.
+
+Helpful commands:
+  (builtins)        - List all available built-in functions
+  (builtins <func>) - Get help for a specific function
+  (env)             - Show current environment variables
+  (modules)         - Show loaded modules
 ```
 
 ### Running Tests
@@ -425,6 +439,26 @@ lisp> (import math-utils)
 
 lisp> (env)
 => ((x 42) (greeting Hello, World!) (square #<function([n])>) (add #<function([a b])>) (multiply #<function([a b])>))
+
+; Discover available built-in functions
+lisp> (builtins)
+=> (+ - * / = < > if define lambda defun list first rest cons length empty? map filter reduce append reverse nth env modules builtins)
+
+; Get help for specific functions
+lisp> (builtins reduce)
+=> (reduce func init lst)
+Reduce a list to a single value using a function.
+Example: (reduce (lambda (acc x) (+ acc x)) 0 (list 1 2 3)) => 6
+
+lisp> (builtins map)
+=> (map func lst)
+Apply a function to each element of a list.
+Example: (map (lambda (x) (* x x)) (list 1 2 3)) => (1 4 9)
+
+lisp> (builtins +)
+=> (+ num1 num2 ...)
+Addition with multiple operands.
+Example: (+ 1 2 3) => 6
 ```
 
 ### Additional List Operations Examples

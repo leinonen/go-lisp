@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/leinonen/lisp-interpreter/pkg/types"
@@ -1440,6 +1441,115 @@ func TestEnvironmentInspection(t *testing.T) {
 		// Check that 'builtins' itself is included (meta!)
 		if !builtinMap["builtins"] {
 			t.Error("'builtins' function should include itself in the listing")
+		}
+	})
+
+	t.Run("builtins function shows help for specific functions", func(t *testing.T) {
+		env := NewEnvironment()
+		evaluator := NewEvaluator(env)
+
+		// Test help for reduce function
+		builtinsHelpExpr := &types.ListExpr{
+			Elements: []types.Expr{
+				&types.SymbolExpr{Name: "builtins"},
+				&types.SymbolExpr{Name: "reduce"},
+			},
+		}
+
+		result, err := evaluator.Eval(builtinsHelpExpr)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Result should be a string with help text
+		helpText, ok := result.(types.StringValue)
+		if !ok {
+			t.Fatalf("expected StringValue, got %T", result)
+		}
+
+		helpStr := string(helpText)
+		// Check that the help contains key information
+		if !strings.Contains(helpStr, "reduce") {
+			t.Error("help text should contain 'reduce'")
+		}
+		if !strings.Contains(helpStr, "func") {
+			t.Error("help text should contain 'func'")
+		}
+		if !strings.Contains(helpStr, "Example") {
+			t.Error("help text should contain an example")
+		}
+
+		// Test help for a simple arithmetic function
+		plusHelpExpr := &types.ListExpr{
+			Elements: []types.Expr{
+				&types.SymbolExpr{Name: "builtins"},
+				&types.SymbolExpr{Name: "+"},
+			},
+		}
+
+		result, err = evaluator.Eval(plusHelpExpr)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		helpText, ok = result.(types.StringValue)
+		if !ok {
+			t.Fatalf("expected StringValue, got %T", result)
+		}
+
+		helpStr = string(helpText)
+		if !strings.Contains(helpStr, "+") {
+			t.Error("help text should contain '+'")
+		}
+		if !strings.Contains(helpStr, "Addition") {
+			t.Error("help text should contain 'Addition'")
+		}
+	})
+
+	t.Run("builtins function fails for unknown functions", func(t *testing.T) {
+		env := NewEnvironment()
+		evaluator := NewEvaluator(env)
+
+		// Test help for non-existent function
+		unknownHelpExpr := &types.ListExpr{
+			Elements: []types.Expr{
+				&types.SymbolExpr{Name: "builtins"},
+				&types.SymbolExpr{Name: "unknown-function"},
+			},
+		}
+
+		_, err := evaluator.Eval(unknownHelpExpr)
+		if err == nil {
+			t.Error("expected error for unknown function, but got none")
+		}
+
+		expectedError := "no help available for 'unknown-function'"
+		if !strings.Contains(err.Error(), expectedError) {
+			t.Errorf("expected error to contain '%s', got: %v", expectedError, err)
+		}
+	})
+
+	t.Run("builtins function fails with too many arguments", func(t *testing.T) {
+		env := NewEnvironment()
+		evaluator := NewEvaluator(env)
+
+		// Test with too many arguments
+		tooManyArgsExpr := &types.ListExpr{
+			Elements: []types.Expr{
+				&types.SymbolExpr{Name: "builtins"},
+				&types.SymbolExpr{Name: "reduce"},
+				&types.SymbolExpr{Name: "extra"},
+			},
+		}
+
+		_, err := evaluator.Eval(tooManyArgsExpr)
+		if err == nil {
+			t.Error("expected error for too many arguments, but got none")
+		}
+
+		expectedError := "builtins requires 0 or 1 arguments"
+		if !strings.Contains(err.Error(), expectedError) {
+			t.Errorf("expected error to contain '%s', got: %v", expectedError, err)
 		}
 	})
 }

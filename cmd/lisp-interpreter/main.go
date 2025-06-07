@@ -13,6 +13,12 @@ func main() {
 	fmt.Println("Welcome to the Lisp Interpreter!")
 	fmt.Println("Type expressions to evaluate them, or 'quit' to exit.")
 	fmt.Println()
+	fmt.Println("Helpful commands:")
+	fmt.Println("  (builtins)        - List all available built-in functions")
+	fmt.Println("  (builtins <func>) - Get help for a specific function")
+	fmt.Println("  (env)             - Show current environment variables")
+	fmt.Println("  (modules)         - Show loaded modules")
+	fmt.Println()
 
 	interpreter := interpreter.NewInterpreter()
 	scanner := bufio.NewScanner(os.Stdin)
