@@ -137,3 +137,43 @@ type Environment interface {
 	Set(name string, value Value)
 	NewChildEnvironment() Environment
 }
+
+// ModuleValue represents a module with exported bindings
+type ModuleValue struct {
+	Name    string
+	Exports map[string]Value
+	Env     Environment // module's internal environment
+}
+
+func (m *ModuleValue) String() string {
+	return fmt.Sprintf("#<module:%s>", m.Name)
+}
+
+// ModuleExpr represents a module definition expression
+type ModuleExpr struct {
+	Name    string
+	Exports []string
+	Body    []Expr
+}
+
+func (m *ModuleExpr) String() string {
+	return fmt.Sprintf("ModuleExpr(name:%s, exports:%v, body:%v)", m.Name, m.Exports, m.Body)
+}
+
+// ImportExpr represents an import expression
+type ImportExpr struct {
+	ModuleName string
+}
+
+func (i *ImportExpr) String() string {
+	return fmt.Sprintf("ImportExpr(%s)", i.ModuleName)
+}
+
+// LoadExpr represents a load file expression
+type LoadExpr struct {
+	Filename string
+}
+
+func (l *LoadExpr) String() string {
+	return fmt.Sprintf("LoadExpr(%s)", l.Filename)
+}

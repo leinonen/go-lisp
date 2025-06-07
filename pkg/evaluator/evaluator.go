@@ -2,7 +2,11 @@ package evaluator
 
 import (
 	"fmt"
+	"io/ioutil"
+	"strings"
 
+	"github.com/leinonen/lisp-interpreter/pkg/parser"
+	"github.com/leinonen/lisp-interpreter/pkg/tokenizer"
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
 
@@ -10,12 +14,14 @@ import (
 type Environment struct {
 	bindings map[string]types.Value
 	parent   *Environment
+	modules  map[string]*types.ModuleValue // module registry
 }
 
 func NewEnvironment() *Environment {
 	return &Environment{
 		bindings: make(map[string]types.Value),
 		parent:   nil,
+		modules:  make(map[string]*types.ModuleValue),
 	}
 }
 
@@ -38,7 +44,26 @@ func (e *Environment) NewChildEnvironment() types.Environment {
 	return &Environment{
 		bindings: make(map[string]types.Value),
 		parent:   e,
+		modules:  e.modules, // share module registry with parent
 	}
+}
+
+// Module-related methods
+func (e *Environment) GetModule(name string) (*types.ModuleValue, bool) {
+	if module, ok := e.modules[name]; ok {
+		return module, true
+	}
+	if e.parent != nil {
+		return e.parent.GetModule(name)
+	}
+	return nil, false
+}
+
+func (e *Environment) SetModule(name string, module *types.ModuleValue) {
+	if e.modules == nil {
+		e.modules = make(map[string]*types.ModuleValue)
+	}
+	e.modules[name] = module
 }
 
 // Evaluator evaluates expressions
@@ -59,6 +84,10 @@ func (e *Evaluator) Eval(expr types.Expr) (types.Value, error) {
 	case *types.BooleanExpr:
 		return types.BooleanValue(ex.Value), nil
 	case *types.SymbolExpr:
+		// Check for qualified module access (module.symbol)
+		if strings.Contains(ex.Name, ".") {
+			return e.evalQualifiedSymbol(ex.Name)
+		}
 		value, ok := e.env.Get(ex.Name)
 		if !ok {
 			return nil, fmt.Errorf("undefined symbol: %s", ex.Name)
@@ -66,6 +95,12 @@ func (e *Evaluator) Eval(expr types.Expr) (types.Value, error) {
 		return value, nil
 	case *types.ListExpr:
 		return e.evalList(ex)
+	case *types.ModuleExpr:
+		return e.evalModule(ex)
+	case *types.ImportExpr:
+		return e.evalImport(ex)
+	case *types.LoadExpr:
+		return e.evalLoad(ex)
 	default:
 		return nil, fmt.Errorf("unknown expression type: %T", expr)
 	}
@@ -393,6 +428,15 @@ func (e *Evaluator) evalDefun(args []types.Expr) (types.Value, error) {
 }
 
 func (e *Evaluator) evalFunctionCall(funcName string, args []types.Expr) (types.Value, error) {
+	// Check if this is a qualified symbol (module.function)
+	if strings.Contains(funcName, ".") {
+		funcValue, err := e.evalQualifiedSymbol(funcName)
+		if err != nil {
+			return nil, err
+		}
+		return e.callFunction(funcValue, args)
+	}
+
 	// Look up the function in the environment
 	funcValue, ok := e.env.Get(funcName)
 	if !ok {
@@ -873,4 +917,163 @@ func (e *Evaluator) evalNth(args []types.Expr) (types.Value, error) {
 	}
 
 	return list.Elements[idx], nil
+}
+
+// Module system methods
+
+func (e *Evaluator) evalQualifiedSymbol(name string) (types.Value, error) {
+	parts := strings.Split(name, ".")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid qualified symbol: %s", name)
+	}
+
+	moduleName := parts[0]
+	symbolName := parts[1]
+
+	module, ok := e.env.GetModule(moduleName)
+	if !ok {
+		return nil, fmt.Errorf("module not found: %s", moduleName)
+	}
+
+	value, ok := module.Exports[symbolName]
+	if !ok {
+		return nil, fmt.Errorf("symbol %s not exported by module %s", symbolName, moduleName)
+	}
+
+	return value, nil
+}
+
+func (e *Evaluator) evalModule(moduleExpr *types.ModuleExpr) (types.Value, error) {
+	// Create a new environment for the module
+	moduleEnv := e.env.NewChildEnvironment()
+	moduleEvaluator := NewEvaluator(moduleEnv.(*Environment))
+
+	// Evaluate the module body
+	for _, expr := range moduleExpr.Body {
+		_, err := moduleEvaluator.Eval(expr)
+		if err != nil {
+			return nil, fmt.Errorf("error in module %s: %v", moduleExpr.Name, err)
+		}
+	}
+
+	// Create the module value with exported bindings
+	module := &types.ModuleValue{
+		Name:    moduleExpr.Name,
+		Exports: make(map[string]types.Value),
+		Env:     moduleEnv,
+	}
+
+	// Collect exported symbols
+	for _, exportName := range moduleExpr.Exports {
+		value, ok := moduleEnv.Get(exportName)
+		if !ok {
+			return nil, fmt.Errorf("exported symbol %s not found in module %s", exportName, moduleExpr.Name)
+		}
+		module.Exports[exportName] = value
+	}
+
+	// Register the module in the global environment
+	e.env.SetModule(moduleExpr.Name, module)
+
+	return module, nil
+}
+
+func (e *Evaluator) evalImport(importExpr *types.ImportExpr) (types.Value, error) {
+	module, ok := e.env.GetModule(importExpr.ModuleName)
+	if !ok {
+		return nil, fmt.Errorf("module not found: %s", importExpr.ModuleName)
+	}
+
+	// Import all exported symbols into current environment
+	for name, value := range module.Exports {
+		e.env.Set(name, value)
+	}
+
+	return module, nil
+}
+
+func (e *Evaluator) evalLoad(loadExpr *types.LoadExpr) (types.Value, error) {
+	// Read the file
+	content, err := ioutil.ReadFile(loadExpr.Filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file %s: %v", loadExpr.Filename, err)
+	}
+
+	// Tokenize
+	tokenizer := tokenizer.NewTokenizer(string(content))
+	tokens, err := tokenizer.TokenizeWithError()
+	if err != nil {
+		return nil, fmt.Errorf("tokenization error in %s: %v", loadExpr.Filename, err)
+	}
+
+	// Parse and evaluate each expression in the file
+	var lastValue types.Value = types.BooleanValue(true) // default return value
+
+	// Parse expressions one by one until we reach the end
+	i := 0
+	for i < len(tokens) {
+		// Find the end of the current expression
+		if tokens[i].Type == types.TokenType(-1) { // EOF
+			break
+		}
+
+		// Extract tokens for this expression
+		exprTokens, newIndex := e.extractExpression(tokens, i)
+		if len(exprTokens) == 0 {
+			break
+		}
+
+		// Parse the expression
+		parser := parser.NewParser(exprTokens)
+		expr, err := parser.Parse()
+		if err != nil {
+			return nil, fmt.Errorf("parse error in %s: %v", loadExpr.Filename, err)
+		}
+
+		// Evaluate the expression
+		value, err := e.Eval(expr)
+		if err != nil {
+			return nil, fmt.Errorf("evaluation error in %s: %v", loadExpr.Filename, err)
+		}
+
+		lastValue = value
+		i = newIndex
+	}
+
+	return lastValue, nil
+}
+
+// Helper function to extract a complete expression from tokens
+func (e *Evaluator) extractExpression(tokens []types.Token, start int) ([]types.Token, int) {
+	if start >= len(tokens) {
+		return nil, start
+	}
+
+	// Handle single token expressions (numbers, strings, booleans, symbols)
+	if tokens[start].Type != types.LPAREN {
+		return tokens[start : start+1], start + 1
+	}
+
+	// Handle list expressions - find matching closing paren
+	parenCount := 0
+	end := start
+	for end < len(tokens) {
+		if tokens[end].Type == types.LPAREN {
+			parenCount++
+		} else if tokens[end].Type == types.RPAREN {
+			parenCount--
+			if parenCount == 0 {
+				end++
+				break
+			}
+		}
+		end++
+	}
+
+	if parenCount != 0 {
+		// Unmatched parentheses - return what we have
+		return tokens[start:end], end
+	}
+
+	return tokens[start:end], end
 }

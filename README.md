@@ -56,6 +56,12 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 - Comments can appear anywhere in the code
 - Useful for documenting code and adding explanations
 
+### Module System
+- `(module name (export sym1 sym2...) body...)` - Define a module with exported symbols
+- `(import module-name)` - Import all exported symbols from a module into current scope
+- `(load "filename.lisp")` - Load and execute a Lisp file
+- `module.symbol` - Qualified access to module symbols without importing
+
 ### Advanced Function Features
 - **First-class functions**: Functions can be stored in variables, passed as arguments, and returned from other functions
 - **Closures**: Functions capture and remember variables from their creation environment
@@ -172,6 +178,7 @@ lisp> (factorial 5) ; Test the function
 
 ### More Examples
 
+```lisp
 lisp> (* (+ 2 3) 4)
 => 20
 
@@ -269,8 +276,72 @@ lisp> (sum-list (list 1 2 3 4))
 => 10
 ```
 
-### Higher-Order Function Examples
+### Module System Examples
 
+```lisp
+; Define a math module with exported functions
+lisp> (module math
+        (export square cube factorial)
+        (defun square (x) (* x x))
+        (defun cube (x) (* x x x))
+        (defun factorial (n)
+          (if (= n 0)
+            1
+            (* n (factorial (- n 1)))))
+        (defun private-helper (x) (+ x 1))) ; not exported
+=> #<module:math>
+
+; Import all exported functions from the math module
+lisp> (import math)
+=> #<module:math>
+
+; Use imported functions directly
+lisp> (square 5)
+=> 25
+
+lisp> (factorial 4)
+=> 24
+
+; Try to use private function (should fail)
+lisp> (private-helper 5)
+=> Error: undefined symbol: private-helper
+
+; Use qualified access without importing
+lisp> (module string-utils
+        (export concat reverse-string)
+        (defun concat (a b) a) ; simplified
+        (defun reverse-string (s) s)) ; simplified
+=> #<module:string-utils>
+
+; Access functions using qualified names
+lisp> (string-utils.concat "Hello" "World")
+=> Hello
+
+lisp> (math.cube 3)
+=> 27
+
+; Load a file containing module definitions
+lisp> (load "examples/math_module.lisp")
+=> #<module:math>
+
+; Create modules with complex functionality
+lisp> (module data-processing
+        (export process-list filter-numbers)
+        (defun process-list (lst)
+          (map square (filter positive? lst)))
+        (defun filter-numbers (lst)
+          (filter (lambda (x) (> x 10)) lst))
+        (defun positive? (x) (> x 0))) ; helper function
+=> #<module:data-processing>
+
+lisp> (import data-processing)
+=> #<module:data-processing>
+
+lisp> (process-list (list -2 3 4 5))
+=> (9 16 25)
+```
+
+### Higher-Order Function Examples
 ```lisp
 ; Map: apply a function to each element
 lisp> (map (lambda (x) (* x x)) (list 1 2 3 4 5))
@@ -407,5 +478,5 @@ lisp-interpreter/
 - Better error messages with line numbers
 - ✅ Support for comments
 - Tail call optimization for recursive functions
-- Module system for code organization
+- ✅ Module system for code organization (implemented: `module`, `import`, `load`, qualified access)
 - Macro system for code transformation

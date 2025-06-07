@@ -117,5 +117,95 @@ func (p *Parser) parseList() (types.Expr, error) {
 
 	p.readToken() // consume ')'
 
+	// Check for special module forms
+	if len(elements) > 0 {
+		if symbolExpr, ok := elements[0].(*types.SymbolExpr); ok {
+			switch symbolExpr.Name {
+			case "module":
+				return p.parseModuleFromElements(elements)
+			case "import":
+				return p.parseImportFromElements(elements)
+			case "load":
+				return p.parseLoadFromElements(elements)
+			}
+		}
+	}
+
 	return &types.ListExpr{Elements: elements}, nil
+}
+
+func (p *Parser) parseModuleFromElements(elements []types.Expr) (types.Expr, error) {
+	// (module name (export sym1 sym2...) body...)
+	if len(elements) < 4 {
+		return nil, fmt.Errorf("module requires at least name, export list, and body")
+	}
+
+	// Get module name
+	nameExpr, ok := elements[1].(*types.SymbolExpr)
+	if !ok {
+		return nil, fmt.Errorf("module name must be a symbol")
+	}
+
+	// Get export list
+	exportListExpr, ok := elements[2].(*types.ListExpr)
+	if !ok {
+		return nil, fmt.Errorf("module export list must be a list")
+	}
+
+	// Check export list format: (export symbol1 symbol2...)
+	if len(exportListExpr.Elements) < 1 {
+		return nil, fmt.Errorf("export list cannot be empty")
+	}
+
+	exportKeyword, ok := exportListExpr.Elements[0].(*types.SymbolExpr)
+	if !ok || exportKeyword.Name != "export" {
+		return nil, fmt.Errorf("export list must start with 'export'")
+	}
+
+	// Parse exported symbols
+	exports := make([]string, len(exportListExpr.Elements)-1)
+	for i, expr := range exportListExpr.Elements[1:] {
+		symExpr, ok := expr.(*types.SymbolExpr)
+		if !ok {
+			return nil, fmt.Errorf("exported names must be symbols")
+		}
+		exports[i] = symExpr.Name
+	}
+
+	// Get body expressions
+	body := elements[3:]
+
+	return &types.ModuleExpr{
+		Name:    nameExpr.Name,
+		Exports: exports,
+		Body:    body,
+	}, nil
+}
+
+func (p *Parser) parseImportFromElements(elements []types.Expr) (types.Expr, error) {
+	// (import module-name)
+	if len(elements) != 2 {
+		return nil, fmt.Errorf("import requires exactly one module name")
+	}
+
+	moduleNameExpr, ok := elements[1].(*types.SymbolExpr)
+	if !ok {
+		return nil, fmt.Errorf("import module name must be a symbol")
+	}
+
+	return &types.ImportExpr{ModuleName: moduleNameExpr.Name}, nil
+}
+
+func (p *Parser) parseLoadFromElements(elements []types.Expr) (types.Expr, error) {
+	// (load "filename.lisp")
+	if len(elements) != 2 {
+		return nil, fmt.Errorf("load requires exactly one filename")
+	}
+
+	filenameExpr, ok := elements[1].(*types.StringExpr)
+	if !ok {
+		return nil, fmt.Errorf("load filename must be a string")
+	}
+
+	return &types.LoadExpr{Filename: filenameExpr.Value}, nil
 }

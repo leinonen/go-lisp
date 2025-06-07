@@ -95,7 +95,7 @@ func isSymbolChar(ch rune) bool {
 	return unicode.IsLetter(ch) || unicode.IsDigit(ch) ||
 		ch == '+' || ch == '-' || ch == '*' || ch == '/' ||
 		ch == '=' || ch == '<' || ch == '>' || ch == '!' ||
-		ch == '?' || ch == '_'
+		ch == '?' || ch == '_' || ch == '.'
 }
 
 func (t *Tokenizer) Tokenize() []types.Token {
