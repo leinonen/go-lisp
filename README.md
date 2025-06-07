@@ -42,6 +42,9 @@ A basic Lisp interpreter implemented in Go using Test-Driven Development (TDD).
 - `(cons elem lst)` - Prepend an element to a list
 - `(length lst)` - Get the number of elements in a list
 - `(empty? lst)` - Check if a list is empty
+- `(append lst1 lst2)` - Combine two lists into one
+- `(reverse lst)` - Reverse the order of elements in a list
+- `(nth index lst)` - Get the element at a specific index (0-based)
 
 ### Higher-Order Functions
 - `(map func lst)` - Apply a function to each element of a list
@@ -247,6 +250,18 @@ lisp> (empty? (list))
 lisp> (cons 5 my-list)
 => (5 10 20 30)
 
+lisp> (append (list 1 2) (list 3 4 5))
+=> (1 2 3 4 5)
+
+lisp> (reverse (list 1 2 3 4))
+=> (4 3 2 1)
+
+lisp> (nth 0 my-list)
+=> 10
+
+lisp> (nth 2 my-list)
+=> 30
+
 lisp> (define sum-list (lambda (lst) (if (empty? lst) 0 (+ (first lst) (sum-list (rest lst))))))
 => #<function([lst])>
 
@@ -280,6 +295,53 @@ lisp> (reduce (lambda (acc x) (+ acc x)) 0 (map (lambda (x) (* x x)) (list 1 2 3
 ; Count elements using reduce
 lisp> (reduce (lambda (acc x) (+ acc 1)) 0 (list "a" "b" "c" "d"))
 => 4
+```
+
+### Additional List Operations Examples
+
+```lisp
+; Append: combine two lists
+lisp> (append (list 1 2 3) (list 4 5 6))
+=> (1 2 3 4 5 6)
+
+lisp> (append (list) (list 1 2 3))
+=> (1 2 3)
+
+lisp> (append (list "hello" "world") (list "from" "lisp"))
+=> (hello world from lisp)
+
+; Reverse: reverse the order of elements
+lisp> (reverse (list 1 2 3 4 5))
+=> (5 4 3 2 1)
+
+lisp> (reverse (list "a" "b" "c"))
+=> (c b a)
+
+lisp> (reverse (list))
+=> ()
+
+; Nth: get element at specific index (0-based)
+lisp> (define colors (list "red" "green" "blue" "yellow"))
+=> (red green blue yellow)
+
+lisp> (nth 0 colors)
+=> red
+
+lisp> (nth 2 colors)
+=> blue
+
+lisp> (nth 3 colors)
+=> yellow
+
+; Combining operations for complex data manipulation
+lisp> (reverse (append (list 1 2) (list 3 4)))
+=> (4 3 2 1)
+
+lisp> (nth 1 (reverse (list 10 20 30 40)))
+=> 30
+
+lisp> (map (lambda (i) (nth i (list "a" "b" "c" "d"))) (list 0 2 1 3))
+=> (a c b d)
 ```
 
 ## Architecture
@@ -340,7 +402,7 @@ lisp-interpreter/
 
 - ✅ List data structures and operations (implemented: `list`, `first`, `rest`, `cons`, `length`, `empty?`)
 - ✅ More built-in list functions (implemented: `map`, `filter`, `reduce`)
-- Additional list operations (append, reverse, nth)
+- ✅ Additional list operations (implemented: `append`, `reverse`, `nth`)
 - Error recovery in parser
 - Better error messages with line numbers
 - ✅ Support for comments

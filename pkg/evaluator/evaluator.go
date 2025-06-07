@@ -122,6 +122,12 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalFilter(list.Elements[1:])
 		case "reduce":
 			return e.evalReduce(list.Elements[1:])
+		case "append":
+			return e.evalAppend(list.Elements[1:])
+		case "reverse":
+			return e.evalReverse(list.Elements[1:])
+		case "nth":
+			return e.evalNth(list.Elements[1:])
 		default:
 			// Try to call it as a user-defined function
 			return e.evalFunctionCall(symbolExpr.Name, list.Elements[1:])
@@ -765,6 +771,106 @@ func isTruthy(value types.Value) bool {
 	case *types.ListValue:
 		return len(v.Elements) > 0
 	default:
-		return true // Functions and other values are truthy
+		return true // Other values are considered truthy
 	}
+}
+
+func (e *Evaluator) evalAppend(args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("append requires exactly 2 arguments")
+	}
+
+	// Evaluate the first list
+	firstValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate the second list
+	secondValue, err := e.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	firstList, ok := firstValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("append first argument must be a list, got %T", firstValue)
+	}
+
+	secondList, ok := secondValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("append second argument must be a list, got %T", secondValue)
+	}
+
+	// Create a new list with combined elements
+	resultElements := make([]types.Value, 0, len(firstList.Elements)+len(secondList.Elements))
+	resultElements = append(resultElements, firstList.Elements...)
+	resultElements = append(resultElements, secondList.Elements...)
+
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalReverse(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("reverse requires exactly 1 argument")
+	}
+
+	// Evaluate the list
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("reverse argument must be a list, got %T", listValue)
+	}
+
+	// Create a new list with reversed elements
+	resultElements := make([]types.Value, len(list.Elements))
+	for i, elem := range list.Elements {
+		resultElements[len(list.Elements)-1-i] = elem
+	}
+
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalNth(args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("nth requires exactly 2 arguments")
+	}
+
+	// Evaluate the index
+	indexValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate the list
+	listValue, err := e.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	index, ok := indexValue.(types.NumberValue)
+	if !ok {
+		return nil, fmt.Errorf("nth first argument must be a number, got %T", indexValue)
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("nth second argument must be a list, got %T", listValue)
+	}
+
+	// Check bounds
+	idx := int(index)
+	if idx < 0 {
+		return nil, fmt.Errorf("nth index cannot be negative: %d", idx)
+	}
+
+	if idx >= len(list.Elements) {
+		return nil, fmt.Errorf("nth index %d out of bounds for list of length %d", idx, len(list.Elements))
+	}
+
+	return list.Elements[idx], nil
 }

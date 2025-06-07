@@ -847,3 +847,178 @@ func TestHigherOrderFunctionCombinations(t *testing.T) {
 		})
 	}
 }
+
+func TestAppendFunction(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected types.Value
+	}{
+		{
+			name:     "append two lists",
+			input:    "(append (list 1 2) (list 3 4))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2), types.NumberValue(3), types.NumberValue(4)}},
+		},
+		{
+			name:     "append empty list to non-empty",
+			input:    "(append (list) (list 1 2 3))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2), types.NumberValue(3)}},
+		},
+		{
+			name:     "append non-empty to empty list",
+			input:    "(append (list 1 2 3) (list))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2), types.NumberValue(3)}},
+		},
+		{
+			name:     "append two empty lists",
+			input:    "(append (list) (list))",
+			expected: &types.ListValue{Elements: []types.Value{}},
+		},
+		{
+			name:     "append lists with different types",
+			input:    "(append (list 1 \"hello\") (list #t 3.14))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.StringValue("hello"), types.BooleanValue(true), types.NumberValue(3.14)}},
+		},
+		{
+			name:     "append multiple single elements",
+			input:    "(append (list 1) (list 2))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2)}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interpreter := NewInterpreter()
+			result, err := interpreter.Interpret(tt.input)
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestReverseFunction(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected types.Value
+	}{
+		{
+			name:     "reverse simple list",
+			input:    "(reverse (list 1 2 3 4))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(4), types.NumberValue(3), types.NumberValue(2), types.NumberValue(1)}},
+		},
+		{
+			name:     "reverse empty list",
+			input:    "(reverse (list))",
+			expected: &types.ListValue{Elements: []types.Value{}},
+		},
+		{
+			name:     "reverse single element list",
+			input:    "(reverse (list 42))",
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(42)}},
+		},
+		{
+			name:     "reverse list with mixed types",
+			input:    "(reverse (list \"hello\" 123 #t))",
+			expected: &types.ListValue{Elements: []types.Value{types.BooleanValue(true), types.NumberValue(123), types.StringValue("hello")}},
+		},
+		{
+			name:     "reverse two element list",
+			input:    "(reverse (list \"first\" \"second\"))",
+			expected: &types.ListValue{Elements: []types.Value{types.StringValue("second"), types.StringValue("first")}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interpreter := NewInterpreter()
+			result, err := interpreter.Interpret(tt.input)
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestNthFunction(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       string
+		expected    types.Value
+		expectError bool
+	}{
+		{
+			name:     "nth first element (index 0)",
+			input:    "(nth 0 (list \"a\" \"b\" \"c\"))",
+			expected: types.StringValue("a"),
+		},
+		{
+			name:     "nth middle element",
+			input:    "(nth 1 (list 10 20 30 40))",
+			expected: types.NumberValue(20),
+		},
+		{
+			name:     "nth last element",
+			input:    "(nth 2 (list \"x\" \"y\" \"z\"))",
+			expected: types.StringValue("z"),
+		},
+		{
+			name:     "nth single element list",
+			input:    "(nth 0 (list 42))",
+			expected: types.NumberValue(42),
+		},
+		{
+			name:        "nth index out of bounds (too high)",
+			input:       "(nth 5 (list 1 2 3))",
+			expectError: true,
+		},
+		{
+			name:        "nth negative index",
+			input:       "(nth -1 (list 1 2 3))",
+			expectError: true,
+		},
+		{
+			name:        "nth empty list",
+			input:       "(nth 0 (list))",
+			expectError: true,
+		},
+		{
+			name:     "nth with mixed types",
+			input:    "(nth 1 (list #t \"hello\" 3.14))",
+			expected: types.StringValue("hello"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interpreter := NewInterpreter()
+			result, err := interpreter.Interpret(tt.input)
+
+			if tt.expectError {
+				if err == nil {
+					t.Fatalf("expected error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
