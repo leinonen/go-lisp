@@ -82,6 +82,8 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalMultiplication(list.Elements[1:])
 		case "/":
 			return e.evalDivision(list.Elements[1:])
+		case "%":
+			return e.evalModulo(list.Elements[1:])
 		case "=":
 			return e.evalEquality(list.Elements[1:])
 		case "<":
@@ -136,6 +138,8 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalModules(list.Elements[1:])
 		case "builtins":
 			return e.evalBuiltins(list.Elements[1:])
+		case "error":
+			return e.evalError(list.Elements[1:])
 		default:
 			// Try to call it as a user-defined function
 			return e.evalFunctionCall(symbolExpr.Name, list.Elements[1:])

@@ -573,3 +573,129 @@ func TestEnvironmentInspection(t *testing.T) {
 		}
 	})
 }
+
+// TestEvalError tests the error function
+func TestEvalError(t *testing.T) {
+	tests := []struct {
+		name        string
+		expr        types.Expr
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "error with string message",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "error"},
+					&types.StringExpr{Value: "This is a test error"},
+				},
+			},
+			expectError: true,
+			errorMsg:    "This is a test error",
+		},
+		{
+			name: "error with number message",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "error"},
+					&types.NumberExpr{Value: 42},
+				},
+			},
+			expectError: true,
+			errorMsg:    "42",
+		},
+		{
+			name: "error with boolean message",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "error"},
+					&types.BooleanExpr{Value: true},
+				},
+			},
+			expectError: true,
+			errorMsg:    "#t",
+		},
+		{
+			name: "error with string concatenation that works",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "error"},
+					&types.StringExpr{Value: "Error code: 404"},
+				},
+			},
+			expectError: true,
+			errorMsg:    "Error code: 404",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env := NewEnvironment()
+			evaluator := NewEvaluator(env)
+
+			_, err := evaluator.Eval(tt.expr)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("expected error but got none")
+					return
+				}
+				if !strings.Contains(err.Error(), tt.errorMsg) {
+					t.Errorf("expected error message to contain '%s', got: %v", tt.errorMsg, err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+			}
+		})
+	}
+}
+
+// TestEvalErrorEdgeCases tests error cases for the error function
+func TestEvalErrorEdgeCases(t *testing.T) {
+	tests := []struct {
+		name string
+		expr types.Expr
+	}{
+		{
+			name: "error with no arguments",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "error"},
+				},
+			},
+		},
+		{
+			name: "error with too many arguments",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "error"},
+					&types.StringExpr{Value: "message1"},
+					&types.StringExpr{Value: "message2"},
+				},
+			},
+		},
+		{
+			name: "error with invalid expression argument",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "error"},
+					&types.SymbolExpr{Name: "undefined_symbol"},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env := NewEnvironment()
+			evaluator := NewEvaluator(env)
+
+			_, err := evaluator.Eval(tt.expr)
+			if err == nil {
+				t.Errorf("expected error for %s", tt.name)
+			}
+		})
+	}
+}

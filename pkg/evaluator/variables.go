@@ -81,9 +81,10 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			// Higher-order functions
 			"map", "filter", "reduce",
 			// List manipulation
-			"append", "reverse", "nth",
-			// Environment inspection
-			"env", "modules", "builtins",
+			"append", "reverse", "nth",		// Environment inspection
+		"env", "modules", "builtins",
+		// Error handling
+		"error",
 		}
 
 		// Convert to list of string values
@@ -160,7 +161,36 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"env":      "(env)\nShow all variables and functions in the current environment.\nExample: (env) => ((x 42) (square #<function([x])>))",
 		"modules":  "(modules)\nShow all loaded modules and their exported symbols.\nExample: (modules) => ((math (square cube)))",
 		"builtins": "(builtins) or (builtins func-name)\nShow all built-in functions or help for a specific function.\nExample: (builtins) => (+ - * / ...) or (builtins reduce) => help for reduce",
+
+		// Error handling
+		"error": "(error message)\nRaise an error with the given message.\nExample: (error \"Something went wrong!\") => Error: Something went wrong!",
 	}
 
 	return helpMap[funcName]
+}
+
+// Error function
+
+func (e *Evaluator) evalError(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("error requires exactly 1 argument")
+	}
+
+	// Evaluate the message argument
+	messageValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert the message to a string
+	var message string
+	switch msgVal := messageValue.(type) {
+	case types.StringValue:
+		message = string(msgVal)
+	default:
+		message = msgVal.String()
+	}
+
+	// Return an error with the message
+	return nil, fmt.Errorf("%s", message)
 }

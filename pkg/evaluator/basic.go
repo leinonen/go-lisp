@@ -326,11 +326,11 @@ func (e *Evaluator) evalComparison(args []types.Expr, op func(float64, float64) 
 
 		// Use big.Int.Cmp for precise comparison
 		cmp := big1.Cmp(big2)
-		
+
 		// Determine the result based on the comparison function
 		// We need to figure out which operation this is by testing with known values
 		testResult := op(1.0, 2.0) // Test with 1 < 2
-		
+
 		if testResult { // This is < or <=
 			secondTest := op(2.0, 2.0) // Test with 2 == 2
 			if secondTest { // This is <=
@@ -512,4 +512,74 @@ func (e *Evaluator) evalMultiplication(args []types.Expr) (types.Value, error) {
 	}
 
 	return types.NumberValue(result), nil
+}
+
+func (e *Evaluator) evalModulo(args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("modulo requires exactly 2 arguments")
+	}
+
+	first, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	second, err := e.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	// Handle big numbers
+	if _, ok := first.(*types.BigNumberValue); ok {
+		firstBig, err := toBigInt(first)
+		if err != nil {
+			return nil, err
+		}
+		secondBig, err := toBigInt(second)
+		if err != nil {
+			return nil, err
+		}
+		if secondBig.Sign() == 0 {
+			return nil, fmt.Errorf("modulo by zero")
+		}
+		result := new(big.Int)
+		result.Mod(firstBig, secondBig)
+		return types.NewBigNumberValue(result), nil
+	}
+
+	if _, ok := second.(*types.BigNumberValue); ok {
+		firstBig, err := toBigInt(first)
+		if err != nil {
+			return nil, err
+		}
+		secondBig, err := toBigInt(second)
+		if err != nil {
+			return nil, err
+		}
+		if secondBig.Sign() == 0 {
+			return nil, fmt.Errorf("modulo by zero")
+		}
+		result := new(big.Int)
+		result.Mod(firstBig, secondBig)
+		return types.NewBigNumberValue(result), nil
+	}
+
+	// Regular number modulo
+	firstNum, ok := first.(types.NumberValue)
+	if !ok {
+		return nil, fmt.Errorf("modulo requires numbers")
+	}
+
+	secondNum, ok := second.(types.NumberValue)
+	if !ok {
+		return nil, fmt.Errorf("modulo requires numbers")
+	}
+
+	if secondNum == 0 {
+		return nil, fmt.Errorf("modulo by zero")
+	}
+
+	// Convert to integers for modulo operation
+	result := int64(firstNum) % int64(secondNum)
+	return types.NumberValue(float64(result)), nil
 }

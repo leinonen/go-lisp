@@ -329,3 +329,209 @@ func TestEvaluatorError(t *testing.T) {
 		})
 	}
 }
+
+// TestModulo tests the modulo operation
+func TestModulo(t *testing.T) {
+	tests := []struct {
+		name     string
+		expr     types.Expr
+		expected types.Value
+	}{
+		{
+			name: "basic modulo",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.NumberExpr{Value: 17},
+					&types.NumberExpr{Value: 5},
+				},
+			},
+			expected: types.NumberValue(2),
+		},
+		{
+			name: "modulo with zero remainder",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.NumberExpr{Value: 10},
+					&types.NumberExpr{Value: 5},
+				},
+			},
+			expected: types.NumberValue(0),
+		},
+		{
+			name: "modulo with negative dividend",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.NumberExpr{Value: -17},
+					&types.NumberExpr{Value: 5},
+				},
+			},
+			expected: types.NumberValue(-2),
+		},
+		{
+			name: "modulo with negative divisor",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.NumberExpr{Value: 17},
+					&types.NumberExpr{Value: -5},
+				},
+			},
+			expected: types.NumberValue(2),
+		},
+		{
+			name: "modulo with both negative",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.NumberExpr{Value: -17},
+					&types.NumberExpr{Value: -5},
+				},
+			},
+			expected: types.NumberValue(-2),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env := NewEnvironment()
+			evaluator := NewEvaluator(env)
+
+			result, err := evaluator.Eval(tt.expr)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+// TestModuloErrors tests error cases for modulo operation
+func TestModuloErrors(t *testing.T) {
+	tests := []struct {
+		name string
+		expr types.Expr
+	}{
+		{
+			name: "modulo by zero",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.NumberExpr{Value: 17},
+					&types.NumberExpr{Value: 0},
+				},
+			},
+		},
+		{
+			name: "wrong number of arguments - too few",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.NumberExpr{Value: 17},
+				},
+			},
+		},
+		{
+			name: "wrong number of arguments - too many",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.NumberExpr{Value: 17},
+					&types.NumberExpr{Value: 5},
+					&types.NumberExpr{Value: 3},
+				},
+			},
+		},
+		{
+			name: "non-numeric first argument",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.StringExpr{Value: "hello"},
+					&types.NumberExpr{Value: 5},
+				},
+			},
+		},
+		{
+			name: "non-numeric second argument",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "%"},
+					&types.NumberExpr{Value: 17},
+					&types.BooleanExpr{Value: true},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env := NewEnvironment()
+			evaluator := NewEvaluator(env)
+
+			_, err := evaluator.Eval(tt.expr)
+			if err == nil {
+				t.Errorf("expected error for expression %v", tt.expr)
+			}
+		})
+	}
+}
+
+// TestModuloWithBigNumbers tests modulo operation with big numbers
+func TestModuloWithBigNumbers(t *testing.T) {
+	tests := []struct {
+		name     string
+		expr     string
+		checkErr bool
+	}{
+		{
+			name: "big number modulo regular number",
+			expr: "(% 123456789012345678901234567890 123)",
+		},
+		{
+			name: "regular number modulo big number",
+			expr: "(% 123456 987654321)",
+		},
+		{
+			name: "big number modulo big number",
+			expr: "(% 123456789012345678901234567890 987654321)",
+		},
+		{
+			name:     "big number modulo by zero",
+			expr:     "(% 123456789012345678901234567890 0)",
+			checkErr: true,
+		},
+		{
+			name:     "regular number modulo by zero",
+			expr:     "(% 123 0)",
+			checkErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := parseAndEval(t, tt.expr)
+			if tt.checkErr {
+				if err == nil {
+					t.Errorf("expected error for modulo by zero")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			// For valid operations, just ensure we get a result without error
+			if result == nil {
+				t.Errorf("expected non-nil result")
+			}
+		})
+	}
+}
