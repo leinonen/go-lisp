@@ -5,17 +5,72 @@ A feature-rich Lisp interpreter implemented in Go using Test-Driven Development 
 ## Quick Start
 
 ```bash
-# Run the REPL
-go run ./cmd/lisp-interpreter
-
-# Run a Lisp file
-go run ./cmd/lisp-interpreter myprogram.lisp
-
-# Or build and run
+# Build the interpreter
 make build
+
+# Show help and available options
+./lisp-interpreter -help
+
+# Start interactive REPL
 ./lisp-interpreter
+
+# Evaluate code directly from command line
+./lisp-interpreter -e "(+ 1 2 3)"
+
+# Execute a Lisp file (explicit flag)
+./lisp-interpreter -f myprogram.lisp
+
+# Execute a Lisp file (legacy positional argument)
 ./lisp-interpreter myprogram.lisp
+
+# Development mode (without building)
+go run ./cmd/lisp-interpreter -e "(* 6 7)"
+go run ./cmd/lisp-interpreter -f examples/basic_features.lisp
 ```
+
+## Command Line Usage
+
+The Lisp interpreter supports multiple modes of operation through command line parameters:
+
+### Interactive REPL Mode
+```bash
+./lisp-interpreter
+# Starts the interactive Read-Eval-Print Loop
+```
+
+### Direct Code Evaluation
+```bash
+# Evaluate expressions directly from the command line
+./lisp-interpreter -e "(+ 1 2 3)"           # => 6
+./lisp-interpreter -e "(list 1 2 3 4 5)"    # => (1 2 3 4 5)
+./lisp-interpreter -e "(* 6 7)"             # => 42
+
+# Perfect for quick calculations and one-liners
+./lisp-interpreter -e "(% 1000000000000000001 7)"  # => 0
+```
+
+### File Execution
+```bash
+# Execute Lisp programs from files
+./lisp-interpreter -f script.lisp           # Explicit file flag
+./lisp-interpreter script.lisp              # Legacy positional argument (still supported)
+```
+
+### Help and Information
+```bash
+./lisp-interpreter -help                    # Show all available options
+```
+
+### Command Line Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `-help` | Show help message and usage examples | `./lisp-interpreter -help` |
+| `-e <code>` | Evaluate Lisp code directly | `./lisp-interpreter -e "(+ 1 2)"` |
+| `-f <file>` | Execute a Lisp file | `./lisp-interpreter -f program.lisp` |
+| (none) | Start interactive REPL | `./lisp-interpreter` |
+
+**Note**: The interpreter maintains backward compatibility - you can still use `./lisp-interpreter filename.lisp` without the `-f` flag.
 
 ## Key Features
 
@@ -103,7 +158,12 @@ echo '(define factorial (lambda (n) (if (= n 0) 1 (* n (factorial (- n 1))))))
 (factorial 5)
 (+ 10 20)' > math.lisp
 
-# Run it
+# Run it using explicit file flag
+./lisp-interpreter -f math.lisp
+# Output: 120
+#         30
+
+# Or use legacy positional argument (backward compatible)
 ./lisp-interpreter math.lisp
 # Output: 120
 #         30
@@ -173,8 +233,13 @@ lisp> (load "examples/core.lisp")
 ### Development Commands
 ```bash
 make build    # Build the interpreter
-make run      # Build and run the interpreter  
+make run      # Build and run the interpreter (REPL mode)
 make test     # Run all tests
+
+# Quick testing with different modes
+./lisp-interpreter -help                    # Show usage
+./lisp-interpreter -e "(* 6 7)"             # Quick evaluation  
+./lisp-interpreter -f examples/basic_features.lisp  # Run examples
 ```
 
 ### Manual Build
