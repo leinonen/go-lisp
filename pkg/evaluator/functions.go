@@ -137,6 +137,11 @@ func (e *Evaluator) callFunctionWithTailCheck(funcValue types.Value, args []type
 			// Return a placeholder - this won't be used since tail call will be detected
 			return nil, nil
 		}
+
+		// Keywords cannot be tail-call optimized, so handle them normally
+		if _, ok := funcValue.(types.KeywordValue); ok {
+			return e.callFunction(funcValue, args)
+		}
 	}
 
 	// Regular function call
@@ -144,6 +149,11 @@ func (e *Evaluator) callFunctionWithTailCheck(funcValue types.Value, args []type
 }
 
 func (e *Evaluator) callFunction(funcValue types.Value, args []types.Expr) (types.Value, error) {
+	// Check if the value is a keyword being used as a function
+	if keyword, ok := funcValue.(types.KeywordValue); ok {
+		return e.evalKeywordAsFunction(keyword, args)
+	}
+
 	function, ok := funcValue.(types.FunctionValue)
 	if !ok {
 		return nil, fmt.Errorf("value is not a function: %T", funcValue)
@@ -244,4 +254,46 @@ func (e *Evaluator) callFunctionRegular(function types.FunctionValue, argValues 
 
 	// Evaluate the function body
 	return funcEvaluator.Eval(function.Body)
+}
+
+// evalKeywordAsFunction handles keywords used as functions to get values from hash maps
+func (e *Evaluator) evalKeywordAsFunction(keyword types.KeywordValue, args []types.Expr) (types.Value, error) {
+	// Keywords as functions can take 1 or 2 arguments:
+	// 1 argument: (:key hash-map) -> value or nil
+	// 2 arguments: (:key hash-map default) -> value or default
+	if len(args) < 1 || len(args) > 2 {
+		return nil, fmt.Errorf("keyword function requires 1 or 2 arguments (hash-map and optional default), got %d", len(args))
+	}
+
+	// Evaluate the hash map argument
+	hashMapValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	hashMap, ok := hashMapValue.(*types.HashMapValue)
+	if !ok {
+		return nil, fmt.Errorf("keyword function first argument must be a hash map, got %T", hashMapValue)
+	}
+
+	// Convert keyword to the string key format used in hash maps
+	keyStr := ":" + string(keyword)
+
+	// Look up the value
+	value, exists := hashMap.Elements[keyStr]
+	if !exists {
+		// If no default value provided, return nil
+		if len(args) == 1 {
+			return &types.NilValue{}, nil
+		}
+
+		// Evaluate and return the default value
+		defaultValue, err := e.Eval(args[1])
+		if err != nil {
+			return nil, err
+		}
+		return defaultValue, nil
+	}
+
+	return value, nil
 }
