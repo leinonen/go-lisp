@@ -328,8 +328,8 @@ func TestREPLFlow(t *testing.T) {
 			},
 		},
 		{
-			name:  "exit command",
-			input: "exit\n",
+			name:      "exit command",
+			input:     "exit\n",
 			responses: []interpretResponse{},
 			expectedOutput: []string{
 				"Welcome to the Lisp Interpreter!",
@@ -345,7 +345,7 @@ func TestREPLFlow(t *testing.T) {
 			scanner := bufio.NewScanner(strings.NewReader(tt.input))
 
 			output := captureOutput(func() {
-				REPL(mockInterp, scanner)
+				REPLWithOptions(mockInterp, scanner, false) // Disable colors for tests
 			})
 
 			for _, expected := range tt.expectedOutput {
@@ -359,7 +359,7 @@ func TestREPLFlow(t *testing.T) {
 
 func TestPrintWelcomeMessage(t *testing.T) {
 	output := captureOutput(func() {
-		printWelcomeMessage()
+		printWelcomeMessageNoColor()
 	})
 
 	expectedParts := []string{
@@ -380,7 +380,7 @@ func TestPrintWelcomeMessage(t *testing.T) {
 
 func TestPrintGoodbyeMessage(t *testing.T) {
 	output := captureOutput(func() {
-		printGoodbyeMessage()
+		printGoodbyeMessageNoColor()
 	})
 
 	expected := "Goodbye!"
@@ -397,7 +397,7 @@ func TestREPLIntegration(t *testing.T) {
 	scanner := bufio.NewScanner(strings.NewReader(input))
 
 	output := captureOutput(func() {
-		REPL(interp, scanner)
+		REPLWithOptions(interp, scanner, false) // Disable colors for tests
 	})
 
 	expectedParts := []string{
