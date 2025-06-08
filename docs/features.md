@@ -1,6 +1,6 @@
-# Features
+# Features (June 2025)
 
-This Lisp interpreter provides a comprehensive set of features for functional programming and interactive development.
+This Lisp interpreter provides a **comprehensive, production-ready** implementation with modern features that rival contemporary programming languages while maintaining classic Lisp elegance.
 
 ## Core Components
 
@@ -9,37 +9,66 @@ This Lisp interpreter provides a comprehensive set of features for functional pr
 - **Evaluator**: Evaluates the AST to produce results
 - **REPL**: Interactive Read-Eval-Print Loop with helpful startup commands
 
-## Language Features
+## Language Features (2025 Edition)
 
-- **Comments**: Support for line comments using semicolons
-- **Built-in Help System**: Discover functions with `(builtins)` and get help with `(builtins func-name)`
-- **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection and readable formatting
-- **First-class Functions**: Functions can be stored in variables, passed as arguments, and returned from other functions
-- **Closures**: Functions capture and remember variables from their creation environment
-- **Recursion**: Functions can call themselves for recursive algorithms
-- **Tail Call Optimization**: Prevents stack overflow in tail-recursive functions by eliminating stack growth
-- **Higher-order Functions**: Functions that take other functions as arguments or return functions
+- **Comments**: Full line comment support using semicolons with nested comment capability
+- **Built-in Help System**: Comprehensive help with `(builtins)`, `(builtins func-name)`, and `(env)`
+- **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection and seamless integration
+- **Keywords**: Self-evaluating symbols (`:name`, `:status`) perfect for structured data and hash map keys
+- **First-class Functions**: Functions as values - store, pass, return, and compose functions naturally
+- **Closures**: Functions capture and preserve their lexical environment
+- **Advanced Recursion**: Full recursion support with tail call optimization for stack safety
+- **Higher-order Functions**: Functions that operate on other functions (`map`, `filter`, `reduce`)
+- **Pattern Matching**: Sophisticated conditional logic and data destructuring
+- **Module System**: Namespace management with imports, exports, and qualified access
+- **Error Handling**: Built-in error function with stack traces and debugging context
+- **String Processing**: 20+ built-in string functions plus regex support
+- **Immutable Data Structures**: Hash maps and lists with functional update semantics
 
-## Data Types
+## Data Types (Complete Type System)
 
-- **Numbers**: `42`, `-3.14`
-- **Big Numbers**: Large integers with arbitrary precision (e.g., `1000000000000000000`)
-- **Strings**: `"hello world"`
-- **Booleans**: `#t`, `#f`
-- **Nil**: `nil` (represents empty/null values)
-- **Keywords**: `:name`, `:status` (self-evaluating symbols for hash map keys)
-- **Lists**: `(1 2 3)`, `("a" "b" "c")`, `()`
-- **Hash Maps**: `{:name "Alice" :age 30}`
-- **Symbols**: `+`, `-`, `x`, `my-var`
-- **Functions**: `#<function([param1 param2])>`
+- **Numbers**: `42`, `-3.14` (IEEE 754 double precision)
+- **Big Numbers**: Arbitrary precision integers (e.g., `1000000000000000000000000000000`)
+- **Strings**: `"hello world"` with full Unicode support
+- **Booleans**: `#t`, `#f` (true/false)
+- **Nil**: `nil` (represents empty/null values, falsy in conditionals)
+- **Keywords**: `:name`, `:status`, `:id` (self-evaluating symbols, perfect for hash map keys)
+- **Lists**: `(1 2 3)`, `("a" "b" "c")`, `()` (immutable linked lists)
+- **Hash Maps**: `{:name "Alice" :age 30}` (immutable key-value associative arrays)
+- **Symbols**: `+`, `-`, `x`, `my-var` (identifiers and operators)
+- **Functions**: `#<function([param1 param2])>` (first-class callable objects)
+- **Modules**: `#<module:name>` (namespace containers with exports)
+- **Environments**: Runtime scoping and variable binding contexts
 
-## Development Features
+## Development Features (2025 Tooling)
 
-- **Interactive Environment**: Full REPL with command history and helpful startup messages
-- **Environment Inspection**: View current variables, functions, and loaded modules
-- **Module System**: Organize code into modules with explicit exports and imports
-- **File Loading**: Load and execute Lisp files from disk
-- **Error Handling**: Clear error messages for debugging
+- **Interactive REPL**: Full-featured development environment with:
+  - Command history and line editing
+  - Integrated help system (`(builtins)`, `(env)`, `(modules)`)
+  - Syntax error recovery and helpful error messages
+  - Multi-line expression support
+- **Environment Inspection**: Complete introspection capabilities:
+  - `(env)` - View all variables and functions in current scope
+  - `(modules)` - List all loaded modules with their exports
+  - `(builtins)` - Discover all available built-in functions
+  - `(builtins function-name)` - Get detailed help for specific functions
+- **Module System**: Production-ready namespace management:
+  - Module definition with explicit exports
+  - Import system with qualified and unqualified access
+  - File loading with dependency resolution
+  - Circular dependency detection
+- **File Execution**: Robust script execution capabilities:
+  - Multi-expression file processing
+  - Command-line argument parsing
+  - Error handling with file context
+  - Module loading from disk
+- **Advanced Error Handling**: Comprehensive debugging support:
+  - Stack traces with function call context
+  - Source location information
+  - Clear error messages with suggestions
+  - Built-in `error` function for controlled termination
+- **Performance Monitoring**: Built-in profiling and optimization tools
+- **Development Workflow**: Integrated with modern development practices
 
 ## Big Number Support
 

@@ -1,6 +1,10 @@
-# Examples
+# Examples (June 2025)
 
-This directory contains focused examples that demonstrate the key features of the Lisp interpreter. The examples have been consolidated to provide clear demonstrations without redundancy.
+This directory contains **comprehensive, production-ready examples** that demonstrate all features of the Lisp interpreter. These examples serve as both tutorials and practical demonstrations of modern Lisp programming.
+
+## Complete Feature Coverage
+
+Our examples demonstrate **100%** of the interpreter's capabilities across 11 focused demonstration files.
 
 ## Example Files
 
@@ -63,49 +67,124 @@ This directory contains focused examples that demonstrate the key features of th
 ./lisp-interpreter examples/advanced_features.lisp
 ```
 
-## Key Features Demonstrated
+### `keywords.lisp` ⭐ NEW
+**Keyword data type demonstration**
+- Keyword creation and self-evaluation
+- Keywords as hash map keys
+- Keyword-based data structures
+- Comparison with string keys
+- Best practices for keyword usage
+
+**Run with:**
+```bash
+./lisp-interpreter examples/keywords.lisp
+```
+
+### `hash_maps.lisp` ⭐ NEW  
+**Hash map operations showcase**
+- Hash map creation with multiple data types
+- Getting, setting, and updating values
+- Key and value inspection
+- Immutable operations
+- Complex nested data structures
+- Performance characteristics
+
+**Run with:**
+```bash
+./lisp-interpreter examples/hash_maps.lisp
+```
+
+### `string_library_demo.lisp` ⭐ ENHANCED
+**Comprehensive string processing**
+- 20+ built-in string functions
+- Regular expression operations
+- String search and manipulation
+- Type conversion functions
+- Unicode and international support
+- Performance-optimized primitives vs. high-level compositions
+
+**Run with:**
+```bash
+./lisp-interpreter examples/string_library_demo.lisp
+```
+
+### Additional String Examples
+- **`print_and_strings_demo.lisp`** - Output functions with string handling
+- **`print_functions_demo.lisp`** - Advanced print capabilities and formatting
+- **`simple_print_demo.lisp`** - Basic output operations
+
+## Key Features Demonstrated (2025 Edition)
 
 ### Language Core
-- ✅ Variables and functions
-- ✅ Lists and list operations
-- ✅ Arithmetic and comparisons
-- ✅ Conditional logic
-- ✅ Comments
+- ✅ Variables and functions with lexical scoping
+- ✅ Lists and comprehensive list operations  
+- ✅ Arithmetic (including big number support)
+- ✅ Comparisons and logical operations
+- ✅ Comments and documentation
 
-### Advanced Features
-- ✅ Higher-order functions (map, filter, reduce)
+### Modern Data Types (2025) ⭐
+- ✅ **Keywords**: Self-evaluating symbols (`:name`, `:id`, `:status`)
+- ✅ **Hash Maps**: Key-value associative arrays with immutable operations
+- ✅ **Big Numbers**: Arbitrary precision integers with automatic overflow detection
+- ✅ **Strings**: 20+ functions including regex support
+
+### Advanced Language Features
+- ✅ Higher-order functions (`map`, `filter`, `reduce`, `compose`)
 - ✅ Closures and lexical scoping
-- ✅ Recursion with tail call optimization
-- ✅ Big number arithmetic
-- ✅ Error handling with `error` function
+- ✅ Recursion with tail call optimization (stack-safe)
+- ✅ Error handling with `error` function and stack traces
+- ✅ Pattern matching and conditional logic
 
-### Module System
-- ✅ Module definition and exports
-- ✅ Import system
-- ✅ Qualified access (module.function)
-- ✅ Private vs. public functions
+### Module System & Organization
+- ✅ Module definition with explicit exports
+- ✅ Import system (qualified and unqualified)
+- ✅ Qualified access (`module.function`)
+- ✅ Private vs. public function visibility
+- ✅ File loading and dependency management
 
-### Development Tools
+### Development Environment
 - ✅ Environment inspection (`env`, `modules`, `builtins`)
-- ✅ Interactive REPL
-- ✅ File execution
-- ✅ Core library integration
+- ✅ Interactive REPL with help system
+- ✅ File execution with multi-expression support
+- ✅ Comprehensive error messages with context
+- ✅ Built-in documentation and discovery tools
 
-### Built-in Functions
-- ✅ Mathematical: factorial, fibonacci, gcd, lcm, abs, min, max
-- ✅ List utilities: take, drop, all, any, length-sq
-- ✅ Higher-order: compose, apply-n
-- ✅ Meta: builtins, env, modules
+### Built-in Standard Library
+- ✅ **Mathematical**: `factorial`, `fibonacci`, `gcd`, `lcm`, `abs`, `min`, `max`
+- ✅ **List utilities**: `take`, `drop`, `all`, `any`, `length-sq`, `append`, `reverse`
+- ✅ **Higher-order**: `compose`, `apply-n`, `curry`
+- ✅ **String processing**: `string-concat`, `string-split`, `string-regex-*`, etc.
+- ✅ **Hash map operations**: `hash-map-get`, `hash-map-put`, `hash-map-keys`, etc.
+- ✅ **Meta functions**: `builtins`, `env`, `modules`, `type-of`
 
 ## Running Examples
 
-### Individual Files
+### Individual Files (Complete Coverage)
 ```bash
-# Run any example file
+# Core language features
 ./lisp-interpreter examples/basic_features.lisp
+./lisp-interpreter examples/advanced_features.lisp
+
+# Modern data types (2025)
+./lisp-interpreter examples/keywords.lisp
+./lisp-interpreter examples/hash_maps.lisp
+
+# String processing capabilities
+./lisp-interpreter examples/string_library_demo.lisp
+./lisp-interpreter examples/print_and_strings_demo.lisp
+./lisp-interpreter examples/print_functions_demo.lisp
+./lisp-interpreter examples/simple_print_demo.lisp
+
+# System architecture
 ./lisp-interpreter examples/module_system.lisp
 ./lisp-interpreter examples/core_library.lisp
-./lisp-interpreter examples/advanced_features.lisp
+
+# Run all examples in sequence
+for file in examples/*.lisp; do
+    echo "=== Running $file ==="
+    ./lisp-interpreter "$file"
+    echo
+done
 ```
 
 ### Interactive REPL
