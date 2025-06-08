@@ -3,6 +3,7 @@ package evaluator
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
@@ -79,7 +80,8 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			// List operations
 			"list", "first", "rest", "cons", "length", "empty?",
 			// Higher-order functions
-			"map", "filter", "reduce", // List manipulation
+			"map", "filter", "reduce",
+			// List manipulation
 			"append", "reverse", "nth",
 			// Hash map operations
 			"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
@@ -91,6 +93,8 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			"string-contains?", "string-starts-with?", "string-ends-with?", "string-replace",
 			"string-index-of", "string->number", "number->string", "string-regex-match?",
 			"string-regex-find-all", "string-repeat", "string?", "string-empty?",
+			// Module system
+			"load", "import",
 			// Environment inspection
 			"env", "modules", "builtins",
 			// Print functions
@@ -98,6 +102,9 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			// Error handling
 			"error",
 		}
+
+		// Sort the builtin names alphabetically
+		sort.Strings(builtinNames)
 
 		// Convert to list of string values
 		var elements []types.Value
@@ -202,6 +209,10 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"string-repeat":         "(string-repeat str count)\nRepeat string count times.\nExample: (string-repeat \"ha\" 3) => \"hahaha\"",
 		"string?":               "(string? value)\nCheck if value is a string.\nExample: (string? \"hello\") => #t",
 		"string-empty?":         "(string-empty? str)\nCheck if string is empty.\nExample: (string-empty? \"\") => #t",
+
+		// Module system
+		"load":   "(load \"filename\")\nLoad and execute a Lisp file.\nExample: (load \"library/core.lisp\") => loads the core library",
+		"import": "(import module-name)\nImport all exported symbols from a module.\nExample: (import math) => imports all functions from math module",
 
 		// Environment inspection
 		"env":      "(env)\nShow all variables and functions in the current environment.\nExample: (env) => ((x 42) (square #<function([x])>))",
