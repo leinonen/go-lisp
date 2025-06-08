@@ -138,3 +138,24 @@ Examples of tail-recursive functions:
 - `(modules)` - Show all loaded modules and their exported symbols
 - `(builtins)` - Show all available built-in functions and special forms
 - `(builtins func-name)` - Get detailed help for a specific built-in function
+
+## Output Functions
+
+- `(print value1 value2 ...)` - Output values to stdout without newline
+- `(println value1 value2 ...)` - Output values to stdout with newline
+
+Examples:
+```lisp
+; Print without newline
+(print "Hello" " " "World")  ; Output: Hello World
+
+; Print with newline
+(println "Hello World")      ; Output: Hello World\n
+
+; Print multiple values
+(println "Result:" (+ 1 2))  ; Output: Result: 3\n
+
+; Print different types
+(println "String:" "hello" "Number:" 42 "Boolean:" #t)
+; Output: String: hello Number: 42 Boolean: #t\n
+```

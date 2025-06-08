@@ -85,8 +85,16 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
 			"hash-map-contains?", "hash-map-keys", "hash-map-values",
 			"hash-map-size", "hash-map-empty?",
+			// String operations
+			"string-concat", "string-length", "string-substring", "string-char-at",
+			"string-upper", "string-lower", "string-trim", "string-split", "string-join",
+			"string-contains?", "string-starts-with?", "string-ends-with?", "string-replace",
+			"string-index-of", "string->number", "number->string", "string-regex-match?",
+			"string-regex-find-all", "string-repeat", "string?", "string-empty?",
 			// Environment inspection
 			"env", "modules", "builtins",
+			// Print functions
+			"print", "println",
 			// Error handling
 			"error",
 		}
@@ -172,10 +180,37 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"hash-map-size":      "(hash-map-size hashmap)\nGet the number of key-value pairs in a hash map.\nExample: (hash-map-size {\"a\" 1 \"b\" 2}) => 2",
 		"hash-map-empty?":    "(hash-map-empty? hashmap)\nCheck if a hash map is empty.\nExample: (hash-map-empty? {}) => #t",
 
+		// String operations
+		"string-concat":         "(string-concat str1 str2 ...)\nConcatenate multiple strings or values.\nExample: (string-concat \"Hello\" \" \" \"World\") => \"Hello World\"",
+		"string-length":         "(string-length str)\nGet the length of a string.\nExample: (string-length \"hello\") => 5",
+		"string-substring":      "(string-substring str start end)\nExtract a substring from start to end (exclusive).\nExample: (string-substring \"hello\" 1 4) => \"ell\"",
+		"string-char-at":        "(string-char-at str index)\nGet the character at a specific index.\nExample: (string-char-at \"hello\" 1) => \"e\"",
+		"string-upper":          "(string-upper str)\nConvert string to uppercase.\nExample: (string-upper \"hello\") => \"HELLO\"",
+		"string-lower":          "(string-lower str)\nConvert string to lowercase.\nExample: (string-lower \"HELLO\") => \"hello\"",
+		"string-trim":           "(string-trim str)\nRemove whitespace from both ends of string.\nExample: (string-trim \"  hello  \") => \"hello\"",
+		"string-split":          "(string-split str separator)\nSplit string by separator into a list.\nExample: (string-split \"a,b,c\" \",\") => (\"a\" \"b\" \"c\")",
+		"string-join":           "(string-join lst separator)\nJoin list elements into a string with separator.\nExample: (string-join (list \"a\" \"b\" \"c\") \",\") => \"a,b,c\"",
+		"string-contains?":      "(string-contains? str substring)\nCheck if string contains substring.\nExample: (string-contains? \"hello\" \"ell\") => #t",
+		"string-starts-with?":   "(string-starts-with? str prefix)\nCheck if string starts with prefix.\nExample: (string-starts-with? \"hello\" \"he\") => #t",
+		"string-ends-with?":     "(string-ends-with? str suffix)\nCheck if string ends with suffix.\nExample: (string-ends-with? \"hello\" \"lo\") => #t",
+		"string-replace":        "(string-replace str old new)\nReplace all occurrences of old with new.\nExample: (string-replace \"hello\" \"l\" \"x\") => \"hexxo\"",
+		"string-index-of":       "(string-index-of str substring)\nFind first index of substring (-1 if not found).\nExample: (string-index-of \"hello\" \"ell\") => 1",
+		"string->number":        "(string->number str)\nConvert string to number.\nExample: (string->number \"42.5\") => 42.5",
+		"number->string":        "(number->string num)\nConvert number to string.\nExample: (number->string 42) => \"42\"",
+		"string-regex-match?":   "(string-regex-match? str pattern)\nCheck if string matches regex pattern.\nExample: (string-regex-match? \"hello123\" \"[a-z]+[0-9]+\") => #t",
+		"string-regex-find-all": "(string-regex-find-all str pattern)\nFind all regex matches in string.\nExample: (string-regex-find-all \"abc123def456\" \"[0-9]+\") => (\"123\" \"456\")",
+		"string-repeat":         "(string-repeat str count)\nRepeat string count times.\nExample: (string-repeat \"ha\" 3) => \"hahaha\"",
+		"string?":               "(string? value)\nCheck if value is a string.\nExample: (string? \"hello\") => #t",
+		"string-empty?":         "(string-empty? str)\nCheck if string is empty.\nExample: (string-empty? \"\") => #t",
+
 		// Environment inspection
 		"env":      "(env)\nShow all variables and functions in the current environment.\nExample: (env) => ((x 42) (square #<function([x])>))",
 		"modules":  "(modules)\nShow all loaded modules and their exported symbols.\nExample: (modules) => ((math (square cube)))",
 		"builtins": "(builtins) or (builtins func-name)\nShow all built-in functions or help for a specific function.\nExample: (builtins) => (+ - * / ...) or (builtins reduce) => help for reduce",
+
+		// Print functions
+		"print":   "(print value1 value2 ...)\nOutput values to stdout without newline.\nExample: (print \"Hello\" \" \" \"World\") outputs: Hello World",
+		"println": "(println value1 value2 ...)\nOutput values to stdout with newline.\nExample: (println \"Hello World\") outputs: Hello World\\n",
 
 		// Error handling
 		"error": "(error message)\nRaise an error with the given message.\nExample: (error \"Something went wrong!\") => Error: Something went wrong!",

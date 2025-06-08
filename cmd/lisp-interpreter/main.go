@@ -45,7 +45,10 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error evaluating code: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Println(result)
+		// Don't print nil values (used by print functions to avoid duplicate output)
+		if result.String() != "nil" {
+			fmt.Println(result)
+		}
 		return
 	}
 

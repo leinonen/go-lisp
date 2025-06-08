@@ -1,5 +1,4 @@
 # Binaries
-lisp-interpreter
 
 # Go build artifacts
 *.exe

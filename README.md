@@ -77,6 +77,8 @@ The Lisp interpreter supports multiple modes of operation through command line p
 - **Complete Lisp Implementation**: Full tokenizer, parser, and evaluator
 - **Interactive REPL**: Rich development environment with help system
 - **File Execution**: Run Lisp programs from files with full multi-expression support
+- **Output Functions**: Built-in `print` and `println` functions for program output
+- **String Processing**: Comprehensive built-in string manipulation functions with high-level library extensions
 - **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection
 - **Hash Maps**: Key-value associative data structures with immutable operations
 - **Modulo Operator**: Full modulo support (`%`) with big number compatibility
@@ -103,6 +105,8 @@ The Lisp interpreter supports multiple modes of operation through command line p
 - **[Error Function](docs/error_function.md)** - Error handling with the `error` function
 - **[File Execution](docs/file_execution.md)** - Running Lisp programs from files
 - **[Core Library](docs/core_library.md)** - Mathematical and utility functions
+- **[Print Functions](docs/print_functions.md)** - Output capabilities with `print` and `println`
+- **[String Processing](library/README.md)** - Built-in string functions and high-level library extensions
 
 ## Quick Examples
 
@@ -123,6 +127,54 @@ lisp> (% 17 5)
 
 lisp> (% 1000000000000000001 7)
 => 0
+```
+
+### Output Functions
+```lisp
+; Print and println functions for program output
+lisp> (println "Hello, World!")
+Hello, World!
+
+lisp> (print "Hello, ")
+Hello, lisp> (println "World!")
+World!
+
+; Multiple arguments supported
+lisp> (println "Values:" 1 2 3 #t #f)
+Values: 1 2 3 #t #f
+
+; All data types supported
+lisp> (println "List:" (list 1 2 3))
+List: (1 2 3)
+
+lisp> (println "Hash:" (hash-map "key" "value"))
+Hash: {key: value}
+```
+
+### String Processing
+```lisp
+; Built-in string functions (Go primitives)
+lisp> (string-concat "Hello" " " "World")
+=> "Hello World"
+
+lisp> (string-length "Hello")
+=> 5
+
+lisp> (string-upper "hello")
+=> "HELLO"
+
+lisp> (string-split "a,b,c" ",")
+=> ("a" "b" "c")
+
+lisp> (string-contains? "Hello World" "World")
+=> #t
+
+; Higher-level library functions built on primitives
+; (load "library/strings.lisp")
+; (import strings)
+; (str-capitalize "hello world")  => "Hello world"
+; (str-title-case "hello world")  => "Hello World" 
+; (str-reverse "hello")           => "olleh"
 ```
 
 ### Error Handling

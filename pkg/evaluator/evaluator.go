@@ -158,6 +158,54 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalHashMapEmpty(list.Elements[1:])
 		case "error":
 			return e.evalError(list.Elements[1:])
+		// Print functions
+		case "print":
+			return e.evalPrint(list.Elements[1:])
+		case "println":
+			return e.evalPrintln(list.Elements[1:])
+		// String functions
+		case "string-concat":
+			return e.evalStringConcat(list.Elements[1:])
+		case "string-length":
+			return e.evalStringLength(list.Elements[1:])
+		case "string-substring":
+			return e.evalStringSubstring(list.Elements[1:])
+		case "string-char-at":
+			return e.evalStringCharAt(list.Elements[1:])
+		case "string-upper":
+			return e.evalStringUpper(list.Elements[1:])
+		case "string-lower":
+			return e.evalStringLower(list.Elements[1:])
+		case "string-trim":
+			return e.evalStringTrim(list.Elements[1:])
+		case "string-split":
+			return e.evalStringSplit(list.Elements[1:])
+		case "string-join":
+			return e.evalStringJoin(list.Elements[1:])
+		case "string-contains?":
+			return e.evalStringContains(list.Elements[1:])
+		case "string-starts-with?":
+			return e.evalStringStartsWith(list.Elements[1:])
+		case "string-ends-with?":
+			return e.evalStringEndsWith(list.Elements[1:])
+		case "string-replace":
+			return e.evalStringReplace(list.Elements[1:])
+		case "string-index-of":
+			return e.evalStringIndexOf(list.Elements[1:])
+		case "string->number":
+			return e.evalStringToNumber(list.Elements[1:])
+		case "number->string":
+			return e.evalNumberToString(list.Elements[1:])
+		case "string-regex-match?":
+			return e.evalStringRegexMatch(list.Elements[1:])
+		case "string-regex-find-all":
+			return e.evalStringRegexFindAll(list.Elements[1:])
+		case "string-repeat":
+			return e.evalStringRepeat(list.Elements[1:])
+		case "string?":
+			return e.evalStringPredicate(list.Elements[1:])
+		case "string-empty?":
+			return e.evalStringEmpty(list.Elements[1:])
 		default:
 			// Try to call it as a user-defined function
 			return e.evalFunctionCall(symbolExpr.Name, list.Elements[1:])

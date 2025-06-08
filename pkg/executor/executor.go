@@ -51,8 +51,10 @@ func ExecuteFile(interpreter *interpreter.Interpreter, filename string) error {
 			if err != nil {
 				return fmt.Errorf("evaluation error in %s: %v", filename, err)
 			}
-			// Print the result of each expression
-			fmt.Println(result)
+			// Print the result of each expression (suppress nil values from print functions)
+			if result.String() != "nil" {
+				fmt.Println(result)
+			}
 		}
 
 		i = newIndex
