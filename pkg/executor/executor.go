@@ -114,6 +114,9 @@ func tokensToString(tokens []types.Token) string {
 		case types.STRING:
 			// Add quotes back for string tokens
 			result += `"` + token.Value + `"`
+		case types.KEYWORD:
+			// Add colon prefix back for keyword tokens
+			result += ":" + token.Value
 		default:
 			result += token.Value
 		}

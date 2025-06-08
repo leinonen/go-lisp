@@ -143,6 +143,17 @@ func (t *Tokenizer) TokenizeWithError() ([]types.Token, error) {
 			} else {
 				return nil, fmt.Errorf("invalid character: %c", t.current)
 			}
+		case ':':
+			// Keywords
+			t.readChar() // consume ':'
+			if !isSymbolChar(t.current) {
+				return nil, fmt.Errorf("invalid keyword: colon must be followed by symbol characters")
+			}
+			keyword := t.readSymbol()
+			if keyword == "" {
+				return nil, fmt.Errorf("invalid keyword: empty keyword name")
+			}
+			tokens = append(tokens, types.Token{Type: types.KEYWORD, Value: keyword})
 		default:
 			if unicode.IsDigit(t.current) || (t.current == '-' && unicode.IsDigit(t.peekChar())) {
 				number := t.readNumber()

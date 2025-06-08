@@ -26,7 +26,10 @@ This Lisp interpreter provides a comprehensive set of features for functional pr
 - **Big Numbers**: Large integers with arbitrary precision (e.g., `1000000000000000000`)
 - **Strings**: `"hello world"`
 - **Booleans**: `#t`, `#f`
+- **Nil**: `nil` (represents empty/null values)
+- **Keywords**: `:name`, `:status` (self-evaluating symbols for hash map keys)
 - **Lists**: `(1 2 3)`, `("a" "b" "c")`, `()`
+- **Hash Maps**: `{:name "Alice" :age 30}`
 - **Symbols**: `+`, `-`, `x`, `my-var`
 - **Functions**: `#<function([param1 param2])>`
 

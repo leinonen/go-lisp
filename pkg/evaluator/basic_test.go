@@ -535,3 +535,346 @@ func TestModuloWithBigNumbers(t *testing.T) {
 		})
 	}
 }
+
+// TestNilEquality tests that nil values can be compared for equality
+func TestNilEquality(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	tests := []struct {
+		name     string
+		expr     types.Expr
+		expected types.Value
+	}{
+		{
+			name: "nil equals nil",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.SymbolExpr{Name: "nil"},
+					&types.SymbolExpr{Name: "nil"},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "nil not equal to number",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.SymbolExpr{Name: "nil"},
+					&types.NumberExpr{Value: 42},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "nil not equal to string",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.SymbolExpr{Name: "nil"},
+					&types.StringExpr{Value: "hello"},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "nil not equal to boolean",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.SymbolExpr{Name: "nil"},
+					&types.BooleanExpr{Value: false},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := evaluator.Eval(tt.expr)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+// TestEnhancedEquality tests that all value types can be compared for equality
+func TestEnhancedEquality(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	tests := []struct {
+		name     string
+		expr     types.Expr
+		expected types.Value
+	}{
+		{
+			name: "string equality",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.StringExpr{Value: "hello"},
+					&types.StringExpr{Value: "hello"},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "string inequality",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.StringExpr{Value: "hello"},
+					&types.StringExpr{Value: "world"},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "boolean equality",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.BooleanExpr{Value: true},
+					&types.BooleanExpr{Value: true},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "boolean inequality",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.BooleanExpr{Value: true},
+					&types.BooleanExpr{Value: false},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "keyword equality",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.KeywordExpr{Value: "name"},
+					&types.KeywordExpr{Value: "name"},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "keyword inequality",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.KeywordExpr{Value: "name"},
+					&types.KeywordExpr{Value: "age"},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "cross-type inequality",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.StringExpr{Value: "42"},
+					&types.NumberExpr{Value: 42},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := evaluator.Eval(tt.expr)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestListEquality(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	tests := []struct {
+		name     string
+		expr     *types.ListExpr
+		expected types.BooleanValue
+	}{
+		{
+			name: "equal empty lists",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+						},
+					},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+						},
+					},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "equal single element lists",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 42},
+						},
+					},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 42},
+						},
+					},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "equal multi-element lists",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.StringExpr{Value: "hello"},
+							&types.BooleanExpr{Value: true},
+						},
+					},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.StringExpr{Value: "hello"},
+							&types.BooleanExpr{Value: true},
+						},
+					},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+		{
+			name: "unequal lists - different values",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.NumberExpr{Value: 2},
+						},
+					},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.NumberExpr{Value: 3},
+						},
+					},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "unequal lists - different lengths",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+						},
+					},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.NumberExpr{Value: 2},
+						},
+					},
+				},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "nested list equality",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "="},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.ListExpr{
+								Elements: []types.Expr{
+									&types.SymbolExpr{Name: "list"},
+									&types.NumberExpr{Value: 1},
+									&types.NumberExpr{Value: 2},
+								},
+							},
+							&types.NumberExpr{Value: 3},
+						},
+					},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.ListExpr{
+								Elements: []types.Expr{
+									&types.SymbolExpr{Name: "list"},
+									&types.NumberExpr{Value: 1},
+									&types.NumberExpr{Value: 2},
+								},
+							},
+							&types.NumberExpr{Value: 3},
+						},
+					},
+				},
+			},
+			expected: types.BooleanValue(true),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := evaluator.Eval(tt.expr)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}

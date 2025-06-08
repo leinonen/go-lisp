@@ -9,6 +9,18 @@ import (
 
 // Hash map operations
 
+// convertKeyToString converts a key value (string or keyword) to its string representation for hash map storage
+func convertKeyToString(keyValue types.Value) (string, error) {
+	switch key := keyValue.(type) {
+	case types.StringValue:
+		return string(key), nil
+	case types.KeywordValue:
+		return ":" + string(key), nil
+	default:
+		return "", fmt.Errorf("hash map keys must be strings or keywords, got %T", keyValue)
+	}
+}
+
 // evalHashMap creates a new hash map from key-value pairs
 func (e *Evaluator) evalHashMap(args []types.Expr) (types.Value, error) {
 	// Check that we have an even number of arguments (key-value pairs)
@@ -29,9 +41,9 @@ func (e *Evaluator) evalHashMap(args []types.Expr) (types.Value, error) {
 		}
 
 		// Key must be a string
-		keyStr, ok := keyValue.(types.StringValue)
-		if !ok {
-			return nil, fmt.Errorf("hash map keys must be strings, got %T", keyValue)
+		keyStr, err := convertKeyToString(keyValue)
+		if err != nil {
+			return nil, err
 		}
 
 		// Evaluate the value
@@ -40,7 +52,7 @@ func (e *Evaluator) evalHashMap(args []types.Expr) (types.Value, error) {
 			return nil, err
 		}
 
-		hashMap.Elements[string(keyStr)] = value
+		hashMap.Elements[keyStr] = value
 	}
 
 	return hashMap, nil
@@ -69,13 +81,13 @@ func (e *Evaluator) evalHashMapGet(args []types.Expr) (types.Value, error) {
 		return nil, err
 	}
 
-	keyStr, ok := keyValue.(types.StringValue)
-	if !ok {
-		return nil, fmt.Errorf("hash map keys must be strings, got %T", keyValue)
+	keyStr, err := convertKeyToString(keyValue)
+	if err != nil {
+		return nil, err
 	}
 
 	// Look up the value
-	value, exists := hashMap.Elements[string(keyStr)]
+	value, exists := hashMap.Elements[keyStr]
 	if !exists {
 		return &types.NilValue{}, nil
 	}
@@ -106,9 +118,9 @@ func (e *Evaluator) evalHashMapPut(args []types.Expr) (types.Value, error) {
 		return nil, err
 	}
 
-	keyStr, ok := keyValue.(types.StringValue)
-	if !ok {
-		return nil, fmt.Errorf("hash map keys must be strings, got %T", keyValue)
+	keyStr, err := convertKeyToString(keyValue)
+	if err != nil {
+		return nil, err
 	}
 
 	// Evaluate the value
@@ -128,7 +140,7 @@ func (e *Evaluator) evalHashMapPut(args []types.Expr) (types.Value, error) {
 	}
 
 	// Add or update the new key-value pair
-	newHashMap.Elements[string(keyStr)] = value
+	newHashMap.Elements[keyStr] = value
 
 	return newHashMap, nil
 }
@@ -156,9 +168,9 @@ func (e *Evaluator) evalHashMapRemove(args []types.Expr) (types.Value, error) {
 		return nil, err
 	}
 
-	keyStr, ok := keyValue.(types.StringValue)
-	if !ok {
-		return nil, fmt.Errorf("hash map keys must be strings, got %T", keyValue)
+	keyStr, err := convertKeyToString(keyValue)
+	if err != nil {
+		return nil, err
 	}
 
 	// Create a new hash map without the specified key (immutable)
@@ -168,7 +180,7 @@ func (e *Evaluator) evalHashMapRemove(args []types.Expr) (types.Value, error) {
 
 	// Copy existing elements except the one to remove
 	for k, v := range hashMap.Elements {
-		if k != string(keyStr) {
+		if k != keyStr {
 			newHashMap.Elements[k] = v
 		}
 	}
@@ -199,13 +211,13 @@ func (e *Evaluator) evalHashMapContains(args []types.Expr) (types.Value, error) 
 		return nil, err
 	}
 
-	keyStr, ok := keyValue.(types.StringValue)
-	if !ok {
-		return nil, fmt.Errorf("hash map keys must be strings, got %T", keyValue)
+	keyStr, err := convertKeyToString(keyValue)
+	if err != nil {
+		return nil, err
 	}
 
 	// Check if key exists
-	_, exists := hashMap.Elements[string(keyStr)]
+	_, exists := hashMap.Elements[keyStr]
 	return types.BooleanValue(exists), nil
 }
 

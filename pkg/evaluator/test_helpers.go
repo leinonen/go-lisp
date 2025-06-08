@@ -21,6 +21,10 @@ func valuesEqual(a, b types.Value) bool {
 		if vb, ok := b.(types.BooleanValue); ok {
 			return va == vb
 		}
+	case types.KeywordValue:
+		if vb, ok := b.(types.KeywordValue); ok {
+			return va == vb
+		}
 	case *types.ListValue:
 		if vb, ok := b.(*types.ListValue); ok {
 			if len(va.Elements) != len(vb.Elements) {

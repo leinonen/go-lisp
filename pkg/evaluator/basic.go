@@ -11,6 +11,35 @@ import (
 
 // Basic arithmetic operations
 
+// Helper function to convert a value back to an expression for recursive evaluation
+func valueToExpr(val types.Value) (types.Expr, error) {
+	switch v := val.(type) {
+	case types.NumberValue:
+		return &types.NumberExpr{Value: float64(v)}, nil
+	case types.StringValue:
+		return &types.StringExpr{Value: string(v)}, nil
+	case types.BooleanValue:
+		return &types.BooleanExpr{Value: bool(v)}, nil
+	case types.KeywordValue:
+		return &types.KeywordExpr{Value: string(v)}, nil
+	case *types.BigNumberValue:
+		return &types.BigNumberExpr{Value: v.String()}, nil
+	case *types.ListValue:
+		// Convert list elements to expressions
+		var elements []types.Expr
+		for _, elem := range v.Elements {
+			expr, err := valueToExpr(elem)
+			if err != nil {
+				return nil, err
+			}
+			elements = append(elements, expr)
+		}
+		return &types.ListExpr{Elements: elements}, nil
+	default:
+		return nil, fmt.Errorf("cannot convert value of type %T to expression", val)
+	}
+}
+
 // Helper function to convert any numeric value to big.Int for computation
 func toBigInt(val types.Value) (*big.Int, error) {
 	switch v := val.(type) {
@@ -283,12 +312,58 @@ func (e *Evaluator) evalEquality(args []types.Expr) (types.Value, error) {
 		return types.BooleanValue(big1.Cmp(big2) == 0), nil
 	}
 
-	// For simplicity, only compare numbers for now
-	firstNum, ok1 := first.(types.NumberValue)
-	secondNum, ok2 := second.(types.NumberValue)
-
-	if ok1 && ok2 {
-		return types.BooleanValue(firstNum == secondNum), nil
+	// Handle different value types
+	switch first.(type) {
+	case types.NumberValue:
+		if firstNum, ok := first.(types.NumberValue); ok {
+			if secondNum, ok := second.(types.NumberValue); ok {
+				return types.BooleanValue(firstNum == secondNum), nil
+			}
+		}
+	case types.StringValue:
+		if firstStr, ok := first.(types.StringValue); ok {
+			if secondStr, ok := second.(types.StringValue); ok {
+				return types.BooleanValue(firstStr == secondStr), nil
+			}
+		}
+	case types.BooleanValue:
+		if firstBool, ok := first.(types.BooleanValue); ok {
+			if secondBool, ok := second.(types.BooleanValue); ok {
+				return types.BooleanValue(firstBool == secondBool), nil
+			}
+		}
+	case types.KeywordValue:
+		if firstKw, ok := first.(types.KeywordValue); ok {
+			if secondKw, ok := second.(types.KeywordValue); ok {
+				return types.BooleanValue(firstKw == secondKw), nil
+			}
+		}
+	case *types.NilValue:
+		if _, ok := second.(*types.NilValue); ok {
+			return types.BooleanValue(true), nil
+		}
+	case *types.ListValue:
+		if firstList, ok := first.(*types.ListValue); ok {
+			if secondList, ok := second.(*types.ListValue); ok {
+				// Lists are equal if they have the same length and all elements are equal
+				if len(firstList.Elements) != len(secondList.Elements) {
+					return types.BooleanValue(false), nil
+				}
+				for i, elem1 := range firstList.Elements {
+					elem2 := secondList.Elements[i]
+					// For list elements, directly compare values instead of recursively converting to expressions
+					// This avoids infinite recursion issues with nested lists
+					equalResult, err := e.compareValues(elem1, elem2)
+					if err != nil {
+						return types.BooleanValue(false), nil
+					}
+					if !equalResult {
+						return types.BooleanValue(false), nil
+					}
+				}
+				return types.BooleanValue(true), nil
+			}
+		}
 	}
 
 	return types.BooleanValue(false), nil
@@ -333,14 +408,14 @@ func (e *Evaluator) evalComparison(args []types.Expr, op func(float64, float64) 
 
 		if testResult { // This is < or <=
 			secondTest := op(2.0, 2.0) // Test with 2 == 2
-			if secondTest { // This is <=
+			if secondTest {            // This is <=
 				return types.BooleanValue(cmp <= 0), nil
 			} else { // This is <
 				return types.BooleanValue(cmp < 0), nil
 			}
 		} else { // This is > or >=
 			secondTest := op(2.0, 2.0) // Test with 2 == 2
-			if secondTest { // This is >=
+			if secondTest {            // This is >=
 				return types.BooleanValue(cmp >= 0), nil
 			} else { // This is >
 				return types.BooleanValue(cmp > 0), nil
@@ -583,3 +658,84 @@ func (e *Evaluator) evalModulo(args []types.Expr) (types.Value, error) {
 	result := int64(firstNum) % int64(secondNum)
 	return types.NumberValue(float64(result)), nil
 }
+
+// Helper function to compare two values directly without converting to expressions
+func (e *Evaluator) compareValues(a, b types.Value) (bool, error) {
+	// Handle nil values
+	if a == nil && b == nil {
+		return true, nil
+	}
+	if a == nil || b == nil {
+		return false, nil
+	}
+
+	// Handle different value types
+	switch va := a.(type) {
+	case types.NumberValue:
+		if vb, ok := b.(types.NumberValue); ok {
+			return va == vb, nil
+		}
+	case types.StringValue:
+		if vb, ok := b.(types.StringValue); ok {
+			return va == vb, nil
+		}
+	case types.BooleanValue:
+		if vb, ok := b.(types.BooleanValue); ok {
+			return va == vb, nil
+		}
+	case types.KeywordValue:
+		if vb, ok := b.(types.KeywordValue); ok {
+			return va == vb, nil
+		}
+	case *types.NilValue:
+		if _, ok := b.(*types.NilValue); ok {
+			return true, nil
+		}
+	case *types.BigNumberValue:
+		if vb, ok := b.(*types.BigNumberValue); ok {
+			return va.Value.Cmp(vb.Value) == 0, nil
+		}
+	case *types.ListValue:
+		if vb, ok := b.(*types.ListValue); ok {
+			// Lists are equal if they have the same length and all elements are equal
+			if len(va.Elements) != len(vb.Elements) {
+				return false, nil
+			}
+			for i, elem1 := range va.Elements {
+				elem2 := vb.Elements[i]
+				equal, err := e.compareValues(elem1, elem2)
+				if err != nil {
+					return false, err
+				}
+				if !equal {
+					return false, nil
+				}
+			}
+			return true, nil
+		}
+	case *types.HashMapValue:
+		if vb, ok := b.(*types.HashMapValue); ok {
+			if len(va.Elements) != len(vb.Elements) {
+				return false, nil
+			}
+			for key, valueA := range va.Elements {
+				valueB, exists := vb.Elements[key]
+				if !exists {
+					return false, nil
+				}
+				equal, err := e.compareValues(valueA, valueB)
+				if err != nil {
+					return false, err
+				}
+				if !equal {
+					return false, nil
+				}
+			}
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// Helper function to convert a value back to an expression for recursive evaluation

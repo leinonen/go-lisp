@@ -10,11 +10,16 @@ type Environment struct {
 }
 
 func NewEnvironment() *Environment {
-	return &Environment{
+	env := &Environment{
 		bindings: make(map[string]types.Value),
 		parent:   nil,
 		modules:  make(map[string]*types.ModuleValue),
 	}
+
+	// Register built-in constants
+	env.bindings["nil"] = &types.NilValue{}
+
+	return env
 }
 
 func (e *Environment) Set(name string, value types.Value) {

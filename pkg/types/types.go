@@ -16,6 +16,7 @@ const (
 	SYMBOL
 	STRING
 	BOOLEAN
+	KEYWORD
 )
 
 // Token represents a single token in the input
@@ -73,6 +74,14 @@ type SymbolExpr struct {
 
 func (s *SymbolExpr) String() string {
 	return fmt.Sprintf("SymbolExpr(%s)", s.Name)
+}
+
+type KeywordExpr struct {
+	Value string
+}
+
+func (k *KeywordExpr) String() string {
+	return fmt.Sprintf("KeywordExpr(:%s)", k.Value)
 }
 
 type ListExpr struct {
@@ -141,6 +150,12 @@ func (b BooleanValue) String() string {
 		return "#t"
 	}
 	return "#f"
+}
+
+type KeywordValue string
+
+func (k KeywordValue) String() string {
+	return ":" + string(k)
 }
 
 // FunctionValue represents a function with parameters and body

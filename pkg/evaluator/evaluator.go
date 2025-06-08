@@ -40,6 +40,8 @@ func (e *Evaluator) Eval(expr types.Expr) (types.Value, error) {
 		return types.StringValue(ex.Value), nil
 	case *types.BooleanExpr:
 		return types.BooleanValue(ex.Value), nil
+	case *types.KeywordExpr:
+		return types.KeywordValue(ex.Value), nil
 	case *types.SymbolExpr:
 		// Check for qualified module access (module.symbol)
 		if strings.Contains(ex.Name, ".") {

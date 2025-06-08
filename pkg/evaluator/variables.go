@@ -99,6 +99,8 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			"env", "modules", "builtins",
 			// Print functions
 			"print", "println",
+			// Constants
+			"nil",
 			// Error handling
 			"error",
 		}
@@ -222,6 +224,9 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		// Print functions
 		"print":   "(print value1 value2 ...)\nOutput values to stdout without newline.\nExample: (print \"Hello\" \" \" \"World\") outputs: Hello World",
 		"println": "(println value1 value2 ...)\nOutput values to stdout with newline.\nExample: (println \"Hello World\") outputs: Hello World\\n",
+
+		// Constants
+		"nil": "nil\nBuilt-in constant representing empty/null values.\nExample: (hash-map-get {} \"missing\") => nil",
 
 		// Error handling
 		"error": "(error message)\nRaise an error with the given message.\nExample: (error \"Something went wrong!\") => Error: Something went wrong!",

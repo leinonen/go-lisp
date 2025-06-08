@@ -59,6 +59,8 @@ func (p *Parser) parseExpr() (types.Expr, error) {
 		return p.parseBoolean()
 	case types.SYMBOL:
 		return p.parseSymbol()
+	case types.KEYWORD:
+		return p.parseKeyword()
 	case types.LPAREN:
 		return p.parseList()
 	case types.RPAREN:
@@ -111,6 +113,12 @@ func (p *Parser) parseBoolean() (types.Expr, error) {
 
 func (p *Parser) parseSymbol() (types.Expr, error) {
 	expr := &types.SymbolExpr{Name: p.current.Value}
+	p.readToken()
+	return expr, nil
+}
+
+func (p *Parser) parseKeyword() (types.Expr, error) {
+	expr := &types.KeywordExpr{Value: p.current.Value}
 	p.readToken()
 	return expr, nil
 }
