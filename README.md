@@ -78,6 +78,7 @@ The Lisp interpreter supports multiple modes of operation through command line p
 - **Interactive REPL**: Rich development environment with help system
 - **File Execution**: Run Lisp programs from files with full multi-expression support
 - **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection
+- **Hash Maps**: Key-value associative data structures with immutable operations
 - **Modulo Operator**: Full modulo support (`%`) with big number compatibility
 - **Error Handling**: Built-in `error` function for controlled program termination
 - **Core Library**: Rich set of mathematical and utility functions (factorial, abs, gcd, etc.)
@@ -97,6 +98,7 @@ The Lisp interpreter supports multiple modes of operation through command line p
 
 ### New Features Documentation
 
+- **[Hash Maps](docs/hash_maps.md)** - Complete guide to key-value data structures
 - **[Modulo Operator](docs/modulo_operator.md)** - Complete guide to the `%` operator
 - **[Error Function](docs/error_function.md)** - Error handling with the `error` function
 - **[File Execution](docs/file_execution.md)** - Running Lisp programs from files
@@ -201,6 +203,22 @@ lisp> (% 123456789012345678901234567890 7)
 
 lisp> (fact-tail 50 1)  ; Large factorials work seamlessly
 => 30414093201713378043612608166064768844377641568960512000000000000
+```
+
+### Hash Maps
+```lisp
+; Create and manipulate hash maps
+lisp> (define my-map (hash-map "name" "Alice" "age" 30))
+=> {name: Alice, age: 30}
+
+lisp> (hash-map-get my-map "name")
+=> Alice
+
+lisp> (hash-map-put my-map "city" "Boston")
+=> {name: Alice, age: 30, city: Boston}
+
+lisp> (hash-map-keys my-map)
+=> (name age)
 ```
 
 ### Module System

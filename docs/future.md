@@ -12,6 +12,7 @@ This document outlines planned improvements and potential future directions for 
 - ✅ **Environment Inspection**: Tools for debugging and exploration (`env`, `modules`, `builtins`)
 - ✅ **Tail Call Optimization**: Eliminates stack growth for tail-recursive functions
 - ✅ **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection and readable formatting
+- ✅ **Hash Maps**: Key-value associative data structures with immutable operations
 
 ## Planned Enhancements
 
@@ -37,8 +38,6 @@ This document outlines planned improvements and potential future directions for 
 - **Exception Handling**: Structured error handling with try/catch
 
 ### Data Types and Structures
-
-- **Hash Maps**: Key-value associative data structures
 - **Sets**: Unique element collections with set operations
 - **Vectors**: Indexed arrays with random access
 - **Records/Structs**: Named field data structures

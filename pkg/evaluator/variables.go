@@ -79,12 +79,16 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			// List operations
 			"list", "first", "rest", "cons", "length", "empty?",
 			// Higher-order functions
-			"map", "filter", "reduce",
-			// List manipulation
-			"append", "reverse", "nth",		// Environment inspection
-		"env", "modules", "builtins",
-		// Error handling
-		"error",
+			"map", "filter", "reduce", // List manipulation
+			"append", "reverse", "nth",
+			// Hash map operations
+			"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
+			"hash-map-contains?", "hash-map-keys", "hash-map-values",
+			"hash-map-size", "hash-map-empty?",
+			// Environment inspection
+			"env", "modules", "builtins",
+			// Error handling
+			"error",
 		}
 
 		// Convert to list of string values
@@ -156,6 +160,17 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"append":  "(append lst1 lst2)\nCombine two lists into one.\nExample: (append (list 1 2) (list 3 4)) => (1 2 3 4)",
 		"reverse": "(reverse lst)\nReverse the order of elements in a list.\nExample: (reverse (list 1 2 3)) => (3 2 1)",
 		"nth":     "(nth index lst)\nGet the element at a specific index (0-based).\nExample: (nth 1 (list \"a\" \"b\" \"c\")) => \"b\"",
+
+		// Hash map operations
+		"hash-map":           "(hash-map key1 value1 key2 value2 ...)\nCreate a hash map with key-value pairs.\nExample: (hash-map \"name\" \"Alice\" \"age\" 30) => {\"name\" Alice \"age\" 30}",
+		"hash-map-get":       "(hash-map-get hashmap key)\nGet a value from a hash map by key.\nExample: (hash-map-get {\"x\" 42} \"x\") => 42",
+		"hash-map-put":       "(hash-map-put hashmap key value)\nAdd or update a key-value pair (returns new hash map).\nExample: (hash-map-put {} \"x\" 42) => {\"x\" 42}",
+		"hash-map-remove":    "(hash-map-remove hashmap key)\nRemove a key-value pair (returns new hash map).\nExample: (hash-map-remove {\"x\" 42 \"y\" 99} \"x\") => {\"y\" 99}",
+		"hash-map-contains?": "(hash-map-contains? hashmap key)\nCheck if a hash map contains a key.\nExample: (hash-map-contains? {\"x\" 42} \"x\") => #t",
+		"hash-map-keys":      "(hash-map-keys hashmap)\nGet all keys from a hash map as a list.\nExample: (hash-map-keys {\"a\" 1 \"b\" 2}) => (\"a\" \"b\")",
+		"hash-map-values":    "(hash-map-values hashmap)\nGet all values from a hash map as a list.\nExample: (hash-map-values {\"a\" 1 \"b\" 2}) => (1 2)",
+		"hash-map-size":      "(hash-map-size hashmap)\nGet the number of key-value pairs in a hash map.\nExample: (hash-map-size {\"a\" 1 \"b\" 2}) => 2",
+		"hash-map-empty?":    "(hash-map-empty? hashmap)\nCheck if a hash map is empty.\nExample: (hash-map-empty? {}) => #t",
 
 		// Environment inspection
 		"env":      "(env)\nShow all variables and functions in the current environment.\nExample: (env) => ((x 42) (square #<function([x])>))",

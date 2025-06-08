@@ -138,6 +138,24 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalModules(list.Elements[1:])
 		case "builtins":
 			return e.evalBuiltins(list.Elements[1:])
+		case "hash-map":
+			return e.evalHashMap(list.Elements[1:])
+		case "hash-map-get":
+			return e.evalHashMapGet(list.Elements[1:])
+		case "hash-map-put":
+			return e.evalHashMapPut(list.Elements[1:])
+		case "hash-map-remove":
+			return e.evalHashMapRemove(list.Elements[1:])
+		case "hash-map-contains?":
+			return e.evalHashMapContains(list.Elements[1:])
+		case "hash-map-keys":
+			return e.evalHashMapKeys(list.Elements[1:])
+		case "hash-map-values":
+			return e.evalHashMapValues(list.Elements[1:])
+		case "hash-map-size":
+			return e.evalHashMapSize(list.Elements[1:])
+		case "hash-map-empty?":
+			return e.evalHashMapEmpty(list.Elements[1:])
 		case "error":
 			return e.evalError(list.Elements[1:])
 		default:

@@ -46,6 +46,22 @@ func valuesEqual(a, b types.Value) bool {
 			}
 			return va.Body.String() == vb.Body.String()
 		}
+	case *types.HashMapValue:
+		if vb, ok := b.(*types.HashMapValue); ok {
+			if len(va.Elements) != len(vb.Elements) {
+				return false
+			}
+			for key, valueA := range va.Elements {
+				valueB, exists := vb.Elements[key]
+				if !exists || !valuesEqual(valueA, valueB) {
+					return false
+				}
+			}
+			return true
+		}
+	case *types.NilValue:
+		_, ok := b.(*types.NilValue)
+		return ok
 	}
 	return false
 }

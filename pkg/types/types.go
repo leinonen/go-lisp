@@ -178,6 +178,35 @@ func (l *ListValue) String() string {
 	return result
 }
 
+// HashMapValue represents a hash map with string keys and arbitrary values
+type HashMapValue struct {
+	Elements map[string]Value
+}
+
+func (h *HashMapValue) String() string {
+	if len(h.Elements) == 0 {
+		return "{}"
+	}
+	result := "{"
+	first := true
+	for key, value := range h.Elements {
+		if !first {
+			result += " "
+		}
+		result += fmt.Sprintf("%q %s", key, value.String())
+		first = false
+	}
+	result += "}"
+	return result
+}
+
+// NilValue represents the absence of a value (nil/null)
+type NilValue struct{}
+
+func (n *NilValue) String() string {
+	return "nil"
+}
+
 // Environment interface for closures
 type Environment interface {
 	Get(name string) (Value, bool)
