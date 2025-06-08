@@ -29,6 +29,13 @@ func (e *Evaluator) Eval(expr types.Expr) (types.Value, error) {
 	switch ex := expr.(type) {
 	case *types.NumberExpr:
 		return types.NumberValue(ex.Value), nil
+	case *types.BigNumberExpr:
+		// Convert string to BigNumberValue
+		bigNum, ok := types.NewBigNumberFromString(ex.Value)
+		if !ok {
+			return nil, fmt.Errorf("invalid big number: %s", ex.Value)
+		}
+		return bigNum, nil
 	case *types.StringExpr:
 		return types.StringValue(ex.Value), nil
 	case *types.BooleanExpr:
@@ -72,7 +79,7 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 		case "-":
 			return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a - b })
 		case "*":
-			return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a * b })
+			return e.evalMultiplication(list.Elements[1:])
 		case "/":
 			return e.evalDivision(list.Elements[1:])
 		case "=":

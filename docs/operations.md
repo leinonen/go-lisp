@@ -9,6 +9,33 @@ This document provides a comprehensive reference for all operations supported by
 - `(* 2 3 4)` - Multiplication with multiple operands
 - `(/ 15 3)` - Division
 
+### Big Number Support
+
+The interpreter automatically handles arbitrary precision arithmetic for large integers:
+
+- **Automatic Detection**: Numbers ≥ 10^15 are parsed as big numbers
+- **Overflow Protection**: Arithmetic operations automatically promote to big numbers when needed
+- **Seamless Integration**: Big numbers work with all arithmetic and comparison operations
+- **Readable Output**: Large numbers display in standard decimal format
+
+Examples:
+```lisp
+; Large multiplication
+(* 1000000000000000 1000000000000000)
+=> 1000000000000000000000000000000
+
+; Mixed operations
+(+ 1000000000000000000 123)
+=> 1000000000000000123
+
+; Factorial of large numbers
+(defun factorial (n acc)
+  (if (= n 0) acc (factorial (- n 1) (* n acc))))
+
+(factorial 50 1)
+=> 30414093201713378043612608166064768844377641568960512000000000000
+```
+
 ## Comparison
 
 - `(= 5 5)` - Equality
@@ -16,6 +43,22 @@ This document provides a comprehensive reference for all operations supported by
 - `(> 7 3)` - Greater than
 - `(<= 3 5)` - Less than or equal
 - `(>= 7 3)` - Greater than or equal
+
+**Note**: All comparison operations work seamlessly with big numbers and mixed number types.
+
+Examples:
+```lisp
+; Big number comparisons
+(= 1000000000000000000 1000000000000000000)
+=> #t
+
+(> 1000000000000000001 1000000000000000000)
+=> #t
+
+; Mixed type comparisons
+(< 999999999999999 1000000000000000000)
+=> #t
+```
 
 ## Logical
 

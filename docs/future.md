@@ -11,6 +11,7 @@ This document outlines planned improvements and potential future directions for 
 - ✅ **Module System**: Complete implementation with `module`, `import`, `load`, and qualified access
 - ✅ **Environment Inspection**: Tools for debugging and exploration (`env`, `modules`, `builtins`)
 - ✅ **Tail Call Optimization**: Eliminates stack growth for tail-recursive functions
+- ✅ **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection and readable formatting
 
 ## Planned Enhancements
 

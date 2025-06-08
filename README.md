@@ -17,6 +17,7 @@ make build
 
 - **Complete Lisp Implementation**: Full tokenizer, parser, and evaluator
 - **Interactive REPL**: Rich development environment with help system
+- **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection
 - **Tail Call Optimization**: Prevents stack overflow in recursive functions
 - **Module System**: Organize code with imports and exports
 - **Higher-Order Functions**: `map`, `filter`, `reduce`, and more
@@ -63,6 +64,16 @@ lisp> (defun fact-tail (n acc)
 
 lisp> (fact-tail 1000 1)  ; Handles large recursion efficiently
 => 4023872600770937735...  ; (very large number)
+```
+
+### Big Number Arithmetic
+```lisp
+; Automatic precision handling for large integers
+lisp> (* 1000000000000000 1000000000000000)
+=> 1000000000000000000000000000000
+
+lisp> (fact-tail 50 1)  ; Large factorials work seamlessly
+=> 30414093201713378043612608166064768844377641568960512000000000000
 ```
 
 ### Module System

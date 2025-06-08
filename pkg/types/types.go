@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"math/big"
 	"strconv"
 )
 
@@ -42,6 +43,14 @@ func (n *NumberExpr) String() string {
 	return fmt.Sprintf("NumberExpr(%g)", n.Value)
 }
 
+type BigNumberExpr struct {
+	Value string // Store as string to preserve precision during parsing
+}
+
+func (b *BigNumberExpr) String() string {
+	return fmt.Sprintf("BigNumberExpr(%s)", b.Value)
+}
+
 type StringExpr struct {
 	Value string
 }
@@ -78,7 +87,45 @@ func (l *ListExpr) String() string {
 type NumberValue float64
 
 func (n NumberValue) String() string {
-	return strconv.FormatFloat(float64(n), 'g', -1, 64)
+	// For very large numbers that exceed float64 precision, show scientific notation
+	f := float64(n)
+	if f > 1e15 || f < -1e15 {
+		return fmt.Sprintf("%.6e", f)
+	}
+	// Check if it's an integer
+	if f == float64(int64(f)) && f >= -1e15 && f <= 1e15 {
+		return fmt.Sprintf("%.0f", f)
+	}
+	return strconv.FormatFloat(f, 'g', -1, 64)
+}
+
+// BigNumberValue represents large integers using math/big
+type BigNumberValue struct {
+	Value *big.Int
+}
+
+func (b *BigNumberValue) String() string {
+	return b.Value.String()
+}
+
+// Helper function to create a BigNumberValue
+func NewBigNumberValue(x *big.Int) *BigNumberValue {
+	return &BigNumberValue{Value: new(big.Int).Set(x)}
+}
+
+// Helper function to create a BigNumberValue from int64
+func NewBigNumberFromInt64(x int64) *BigNumberValue {
+	return &BigNumberValue{Value: big.NewInt(x)}
+}
+
+// Helper function to create a BigNumberValue from string
+func NewBigNumberFromString(s string) (*BigNumberValue, bool) {
+	bigInt := new(big.Int)
+	_, ok := bigInt.SetString(s, 10)
+	if !ok {
+		return nil, false
+	}
+	return &BigNumberValue{Value: bigInt}, true
 }
 
 type StringValue string

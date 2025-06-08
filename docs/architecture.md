@@ -167,18 +167,67 @@ Tests cover:
 - Minimal allocations in hot paths
 - Reuse of common structures where possible
 - Garbage collection friendly design
+- **Big Numbers**: Use `math/big` package for arbitrary precision arithmetic
 
 ### Parsing Efficiency
 
 - Single-pass tokenization
 - Recursive descent parsing (O(n) complexity)
 - Minimal backtracking
+- **Big Number Detection**: Automatic detection of large integers during parsing
 
 ### Evaluation Optimization
 
 - Direct AST evaluation (no intermediate compilation)
 - Efficient environment lookup
 - **Tail Call Optimization**: Implemented to prevent stack overflow in recursive functions
+- **Overflow Detection**: Automatic promotion to big integers when operations would overflow
+
+## Big Number Support
+
+### Technical Design
+
+The interpreter provides comprehensive support for arbitrary precision integers using Go's `math/big` package:
+
+1. **Automatic Detection**: Large integers (≥1e15) are automatically detected during parsing
+2. **Overflow Protection**: Arithmetic operations detect potential overflow and promote to big integers
+3. **Seamless Integration**: Big numbers work transparently with regular integers in all operations
+4. **Display Formatting**: Large numbers are formatted in standard decimal notation
+
+### Implementation Details
+
+```go
+type BigNumberValue struct {
+    value *big.Int
+}
+
+type BigNumberExpr struct {
+    Value *big.Int
+}
+```
+
+### Key Components
+
+- **`BigNumberValue`**: Runtime value type for arbitrary precision integers
+- **`BigNumberExpr`**: AST node for big number literals
+- **Overflow Detection**: `mightOverflowMultiplication()` checks for potential overflow
+- **Type Conversion**: Automatic promotion between regular and big integers
+- **Arithmetic Enhancement**: All operations (`+`, `-`, `*`, `/`, `%`) support big numbers
+- **Comparison Support**: All comparison operations (`=`, `<`, `>`, `<=`, `>=`) work with big numbers
+
+### Parsing Strategy
+
+The parser automatically detects large numbers using multiple criteria:
+- Scientific notation (contains 'e' or 'E')
+- String length (>15 characters)
+- Magnitude threshold (≥1e15)
+
+### Benefits
+
+- **Precision**: No loss of precision for large integer calculations
+- **Transparency**: Existing code continues to work without changes
+- **Performance**: Regular integers used for small values to maintain performance
+- **Usability**: Automatic promotion means users don't need to think about number types
 
 ## Tail Call Optimization Implementation
 

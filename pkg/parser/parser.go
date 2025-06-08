@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
@@ -68,11 +69,28 @@ func (p *Parser) parseExpr() (types.Expr, error) {
 }
 
 func (p *Parser) parseNumber() (types.Expr, error) {
+	// First try to parse as a regular float64
 	value, err := strconv.ParseFloat(p.current.Value, 64)
 	if err != nil {
 		return nil, fmt.Errorf("invalid number: %s", p.current.Value)
 	}
 
+	// Check if this number might lose precision when converted to float64
+	// If the string representation is a large integer, use BigNumberExpr
+	originalStr := p.current.Value
+
+	// Check if it's an integer without decimal point
+	if !strings.Contains(originalStr, ".") && !strings.Contains(originalStr, "e") && !strings.Contains(originalStr, "E") {
+		// Check if it's too large for safe float64 integer representation
+		if len(originalStr) > 15 || (len(originalStr) == 16 && originalStr[0] > '1') {
+			// This is a large integer that might lose precision in float64
+			expr := &types.BigNumberExpr{Value: originalStr}
+			p.readToken()
+			return expr, nil
+		}
+	}
+
+	// Use regular NumberExpr for smaller numbers or floating point numbers
 	expr := &types.NumberExpr{Value: value}
 	p.readToken()
 	return expr, nil
