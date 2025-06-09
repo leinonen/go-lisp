@@ -67,6 +67,22 @@ Our examples demonstrate **100%** of the interpreter's capabilities across 11 fo
 ./lisp-interpreter examples/advanced_features.lisp
 ```
 
+### `macro_system.lisp` ⭐ NEW
+**Macro system and code transformation**
+- Macro definition with `defmacro`
+- Quote special form with `quote` and `'` syntax
+- Control structure macros (`when`, `unless`)
+- Let-binding macros for local variables
+- Debugging macros for expression inspection
+- Variable modification macros
+- Compile-time conditional compilation
+- Domain-specific language creation
+
+**Run with:**
+```bash
+./lisp-interpreter examples/macro_system.lisp
+```
+
 ### `keywords.lisp` ⭐ NEW
 **Keyword data type demonstration**
 - Keyword creation and self-evaluation

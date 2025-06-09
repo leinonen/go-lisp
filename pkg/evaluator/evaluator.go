@@ -110,6 +110,10 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalLambda(list.Elements[1:])
 		case "defun":
 			return e.evalDefun(list.Elements[1:])
+		case "defmacro":
+			return e.evalDefmacro(list.Elements[1:])
+		case "quote":
+			return e.evalQuote(list.Elements[1:])
 		case "list":
 			return e.evalListConstruction(list.Elements[1:])
 		case "first":
@@ -209,6 +213,15 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 		case "string-empty?":
 			return e.evalStringEmpty(list.Elements[1:])
 		default:
+			// Check if it's a macro call first
+			if macro, isMacro := e.isMacroCall(symbolExpr.Name); isMacro {
+				// Expand the macro and evaluate the result
+				expanded, err := e.expandMacro(macro, list.Elements[1:])
+				if err != nil {
+					return nil, err
+				}
+				return e.Eval(expanded)
+			}
 			// Try to call it as a user-defined function
 			return e.evalFunctionCall(symbolExpr.Name, list.Elements[1:])
 		}

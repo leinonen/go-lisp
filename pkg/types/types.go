@@ -17,6 +17,7 @@ const (
 	STRING
 	BOOLEAN
 	KEYWORD
+	QUOTE
 )
 
 // Token represents a single token in the input
@@ -167,6 +168,30 @@ type FunctionValue struct {
 
 func (f FunctionValue) String() string {
 	return fmt.Sprintf("#<function(%v)>", f.Params)
+}
+
+// MacroValue represents a macro with parameters and body
+type MacroValue struct {
+	Params []string    // parameter names
+	Body   Expr        // macro body expression
+	Env    Environment // captured environment for closures
+}
+
+func (m MacroValue) String() string {
+	return fmt.Sprintf("#<macro(%v)>", m.Params)
+}
+
+// QuotedValue represents a quoted expression that should not be evaluated
+type QuotedValue struct {
+	Value Expr
+}
+
+func (q QuotedValue) String() string {
+	// Special handling for quoted symbols - return just the symbol name
+	if symbolExpr, ok := q.Value.(*SymbolExpr); ok {
+		return symbolExpr.Name
+	}
+	return q.Value.String()
 }
 
 // ListValue represents a list of values

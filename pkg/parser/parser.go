@@ -63,6 +63,8 @@ func (p *Parser) parseExpr() (types.Expr, error) {
 		return p.parseKeyword()
 	case types.LPAREN:
 		return p.parseList()
+	case types.QUOTE:
+		return p.parseQuote()
 	case types.RPAREN:
 		return nil, fmt.Errorf("unexpected closing parenthesis")
 	default:
@@ -234,4 +236,19 @@ func (p *Parser) parseLoadFromElements(elements []types.Expr) (types.Expr, error
 	}
 
 	return &types.LoadExpr{Filename: filenameExpr.Value}, nil
+}
+
+func (p *Parser) parseQuote() (types.Expr, error) {
+	// Consume the quote token
+	p.readToken()
+
+	// Parse the expression that follows the quote
+	expr, err := p.parseExpr()
+	if err != nil {
+		return nil, fmt.Errorf("error parsing quoted expression: %v", err)
+	}
+
+	// Convert 'expr to (quote expr)
+	quoteSymbol := &types.SymbolExpr{Name: "quote"}
+	return &types.ListExpr{Elements: []types.Expr{quoteSymbol, expr}}, nil
 }

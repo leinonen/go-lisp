@@ -24,6 +24,7 @@ This Lisp interpreter provides a **comprehensive, production-ready** implementat
 - **Error Handling**: Built-in error function with stack traces and debugging context
 - **String Processing**: 20+ built-in string functions plus regex support
 - **Immutable Data Structures**: Hash maps and lists with functional update semantics
+- **Macro System**: Code transformation at evaluation time with `defmacro` and `quote`
 
 ## Data Types (Complete Type System)
 
@@ -37,6 +38,7 @@ This Lisp interpreter provides a **comprehensive, production-ready** implementat
 - **Hash Maps**: `{:name "Alice" :age 30}` (immutable key-value associative arrays)
 - **Symbols**: `+`, `-`, `x`, `my-var` (identifiers and operators)
 - **Functions**: `#<function([param1 param2])>` (first-class callable objects)
+- **Macros**: `#<macro([param1 param2])>` (code transformation functions)
 - **Modules**: `#<module:name>` (namespace containers with exports)
 - **Environments**: Runtime scoping and variable binding contexts
 
@@ -105,3 +107,53 @@ The interpreter provides comprehensive support for arbitrary precision arithmeti
 (> 1000000000000000000000 999999999999999999999)
 => #t
 ```
+
+## Macro System
+
+The interpreter includes a powerful macro system that enables code transformation at evaluation time, allowing developers to extend the language with custom syntax and control structures.
+
+### Macro Definition
+- `(defmacro name (params) body)` - Define a macro that transforms code before evaluation
+- Macros receive unevaluated arguments and return code to be evaluated
+- Macro expansion happens at evaluation time, not parse time
+
+### Quote Special Form  
+- `(quote expr)` or `'expr` - Return expression without evaluating it
+- Essential for macro programming to manipulate code as data
+- Both long form `(quote ...)` and shorthand `'...` syntax supported
+
+### Examples
+```lisp
+; Define a 'when' control structure
+(defmacro when (condition body)
+  (list 'if condition body 'nil))
+
+; Use the when macro
+(when (> x 5) (print "x is greater than 5"))
+; Expands to: (if (> x 5) (print "x is greater than 5") nil)
+
+; Define an 'unless' macro
+(defmacro unless (condition then else)
+  (list 'if condition else then))
+
+(unless (< x 5) "not less" "is less")
+; Expands to: (if (< x 5) "is less" "not less")
+
+; Quote prevents evaluation
+(quote (+ 1 2))    ; => (+ 1 2)
+'(+ 1 2)           ; => (+ 1 2) 
+(+ 1 2)            ; => 3
+
+; Complex macro - let-like binding
+(defmacro let1 (var value body)
+  (list (list 'lambda (list var) body) value))
+
+(let1 x 10 (+ x 5))  ; => 15
+; Expands to: ((lambda (x) (+ x 5)) 10)
+```
+
+### Macro Benefits
+- **Language Extension**: Create new control structures and syntax
+- **Code Generation**: Automatically generate repetitive code patterns  
+- **DSL Creation**: Build domain-specific languages within Lisp
+- **Performance**: Code transformation happens at evaluation time, not runtime

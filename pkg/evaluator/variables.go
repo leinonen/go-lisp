@@ -77,6 +77,8 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			"if",
 			// Variable and function definition
 			"define", "lambda", "defun",
+			// Macro system
+			"defmacro", "quote",
 			// List operations
 			"list", "first", "rest", "cons", "length", "empty?",
 			// Higher-order functions
@@ -159,6 +161,10 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"define": "(define name value)\nDefine a variable with a name and value.\nExample: (define x 42)",
 		"lambda": "(lambda (params) body)\nCreate an anonymous function.\nExample: (lambda (x) (+ x 1))",
 		"defun":  "(defun name (params) body)\nDefine a named function.\nExample: (defun square (x) (* x x))",
+
+		// Macro system
+		"defmacro": "(defmacro name (params) body)\nDefine a macro that transforms code at evaluation time.\nExample: (defmacro when (condition body) (list 'if condition body 'nil))",
+		"quote":    "(quote expr) or 'expr\nReturn expression without evaluating it.\nExample: (quote (+ 1 2)) => (+ 1 2), '(+ 1 2) => (+ 1 2)",
 
 		// List operations
 		"list":   "(list elem1 elem2 ...)\nCreate a list with the given elements.\nExample: (list 1 2 3) => (1 2 3)",
