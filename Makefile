@@ -1,7 +1,7 @@
 # Lisp Interpreter Makefile
 
 # Variables
-BINARY_NAME=lisp-interpreter
+BINARY_NAME=lisp
 
 .PHONY: build run test
 
