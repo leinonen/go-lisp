@@ -1,6 +1,6 @@
 # Lisp Interpreter
 
-A comprehensive, production-ready Lisp interpreter implemented in Go using Test-Driven Development (TDD). Built in 2025, this modern interpreter combines classic Lisp elegance with contemporary features like big number arithmetic, hash maps, advanced string processing, and a robust module system.
+A modern, production-ready Lisp interpreter implemented in Go. Features comprehensive language support, advanced data types, functional programming utilities, and a powerful module system.
 
 ## Quick Start
 
@@ -89,7 +89,7 @@ This Lisp interpreter is **feature-complete** and **production-ready** with:
 ## Key Features
 
 - **🚀 Complete Lisp Implementation**: Full tokenizer, parser, and evaluator with modern architecture
-- **💻 Interactive REPL**: Rich development environment with built-in help system and command history
+- **💻 Interactive REPL**: Rich development environment with built-in help system
 - **📁 File Execution**: Run Lisp programs from files with full multi-expression support
 - **🔢 Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection
 - **📊 Advanced Data Types**: Lists, hash maps, keywords, strings, and functions as first-class citizens
@@ -99,21 +99,49 @@ This Lisp interpreter is **feature-complete** and **production-ready** with:
 - **🎯 Error Handling**: Built-in `error` function and clear diagnostic messages
 - **🛠️ Development Tools**: Environment inspection, debugging helpers, and extensive examples
 - **📚 Core Library**: Rich mathematical and utility functions (factorial, gcd, map, filter, reduce)
+- **⚡ Functional Programming**: Complete functional library with currying, composition, and higher-order utilities
 - **🎨 Output Functions**: Built-in `print` and `println` for program output
 - **🔍 Keywords Support**: Self-evaluating symbols perfect for hash map keys
-- **📖 Comprehensive Documentation**: Extensive guides, examples, and API reference
+
+## Libraries
+
+### Core Library (`library/core.lisp`)
+Mathematical functions and list utilities:
+- **Math**: `factorial`, `fibonacci`, `gcd`, `lcm`, `abs`, `min`, `max`
+- **Lists**: `all`, `any`, `take`, `drop`, `length-sq`
+- **Composition**: `compose`, `apply-n`
+
+### Functional Library (`library/functional.lisp`)
+Comprehensive functional programming utilities:
+- **Combinators**: `identity`, `constantly`, `complement`
+- **Composition**: `comp`, `pipe`, `juxt` (with variants)
+- **Currying**: `curry`, `partial` application
+- **Predicates**: `every-pred`, `some-pred`
+- **Higher-order**: `fnil`, `map-indexed`, `keep`
+
+### String Library (`library/strings.lisp`)
+Advanced string operations and utilities.
+
+### Macro Library (`library/macros.lisp`)
+Control flow and utility macros for enhanced syntax.
 
 ## Documentation
 
+### Core Documentation
 - **[Features](docs/features.md)** - Complete feature overview and data types
-- **[Operations Reference](docs/operations.md)** - Comprehensive guide to all supported operations
-- **[Usage Guide](docs/usage.md)** - How to run, build, and use the interpreter
-- **[Examples](docs/examples.md)** - Extensive code examples and tutorials
-- **[Architecture](docs/architecture.md)** - Technical design and implementation details
-- **[Future Enhancements](docs/future.md)** - Planned improvements and roadmap
+- **[Operations Reference](docs/operations.md)** - Guide to all supported operations
+- **[Examples](docs/examples.md)** - Code examples and tutorials
+- **[Usage Guide](docs/usage.md)** - Running and building the interpreter
 
-### Feature-Specific Documentation
-- **[Keywords](docs/keywords.md)** ⭐ - Self-evaluating symbols and hash map integration
+### Library Documentation
+- **[Core Library](docs/core_library.md)** - Mathematical and utility functions
+- **[Functional Library](docs/functional_library.md)** - Functional programming utilities
+- **[Hash Maps](docs/hash_maps.md)** - Associative data structures
+- **[Keywords](docs/keywords.md)** - Self-evaluating symbols
+
+### Technical Reference
+- **[Architecture](docs/architecture.md)** - Implementation design and structure
+- **[Future Enhancements](docs/future.md)** - Planned improvements
 
 ## Building and Testing
 
@@ -139,10 +167,12 @@ make run      # Build and run the interpreter (REPL mode)
 make test     # Run comprehensive test suite (100% coverage)
 
 # Feature demonstrations
-./lisp-interpreter examples/keywords.lisp           # Keyword data type examples
-./lisp-interpreter examples/hash_maps.lisp          # Hash map operations
+./lisp-interpreter examples/basic_features.lisp      # Core language features  
+./lisp-interpreter examples/functional_library_demo.lisp # Functional programming
+./lisp-interpreter examples/keywords.lisp            # Keyword data type examples
+./lisp-interpreter examples/hash_maps.lisp           # Hash map operations
 ./lisp-interpreter examples/string_library_demo.lisp # String processing showcase
-./lisp-interpreter examples/advanced_features.lisp  # All advanced features
+./lisp-interpreter examples/advanced_features.lisp   # All advanced features
 
 # Interactive exploration
 ./lisp-interpreter -help                    # Show all options
@@ -170,57 +200,7 @@ go build -o lisp-interpreter ./cmd/lisp-interpreter
 
 ## Project Structure
 
-Built with modern Go practices and clean architecture principles:
-
-```
-lisp-interpreter/
-├── docs/                        # Comprehensive documentation (12 guides)
-│   ├── features.md             # Complete feature overview
-│   ├── operations.md           # All supported operations reference
-│   ├── architecture.md         # Technical design and TDD approach
-│   ├── keywords.md             # Keyword data type guide
-│   ├── hash_maps.md           # Hash map operations guide
-│   ├── modulo_operator.md     # Modulo operator documentation
-│   ├── error_function.md      # Error handling guide
-│   ├── file_execution.md      # File execution capabilities
-│   ├── core_library.md        # Mathematical and utility functions
-│   ├── print_functions.md     # Output function reference
-│   ├── usage.md               # Comprehensive usage guide
-│   └── future.md              # Roadmap and planned enhancements
-├── examples/                   # Comprehensive example programs (11 files)
-│   ├── README.md              # Example documentation
-│   ├── basic_features.lisp    # Core language features
-│   ├── advanced_features.lisp # Modern Lisp capabilities
-│   ├── keywords.lisp          # Keywords and hash maps
-│   ├── hash_maps.lisp         # Hash map operations showcase
-│   ├── string_library_demo.lisp # String processing examples
-│   ├── module_system.lisp     # Module system demonstration
-│   ├── core_library.lisp      # Core library functions
-│   └── print_*.lisp           # Output function examples
-├── library/                    # High-level Lisp libraries
-│   ├── README.md              # Library architecture guide
-│   ├── core.lisp              # Core mathematical functions
-│   └── strings.lisp           # Advanced string operations
-├── cmd/lisp-interpreter/       # Main application
-│   └── main.go                # REPL + file execution + command line
-└── pkg/                        # Core implementation packages
-    ├── types/                  # Type system (14 types including keywords)
-    ├── tokenizer/             # Lexical analysis with keyword support
-    ├── parser/                # Syntax analysis and AST building
-    ├── evaluator/             # Expression evaluation (12 modules)
-    │   ├── basic.go           # Core operations
-    │   ├── big_numbers.go     # Arbitrary precision arithmetic
-    │   ├── hashmaps.go        # Hash map operations
-    │   ├── keywords.go        # Keyword support
-    │   ├── strings.go         # String processing (20+ functions)
-    │   ├── modules.go         # Module system
-    │   ├── functions.go       # Function handling
-    │   ├── lists.go           # List operations
-    │   └── *.go              # Other specialized evaluators
-    ├── repl/                  # Interactive environment
-    ├── executor/              # High-level execution API
-    └── interpreter/           # Unified interpreter interface
-```
+Built with modern Go practices and clean architecture principles. See **[Architecture Guide](docs/architecture.md)** for complete technical details and project structure.
 
 ## Contributing
 

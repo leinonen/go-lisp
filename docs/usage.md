@@ -1,40 +1,28 @@
-# Usage Guide
+# Usage
 
-This guide covers how to run, build, and work with the Lisp interpreter.
-
-## Running the REPL
-
-Start the interactive Read-Eval-Print Loop:
+## Quick Start
 
 ```bash
-go run ./cmd/lisp-interpreter
-```
-
-The interpreter starts with a helpful message showing key commands:
-
-```
-Welcome to the Lisp Interpreter!
-Type expressions to evaluate them, or 'quit' to exit.
-
-Helpful commands:
-  (builtins)        - List all available built-in functions
-  (builtins <func>) - Get help for a specific function
-  (env)             - Show current environment variables
-  (modules)         - Show loaded modules
-```
-
-## Building the Interpreter
-
-Create a standalone executable:
-
-```bash
-go build -o lisp-interpreter ./cmd/lisp-interpreter
+# Interactive REPL
 ./lisp-interpreter
+
+# Run file
+./lisp-interpreter examples/basic_features.lisp
+
+# Build from source
+make build
+# or: go build -o lisp-interpreter ./cmd/lisp-interpreter
 ```
 
-## Running Tests
+## REPL Commands
 
-Execute the test suite:
+- `(builtins)` - List all built-in functions  
+- `(builtins <func>)` - Get help for specific function  
+- `(env)` - Show current environment  
+- `(modules)` - Show loaded modules  
+- `quit` - Exit interpreter
+
+## Testing
 
 ```bash
 go test ./...

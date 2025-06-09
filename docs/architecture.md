@@ -19,35 +19,97 @@ This project was built using TDD principles:
 - **Living Documentation**: Tests serve as executable documentation and ensure correctness
 - **Regression Prevention**: Comprehensive test suite prevents breaking changes
 
-## File Structure
+## Project Structure
 
-The project follows Go standard layout with clear separation of concerns:
+Built with modern Go practices and clean architecture principles:
 
 ```
 lisp-interpreter/
-├── go.mod                       # Go module definition
-├── README.md                    # Project overview and quick start
-├── Makefile                     # Build automation
-├── docs/                        # Detailed documentation
-│   ├── features.md              # Feature overview
-│   ├── operations.md            # Operation reference
-│   ├── usage.md                 # Usage guide
-│   ├── examples.md              # Code examples
-│   ├── architecture.md          # This file
-│   └── future.md                # Planned enhancements
-├── examples/                    # Example Lisp programs
-│   ├── math_module.lisp         # Module system examples
-│   ├── higher_order_functions.lisp # HOF examples
-│   └── ...                     # Additional examples
-├── cmd/
-│   └── lisp-interpreter/
-│       └── main.go              # REPL and main program
-└── pkg/
-    ├── types/
-    │   ├── types.go             # Core types and interfaces
-    │   └── types_test.go        # Type system tests
-    ├── tokenizer/
-    │   ├── tokenizer.go         # Lexical analysis
+├── docs/                        # Comprehensive documentation
+│   ├── features.md             # Complete feature overview and operations reference
+│   ├── architecture.md         # Technical design and implementation details (this file)
+│   ├── examples.md             # Quick reference code snippets
+│   ├── usage.md                # Running and building the interpreter
+│   ├── keywords.md             # Keyword data type guide
+│   ├── hash_maps.md           # Hash map operations guide
+│   ├── core_library.md        # Mathematical and utility functions
+│   ├── functional_library.md  # Functional programming utilities
+│   ├── print_functions.md     # Output function reference
+│   ├── modulo_operator.md     # Modulo operator documentation
+│   ├── error_function.md      # Error handling guide
+│   ├── file_execution.md      # File execution capabilities
+│   └── future.md              # Roadmap and planned enhancements
+├── examples/                   # Comprehensive example programs
+│   ├── README.md              # Example documentation and organization
+│   ├── basic_features.lisp    # Core language features demonstration
+│   ├── advanced_features.lisp # Advanced capabilities (tail-call, big numbers)
+│   ├── functional_library_demo.lisp # Functional programming utilities ⭐ NEW
+│   ├── module_system.lisp     # Module system demonstration
+│   ├── core_library.lisp      # Core library functions
+│   ├── keywords.lisp          # Keyword data type examples
+│   ├── hash_maps.lisp         # Hash map operations showcase
+│   ├── string_library_demo.lisp # String processing examples
+│   ├── macro_system.lisp      # Macro programming and code transformation
+│   ├── macro_library_demo.lisp # Macro utilities demonstration
+│   └── print_functions_demo.lisp # Output capabilities and formatting
+├── library/                    # High-level Lisp libraries
+│   ├── README.md              # Library architecture guide
+│   ├── core.lisp              # Core mathematical functions
+│   ├── functional.lisp        # Functional programming utilities
+│   ├── strings.lisp           # Advanced string operations
+│   └── macros.lisp            # Control flow and utility macros
+├── cmd/lisp-interpreter/       # Main application
+│   └── main.go                # REPL + file execution + command line interface
+└── pkg/                        # Core implementation packages
+    ├── types/                  # Type system (14 types including keywords)
+    │   ├── types.go           # Core types and interfaces
+    │   └── types_test.go      # Type system tests
+    ├── tokenizer/             # Lexical analysis with keyword support
+    │   ├── tokenizer.go       # Lexical analysis implementation
+    │   ├── keywords_test.go   # Keyword tokenization tests
+    │   └── tokenizer_test.go  # Comprehensive tokenizer tests
+    ├── parser/                # Syntax analysis and AST building
+    │   ├── parser.go          # Recursive descent parser
+    │   ├── keywords_test.go   # Keyword parsing tests
+    │   └── parser_test.go     # Parser functionality tests
+    ├── evaluator/             # Expression evaluation (12 modules)
+    │   ├── evaluator.go       # Core evaluation engine
+    │   ├── basic.go           # Core operations and arithmetic
+    │   ├── big_numbers_test.go # Big number arithmetic tests
+    │   ├── functions.go       # Function handling and calls
+    │   ├── functions_test.go  # Function evaluation tests
+    │   ├── lists.go           # List operations and manipulation
+    │   ├── lists_test.go      # List functionality tests
+    │   ├── hashmaps.go        # Hash map operations
+    │   ├── hashmaps_test.go   # Hash map tests
+    │   ├── keywords_test.go   # Keyword evaluation tests
+    │   ├── strings.go         # String processing (20+ functions)
+    │   ├── strings_test.go    # String operation tests
+    │   ├── modules.go         # Module system implementation
+    │   ├── module_test.go     # Module system tests
+    │   ├── macros.go          # Macro system implementation
+    │   ├── macros_test.go     # Macro functionality tests
+    │   ├── variables.go       # Variable management
+    │   ├── variables_test.go  # Variable handling tests
+    │   ├── print.go           # Output functions
+    │   ├── environment.go     # Environment and scoping
+    │   ├── recursion_test.go  # Tail-call optimization tests
+    │   ├── new_operators_test.go # Extended operator tests
+    │   ├── core_library_test.go # Core library integration tests
+    │   ├── basic_test.go      # Basic evaluation tests
+    │   └── test_helpers.go    # Testing utilities and helpers
+    ├── executor/              # High-level execution API
+    │   ├── executor.go        # Execution coordination
+    │   └── executor_test.go   # Execution integration tests
+    ├── interpreter/           # Unified interpreter interface
+    │   ├── interpreter.go     # Main interpreter API
+    │   └── interpreter_test.go # End-to-end interpreter tests
+    └── repl/                  # Interactive environment
+        ├── repl.go            # REPL implementation
+        ├── repl_test.go       # REPL functionality tests
+        ├── errors.go          # Error handling and formatting
+        └── errors_test.go     # Error handling tests
+```
     │   └── tokenizer_test.go    # Tokenizer tests
     ├── parser/
     │   ├── parser.go            # Syntax analysis

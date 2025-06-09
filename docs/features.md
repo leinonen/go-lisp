@@ -1,34 +1,43 @@
-# Features (June 2025)
+# Features
 
-This Lisp interpreter provides a **comprehensive, production-ready** implementation with modern features that rival contemporary programming languages while maintaining classic Lisp elegance.
+A modern, production-ready Lisp interpreter with comprehensive language support and advanced capabilities.
 
-## Core Components
+## Core Language
 
-- **Tokenizer/Lexer**: Converts input text into tokens for parsing
-- **Parser**: Builds an Abstract Syntax Tree (AST) from tokens  
-- **Evaluator**: Evaluates the AST to produce results
-- **REPL**: Interactive Read-Eval-Print Loop with helpful startup commands
+**Basic**: Variables, functions, lists, arithmetic, comparisons, comments  
+**Advanced**: Closures, recursion, tail-call optimization, error handling  
+**Data Types**: Numbers (including big integers), strings, booleans, lists, hash maps, keywords  
 
-## Language Features (2025 Edition)
+## Modern Capabilities
 
-- **Comments**: Full line comment support using semicolons with nested comment capability
-- **Built-in Help System**: Comprehensive help with `(builtins)`, `(builtins func-name)`, and `(env)`
-- **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection and seamless integration
-- **Keywords**: Self-evaluating symbols (`:name`, `:status`) perfect for structured data and hash map keys
-- **First-class Functions**: Functions as values - store, pass, return, and compose functions naturally
-- **Closures**: Functions capture and preserve their lexical environment
-- **Advanced Recursion**: Full recursion support with tail call optimization for stack safety
-- **Higher-order Functions**: Functions that operate on other functions (`map`, `filter`, `reduce`)
-- **Pattern Matching**: Sophisticated conditional logic and data destructuring
-- **Module System**: Namespace management with imports, exports, and qualified access
-- **Error Handling**: Built-in error function with stack traces and debugging context
-- **String Processing**: 20+ built-in string functions plus regex support
-- **Immutable Data Structures**: Hash maps and lists with functional update semantics
-- **Macro System**: Code transformation at evaluation time with `defmacro` and `quote`
+**Functional Programming**: Higher-order functions, currying, composition, partial application  
+**Module System**: Namespaces, exports/imports, qualified access  
+**Macro System**: Code transformation with `defmacro`, `quote`, and templating  
+**String Processing**: 20+ functions including regex support  
+**Development Tools**: Interactive REPL, environment inspection, built-in help  
 
-## Data Types (Complete Type System)
+## Key Operations
 
-- **Numbers**: `42`, `-3.14` (IEEE 754 double precision)
+### Arithmetic
+`(+ 1 2 3)` `(- 10 3)` `(* 2 3)` `(/ 15 3)` `(mod 10 3)`  
+Automatic big number support for arbitrary precision.
+
+### Lists  
+`(list 1 2 3)` `(first lst)` `(rest lst)` `(append lst1 lst2)`  
+`(map fn lst)` `(filter pred lst)` `(reduce fn init lst)`
+
+### Hash Maps
+`(hash-map :key "value")` `(hash-map-get hm :key)` `(hash-map-put hm :key val)`
+
+### Functions
+`(defun name (params) body)` `(lambda (x) (* x x))`  
+`(apply fn args)` `(compose f g)` `(partial fn arg1)`
+
+### Control Flow
+`(if condition then else)` `(cond ...)` `(when pred body)`  
+`(defmacro name (params) template)`
+
+See `examples/` directory for comprehensive demonstrations.
 - **Big Numbers**: Arbitrary precision integers (e.g., `1000000000000000000000000000000`)
 - **Strings**: `"hello world"` with full Unicode support
 - **Booleans**: `#t`, `#f` (true/false)
