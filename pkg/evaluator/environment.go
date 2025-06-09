@@ -19,6 +19,14 @@ func NewEnvironment() *Environment {
 	// Register built-in constants
 	env.bindings["nil"] = &types.NilValue{}
 
+	// Register arithmetic operations as callable functions
+	// These wrapper functions allow arithmetic operations to be used in lambda expressions
+	env.bindings["+"] = &types.ArithmeticFunctionValue{Operation: "+"}
+	env.bindings["-"] = &types.ArithmeticFunctionValue{Operation: "-"}
+	env.bindings["*"] = &types.ArithmeticFunctionValue{Operation: "*"}
+	env.bindings["/"] = &types.ArithmeticFunctionValue{Operation: "/"}
+	env.bindings["%"] = &types.ArithmeticFunctionValue{Operation: "%"}
+
 	return env
 }
 

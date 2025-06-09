@@ -79,7 +79,7 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 		case "+":
 			return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a + b })
 		case "-":
-			return e.evalArithmetic(list.Elements[1:], func(a, b float64) float64 { return a - b })
+			return e.evalSubtraction(list.Elements[1:])
 		case "*":
 			return e.evalMultiplication(list.Elements[1:])
 		case "/":

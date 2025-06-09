@@ -142,6 +142,11 @@ func (e *Evaluator) callFunctionWithTailCheck(funcValue types.Value, args []type
 		if _, ok := funcValue.(types.KeywordValue); ok {
 			return e.callFunction(funcValue, args)
 		}
+
+		// Arithmetic operations cannot be tail-call optimized, so handle them normally
+		if _, ok := funcValue.(*types.ArithmeticFunctionValue); ok {
+			return e.callFunction(funcValue, args)
+		}
 	}
 
 	// Regular function call
@@ -152,6 +157,11 @@ func (e *Evaluator) callFunction(funcValue types.Value, args []types.Expr) (type
 	// Check if the value is a keyword being used as a function
 	if keyword, ok := funcValue.(types.KeywordValue); ok {
 		return e.evalKeywordAsFunction(keyword, args)
+	}
+
+	// Check if the value is an arithmetic operation
+	if arithFunc, ok := funcValue.(*types.ArithmeticFunctionValue); ok {
+		return e.callArithmeticFunction(arithFunc, args)
 	}
 
 	function, ok := funcValue.(types.FunctionValue)
@@ -296,4 +306,22 @@ func (e *Evaluator) evalKeywordAsFunction(keyword types.KeywordValue, args []typ
 	}
 
 	return value, nil
+}
+
+// callArithmeticFunction handles calling arithmetic operations as functions
+func (e *Evaluator) callArithmeticFunction(arithFunc *types.ArithmeticFunctionValue, args []types.Expr) (types.Value, error) {
+	switch arithFunc.Operation {
+	case "+":
+		return e.evalArithmetic(args, func(a, b float64) float64 { return a + b })
+	case "-":
+		return e.evalSubtraction(args)
+	case "*":
+		return e.evalMultiplication(args)
+	case "/":
+		return e.evalDivision(args)
+	case "%":
+		return e.evalModulo(args)
+	default:
+		return nil, fmt.Errorf("unknown arithmetic operation: %s", arithFunc.Operation)
+	}
 }

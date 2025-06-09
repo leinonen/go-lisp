@@ -293,3 +293,12 @@ type LoadExpr struct {
 func (l *LoadExpr) String() string {
 	return fmt.Sprintf("LoadExpr(%s)", l.Filename)
 }
+
+// ArithmeticFunctionValue represents a built-in arithmetic operation as a callable function
+type ArithmeticFunctionValue struct {
+	Operation string // "+", "-", "*", "/", "%"
+}
+
+func (a ArithmeticFunctionValue) String() string {
+	return fmt.Sprintf("#<built-in:%s>", a.Operation)
+}

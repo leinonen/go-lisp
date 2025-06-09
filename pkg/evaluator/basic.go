@@ -659,6 +659,44 @@ func (e *Evaluator) evalModulo(args []types.Expr) (types.Value, error) {
 	return types.NumberValue(float64(result)), nil
 }
 
+// Enhanced subtraction evaluation that handles both binary subtraction and unary minus
+func (e *Evaluator) evalSubtraction(args []types.Expr) (types.Value, error) {
+	if len(args) == 0 {
+		return nil, fmt.Errorf("subtraction requires at least one argument")
+	}
+
+	// Handle unary minus (negation)
+	if len(args) == 1 {
+		val, err := e.Eval(args[0])
+		if err != nil {
+			return nil, err
+		}
+
+		// Handle big numbers
+		if bigNum, ok := val.(*types.BigNumberValue); ok {
+			result := new(big.Int)
+			result.Neg(bigNum.Value)
+			return types.NewBigNumberValue(result), nil
+		}
+
+		// Handle regular numbers
+		num, ok := val.(types.NumberValue)
+		if !ok {
+			return nil, fmt.Errorf("subtraction requires numbers")
+		}
+
+		result := -float64(num)
+		// Handle the special case of -0.0 to return 0.0
+		if result == 0.0 {
+			result = 0.0
+		}
+		return types.NumberValue(result), nil
+	}
+
+	// Handle binary subtraction (two or more arguments)
+	return e.evalArithmetic(args, func(a, b float64) float64 { return a - b })
+}
+
 // Helper function to compare two values directly without converting to expressions
 func (e *Evaluator) compareValues(a, b types.Value) (bool, error) {
 	// Handle nil values
@@ -737,5 +775,3 @@ func (e *Evaluator) compareValues(a, b types.Value) (bool, error) {
 
 	return false, nil
 }
-
-// Helper function to convert a value back to an expression for recursive evaluation
