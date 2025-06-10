@@ -55,9 +55,28 @@ Once in the REPL, you can:
 
 You can load Lisp files from within the REPL:
 
+### Traditional Approach
 ```lisp
 lisp> (load "examples/math_module.lisp")
 => #<module:math>
+lisp> (import math)
+=> #<module:math>
+lisp> (factorial 5)
+=> 120
 ```
 
-This executes all expressions in the file and makes any defined modules or functions available in the current session.
+### Simplified with Require
+```lisp
+lisp> (require "examples/math_module.lisp")
+=> #<module:math>
+lisp> (factorial 5)
+=> 120
+```
+
+The `require` function combines loading and importing in a single operation:
+- **Loads** the file and executes all expressions
+- **Automatically detects** any modules defined in the file
+- **Imports** all exported functions into the current environment
+- **Prevents** re-loading the same file multiple times
+
+This makes it easier to work with library files and reduces the number of commands needed to use external modules.

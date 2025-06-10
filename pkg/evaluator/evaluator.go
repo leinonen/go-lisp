@@ -60,6 +60,8 @@ func (e *Evaluator) Eval(expr types.Expr) (types.Value, error) {
 		return e.evalImport(ex)
 	case *types.LoadExpr:
 		return e.evalLoad(ex)
+	case *types.RequireExpr:
+		return e.evalRequire(ex)
 	default:
 		return nil, fmt.Errorf("unknown expression type: %T", expr)
 	}

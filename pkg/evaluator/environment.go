@@ -4,16 +4,18 @@ import "github.com/leinonen/lisp-interpreter/pkg/types"
 
 // Environment represents a variable binding environment
 type Environment struct {
-	bindings map[string]types.Value
-	parent   *Environment
-	modules  map[string]*types.ModuleValue // module registry
+	bindings    map[string]types.Value
+	parent      *Environment
+	modules     map[string]*types.ModuleValue // module registry
+	loadedFiles map[string]bool               // track loaded files to avoid re-loading
 }
 
 func NewEnvironment() *Environment {
 	env := &Environment{
-		bindings: make(map[string]types.Value),
-		parent:   nil,
-		modules:  make(map[string]*types.ModuleValue),
+		bindings:    make(map[string]types.Value),
+		parent:      nil,
+		modules:     make(map[string]*types.ModuleValue),
+		loadedFiles: make(map[string]bool),
 	}
 
 	// Register built-in constants
@@ -47,9 +49,10 @@ func (e *Environment) Get(name string) (types.Value, bool) {
 // NewChildEnvironment creates a new environment with this environment as parent
 func (e *Environment) NewChildEnvironment() types.Environment {
 	return &Environment{
-		bindings: make(map[string]types.Value),
-		parent:   e,
-		modules:  e.modules, // share module registry with parent
+		bindings:    make(map[string]types.Value),
+		parent:      e,
+		modules:     e.modules, // share module registry with parent
+		loadedFiles: e.loadedFiles,
 	}
 }
 
@@ -69,4 +72,19 @@ func (e *Environment) SetModule(name string, module *types.ModuleValue) {
 		e.modules = make(map[string]*types.ModuleValue)
 	}
 	e.modules[name] = module
+}
+
+// File loading tracking methods
+func (e *Environment) IsFileLoaded(filename string) bool {
+	if e.loadedFiles == nil {
+		return false
+	}
+	return e.loadedFiles[filename]
+}
+
+func (e *Environment) MarkFileLoaded(filename string) {
+	if e.loadedFiles == nil {
+		e.loadedFiles = make(map[string]bool)
+	}
+	e.loadedFiles[filename] = true
 }

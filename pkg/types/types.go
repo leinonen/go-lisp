@@ -294,6 +294,23 @@ func (l *LoadExpr) String() string {
 	return fmt.Sprintf("LoadExpr(%s)", l.Filename)
 }
 
+// RequireExpr represents a require expression that combines load and import
+type RequireExpr struct {
+	Filename string
+	AsAlias  string   // For :as syntax
+	OnlyList []string // For :only syntax
+}
+
+func (r *RequireExpr) String() string {
+	if r.AsAlias != "" {
+		return fmt.Sprintf("RequireExpr(%s :as %s)", r.Filename, r.AsAlias)
+	}
+	if len(r.OnlyList) > 0 {
+		return fmt.Sprintf("RequireExpr(%s :only %v)", r.Filename, r.OnlyList)
+	}
+	return fmt.Sprintf("RequireExpr(%s)", r.Filename)
+}
+
 // ArithmeticFunctionValue represents a built-in arithmetic operation as a callable function
 type ArithmeticFunctionValue struct {
 	Operation string // "+", "-", "*", "/", "%"

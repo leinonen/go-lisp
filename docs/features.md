@@ -81,6 +81,105 @@ See `examples/` directory for comprehensive demonstrations.
 - **Performance Monitoring**: Built-in profiling and optimization tools
 - **Development Workflow**: Integrated with modern development practices
 
+## Module System
+
+The interpreter provides a comprehensive module system for organizing code into reusable namespaces with explicit exports and imports.
+
+### Module Definition
+```lisp
+(module math-utils
+  (export square cube add-squares)
+  
+  (defun square (x) (* x x))
+  (defun cube (x) (* x x x))
+  (defun add-squares (x y) (+ (square x) (square y)))
+  
+  ; Private helper function (not exported)
+  (defun helper (x) (+ x 1)))
+```
+
+### Loading and Importing
+
+#### Individual Operations
+```lisp
+; Load a file containing module definitions
+(load "library/core.lisp")
+
+; Import a module's exports into current environment
+(import core)
+
+; Use imported functions directly
+(factorial 10)
+
+; Or use qualified access without importing
+(core.factorial 10)
+```
+
+#### Unified Require Function
+The `require` function combines loading and importing in a single operation:
+
+```lisp
+; Basic require - load file and import all exports
+(require "library/core.lisp")
+(factorial 10)  ; Available immediately
+
+; Equivalent to:
+; (load "library/core.lisp")
+; (import core)
+```
+
+**Benefits:**
+- **Simplicity**: One command instead of two separate load/import calls
+- **Efficiency**: Automatically detects and imports modules from loaded files
+- **File Caching**: Prevents re-loading the same file multiple times
+- **Error Handling**: Comprehensive error messages for missing files or modules
+
+**Usage Example:**
+```lisp
+; Traditional approach
+(load "library/functional.lisp")
+(import functional)
+(map (lambda (x) (* x 2)) (list 1 2 3))
+
+; Simplified with require  
+(require "library/functional.lisp")
+(map (lambda (x) (* x 2)) (list 1 2 3))
+```
+
+**Current Implementation:**
+- Supports basic `(require "filename")` syntax
+- Automatically loads file and imports all module exports
+- Prevents duplicate file loading through caching
+- Works with all existing library modules (core, functional, strings, macros)
+
+### Access Patterns
+
+#### Qualified Access
+```lisp
+; Access without importing
+(math-utils.square 5)      ; => 25
+(core.factorial 10)        ; => 3628800
+```
+
+#### Direct Access After Import
+```lisp
+(import math-utils)
+(square 5)                 ; => 25
+(add-squares 3 4)         ; => 25
+```
+
+#### Module Introspection
+```lisp
+(modules)                  ; List all loaded modules
+(env)                      ; View current environment bindings
+```
+
+### File Organization
+- **Library Structure**: Organize related functions into modules within files
+- **Export Control**: Only exported functions are accessible outside the module
+- **Private Functions**: Non-exported functions remain module-internal
+- **Dependency Management**: Files can load other files, creating dependency chains
+
 ## Big Number Support
 
 The interpreter provides comprehensive support for arbitrary precision arithmetic:

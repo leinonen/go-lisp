@@ -155,6 +155,8 @@ func (p *Parser) parseList() (types.Expr, error) {
 				return p.parseImportFromElements(elements)
 			case "load":
 				return p.parseLoadFromElements(elements)
+			case "require":
+				return p.parseRequireFromElements(elements)
 			}
 		}
 	}
@@ -236,6 +238,76 @@ func (p *Parser) parseLoadFromElements(elements []types.Expr) (types.Expr, error
 	}
 
 	return &types.LoadExpr{Filename: filenameExpr.Value}, nil
+}
+
+func (p *Parser) parseRequireFromElements(elements []types.Expr) (types.Expr, error) {
+	// Supported syntaxes:
+	// (require "filename.lisp")
+	// (require "filename.lisp" :as alias)
+	// (require "filename.lisp" :only [symbol1 symbol2])
+
+	if len(elements) < 2 {
+		return nil, fmt.Errorf("require requires at least a filename")
+	}
+
+	filenameExpr, ok := elements[1].(*types.StringExpr)
+	if !ok {
+		return nil, fmt.Errorf("require filename must be a string")
+	}
+
+	requireExpr := &types.RequireExpr{
+		Filename: filenameExpr.Value,
+	}
+
+	// Parse optional modifiers
+	if len(elements) > 2 {
+		if len(elements) < 4 {
+			return nil, fmt.Errorf("require modifier requires an argument")
+		}
+
+		keywordExpr, ok := elements[2].(*types.KeywordExpr)
+		if !ok {
+			return nil, fmt.Errorf("require modifier must be a keyword (:as or :only)")
+		}
+
+		switch keywordExpr.Value {
+		case "as":
+			// (require "file.lisp" :as alias)
+			if len(elements) != 4 {
+				return nil, fmt.Errorf("require :as expects exactly one alias symbol")
+			}
+			aliasExpr, ok := elements[3].(*types.SymbolExpr)
+			if !ok {
+				return nil, fmt.Errorf("require :as alias must be a symbol")
+			}
+			requireExpr.AsAlias = aliasExpr.Name
+
+		case "only":
+			// (require "file.lisp" :only [symbol1 symbol2])
+			if len(elements) != 4 {
+				return nil, fmt.Errorf("require :only expects exactly one symbol list")
+			}
+			listExpr, ok := elements[3].(*types.ListExpr)
+			if !ok {
+				return nil, fmt.Errorf("require :only expects a list of symbols")
+			}
+
+			onlyList := make([]string, len(listExpr.Elements))
+			for i, elem := range listExpr.Elements {
+				symbolExpr, ok := elem.(*types.SymbolExpr)
+				if !ok {
+					return nil, fmt.Errorf("require :only list must contain only symbols")
+				}
+				onlyList[i] = symbolExpr.Name
+			}
+			requireExpr.OnlyList = onlyList
+
+		default:
+			return nil, fmt.Errorf("require modifier must be :as or :only, got %s", keywordExpr.Value)
+		}
+	}
+
+	return requireExpr, nil
 }
 
 func (p *Parser) parseQuote() (types.Expr, error) {

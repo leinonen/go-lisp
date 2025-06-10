@@ -22,9 +22,20 @@ func (e *Evaluator) evalQualifiedSymbol(name string) (types.Value, error) {
 	moduleName := parts[0]
 	symbolName := parts[1]
 
+	// First try to get module from the module registry
 	module, ok := e.env.GetModule(moduleName)
 	if !ok {
-		return nil, fmt.Errorf("module not found: %s", moduleName)
+		// If not found in module registry, check if it's stored as a regular variable (for aliases)
+		moduleValue, ok := e.env.Get(moduleName)
+		if !ok {
+			return nil, fmt.Errorf("module not found: %s", moduleName)
+		}
+
+		// Check if the variable is actually a module
+		module, ok = moduleValue.(*types.ModuleValue)
+		if !ok {
+			return nil, fmt.Errorf("symbol %s is not a module", moduleName)
+		}
 	}
 
 	value, ok := module.Exports[symbolName]
@@ -132,6 +143,9 @@ func (e *Evaluator) evalLoad(loadExpr *types.LoadExpr) (types.Value, error) {
 		i = newIndex
 	}
 
+	// Mark file as loaded
+	e.env.MarkFileLoaded(loadExpr.Filename)
+
 	return lastValue, nil
 }
 
@@ -196,4 +210,128 @@ func (e *Evaluator) evalModules(args []types.Expr) (types.Value, error) {
 	}
 
 	return &types.ListValue{Elements: elements}, nil
+}
+
+func (e *Evaluator) evalRequire(requireExpr *types.RequireExpr) (types.Value, error) {
+	// Check if file is already loaded to avoid re-evaluation
+	if e.env.IsFileLoaded(requireExpr.Filename) {
+		// File already loaded, we need to find the module(s) it defined
+		// This is a simplified approach - in a real implementation, we'd track
+		// which modules each file created
+		return e.handleRequireForLoadedFile(requireExpr)
+	}
+
+	// Track modules before loading
+	modulesBefore := make(map[string]*types.ModuleValue)
+	for name, module := range e.env.modules {
+		modulesBefore[name] = module
+	}
+
+	// Load the file using existing load functionality
+	loadExpr := &types.LoadExpr{Filename: requireExpr.Filename}
+	_, err := e.evalLoad(loadExpr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load file %s: %v", requireExpr.Filename, err)
+	}
+
+	// Find newly created modules
+	var newModules []*types.ModuleValue
+	for name, module := range e.env.modules {
+		if _, existed := modulesBefore[name]; !existed {
+			newModules = append(newModules, module)
+		}
+	}
+
+	if len(newModules) == 0 {
+		return nil, fmt.Errorf("no module found in file %s", requireExpr.Filename)
+	}
+
+	// For simplicity, use the first module found (most files define one module)
+	module := newModules[0]
+
+	// Handle different require modes
+	if requireExpr.AsAlias != "" {
+		// (require "file.lisp" :as alias) - create qualified access only
+		e.env.Set(requireExpr.AsAlias, module)
+	} else if len(requireExpr.OnlyList) > 0 {
+		// (require "file.lisp" :only [fn1 fn2]) - import only specified functions
+		for _, symbolName := range requireExpr.OnlyList {
+			if exportedValue, exists := module.Exports[symbolName]; exists {
+				e.env.Set(symbolName, exportedValue)
+			} else {
+				return nil, fmt.Errorf("symbol %s not exported by module %s", symbolName, module.Name)
+			}
+		}
+	} else {
+		// (require "file.lisp") - import all exports
+		for name, value := range module.Exports {
+			e.env.Set(name, value)
+		}
+	}
+
+	return module, nil
+}
+
+func (e *Evaluator) handleRequireForLoadedFile(requireExpr *types.RequireExpr) (types.Value, error) {
+	// For already loaded files, we need to guess which module they created
+	// This is a heuristic approach - a better implementation would track file->module mappings
+
+	// Try to find a module by filename-based heuristic
+	moduleName := getModuleNameFromPath(requireExpr.Filename)
+	if module, exists := e.env.GetModule(moduleName); exists {
+		return e.applyRequireMode(requireExpr, module)
+	}
+
+	// If heuristic fails, look for any module that might match
+	// This is imperfect but handles most common cases
+	var possibleModule *types.ModuleValue
+	for _, module := range e.env.modules {
+		possibleModule = module
+		break // Take the first one as fallback
+	}
+
+	if possibleModule == nil {
+		return nil, fmt.Errorf("no suitable module found for already loaded file %s", requireExpr.Filename)
+	}
+
+	return e.applyRequireMode(requireExpr, possibleModule)
+}
+
+func (e *Evaluator) applyRequireMode(requireExpr *types.RequireExpr, module *types.ModuleValue) (types.Value, error) {
+	// Handle different require modes
+	if requireExpr.AsAlias != "" {
+		// (require "file.lisp" :as alias) - create qualified access only
+		e.env.Set(requireExpr.AsAlias, module)
+	} else if len(requireExpr.OnlyList) > 0 {
+		// (require "file.lisp" :only [fn1 fn2]) - import only specified functions
+		for _, symbolName := range requireExpr.OnlyList {
+			if exportedValue, exists := module.Exports[symbolName]; exists {
+				e.env.Set(symbolName, exportedValue)
+			} else {
+				return nil, fmt.Errorf("symbol %s not exported by module %s", symbolName, module.Name)
+			}
+		}
+	} else {
+		// (require "file.lisp") - import all exports
+		for name, value := range module.Exports {
+			e.env.Set(name, value)
+		}
+	}
+
+	return module, nil
+}
+
+// Helper function to extract module name from file path
+func getModuleNameFromPath(filename string) string {
+	// For now, use a simple heuristic - this could be improved
+	// to actually parse the file and get the module name
+	parts := strings.Split(filename, "/")
+	baseName := parts[len(parts)-1]
+
+	// Remove .lisp extension if present
+	if strings.HasSuffix(baseName, ".lisp") {
+		baseName = baseName[:len(baseName)-5]
+	}
+
+	return baseName
 }
