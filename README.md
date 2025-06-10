@@ -9,19 +9,19 @@ A modern, production-ready Lisp interpreter implemented in Go. Features comprehe
 make build
 
 # Show help and available options
-./lisp-interpreter -help
+./lisp -help
 
 # Start interactive REPL
-./lisp-interpreter
+./lisp
 
 # Evaluate code directly from command line
-./lisp-interpreter -e "(+ 1 2 3)"
+./lisp -e "(+ 1 2 3)"
 
 # Execute a Lisp file (explicit flag)
-./lisp-interpreter -f myprogram.lisp
+./lisp -f myprogram.lisp
 
 # Execute a Lisp file (legacy positional argument)
-./lisp-interpreter myprogram.lisp
+./lisp myprogram.lisp
 
 # Development mode (without building)
 go run ./cmd/lisp-interpreter -e "(* 6 7)"
@@ -34,43 +34,43 @@ The Lisp interpreter supports multiple modes of operation through command line p
 
 ### Interactive REPL Mode
 ```bash
-./lisp-interpreter
+./lisp
 # Starts the interactive Read-Eval-Print Loop
 ```
 
 ### Direct Code Evaluation
 ```bash
 # Evaluate expressions directly from the command line
-./lisp-interpreter -e "(+ 1 2 3)"           # => 6
-./lisp-interpreter -e "(list 1 2 3 4 5)"    # => (1 2 3 4 5)
-./lisp-interpreter -e "(* 6 7)"             # => 42
+./lisp -e "(+ 1 2 3)"           # => 6
+./lisp -e "(list 1 2 3 4 5)"    # => (1 2 3 4 5)
+./lisp -e "(* 6 7)"             # => 42
 
 # Perfect for quick calculations and one-liners
-./lisp-interpreter -e "(% 1000000000000000001 7)"  # => 0
+./lisp -e "(% 1000000000000000001 7)"  # => 0
 ```
 
 ### File Execution
 ```bash
 # Execute Lisp programs from files
-./lisp-interpreter -f script.lisp           # Explicit file flag
-./lisp-interpreter script.lisp              # Legacy positional argument (still supported)
+./lisp -f script.lisp           # Explicit file flag
+./lisp script.lisp              # Legacy positional argument (still supported)
 ```
 
 ### Help and Information
 ```bash
-./lisp-interpreter -help                    # Show all available options
+./lisp -help                    # Show all available options
 ```
 
 ### Command Line Options
 
 | Option | Description | Example |
 |--------|-------------|---------|
-| `-help` | Show help message and usage examples | `./lisp-interpreter -help` |
-| `-e <code>` | Evaluate Lisp code directly | `./lisp-interpreter -e "(+ 1 2)"` |
-| `-f <file>` | Execute a Lisp file | `./lisp-interpreter -f program.lisp` |
-| (none) | Start interactive REPL | `./lisp-interpreter` |
+| `-help` | Show help message and usage examples | `./lisp -help` |
+| `-e <code>` | Evaluate Lisp code directly | `./lisp -e "(+ 1 2)"` |
+| `-f <file>` | Execute a Lisp file | `./lisp -f program.lisp` |
+| (none) | Start interactive REPL | `./lisp` |
 
-**Note**: The interpreter maintains backward compatibility - you can still use `./lisp-interpreter filename.lisp` without the `-f` flag.
+**Note**: The interpreter maintains backward compatibility - you can still use `./lisp filename.lisp` without the `-f` flag.
 
 ## Current Status
 
@@ -153,11 +153,11 @@ cd lisp-interpreter
 make build
 
 # Start the REPL
-./lisp-interpreter
+./lisp
 
 # Try some examples
-./lisp-interpreter -e "(* 1000000000000000000 1000000000000000000)"
-./lisp-interpreter -f examples/advanced_features.lisp
+./lisp -e "(* 1000000000000000000 1000000000000000000)"
+./lisp -f examples/advanced_features.lisp
 ```
 
 ### Development Commands
@@ -167,17 +167,17 @@ make run      # Build and run the interpreter (REPL mode)
 make test     # Run comprehensive test suite (100% coverage)
 
 # Feature demonstrations
-./lisp-interpreter examples/basic_features.lisp      # Core language features  
-./lisp-interpreter examples/functional_library_demo.lisp # Functional programming
-./lisp-interpreter examples/keywords.lisp            # Keyword data type examples
-./lisp-interpreter examples/hash_maps.lisp           # Hash map operations
-./lisp-interpreter examples/string_library_demo.lisp # String processing showcase
-./lisp-interpreter examples/advanced_features.lisp   # All advanced features
+./lisp examples/basic_features.lisp      # Core language features  
+./lisp examples/functional_library_demo.lisp # Functional programming
+./lisp examples/keywords.lisp            # Keyword data type examples
+./lisp examples/hash_maps.lisp           # Hash map operations
+./lisp examples/string_library_demo.lisp # String processing showcase
+./lisp examples/advanced_features.lisp   # All advanced features
 
 # Interactive exploration
-./lisp-interpreter -help                    # Show all options
-./lisp-interpreter -e "(builtins)"         # List all built-in functions
-./lisp-interpreter -e "(env)"              # Show current environment
+./lisp -help                    # Show all options
+./lisp -e "(builtins)"         # List all built-in functions
+./lisp -e "(env)"              # Show current environment
 ```
 
 ### Requirements and Compatibility
@@ -194,8 +194,8 @@ make --version # GNU Make for build automation
 
 ### Manual Build
 ```bash
-go build -o lisp-interpreter ./cmd/lisp-interpreter
-./lisp-interpreter
+go build -o lisp ./cmd/lisp-interpreter
+./lisp
 ```
 
 ## Project Structure
