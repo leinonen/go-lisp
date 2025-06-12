@@ -126,6 +126,12 @@ func (t *Tokenizer) TokenizeWithError() ([]types.Token, error) {
 		case ')':
 			tokens = append(tokens, types.Token{Type: types.RPAREN, Value: ")"})
 			t.readChar()
+		case '[':
+			tokens = append(tokens, types.Token{Type: types.LBRACKET, Value: "["})
+			t.readChar()
+		case ']':
+			tokens = append(tokens, types.Token{Type: types.RBRACKET, Value: "]"})
+			t.readChar()
 		case '\'':
 			tokens = append(tokens, types.Token{Type: types.QUOTE, Value: "'"})
 			t.readChar()

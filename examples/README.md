@@ -47,15 +47,15 @@ Comprehensive examples demonstrating all interpreter features. Each file focuses
 
 ```bash
 # Run individual examples
-./lisp-interpreter examples/basic_features.lisp
-./lisp-interpreter examples/functional_library_demo.lisp
-./lisp-interpreter examples/macro_system.lisp
+./lisp examples/basic_features.lisp
+./lisp examples/functional_library_demo.lisp
+./lisp examples/macro_system.lisp
 
 # Run all examples
-for file in examples/*.lisp; do ./lisp-interpreter "$file"; done
+for file in examples/*.lisp; do ./lisp "$file"; done
 
 # Interactive exploration
-./lisp-interpreter
+./lisp
 lisp> (load "examples/basic_features.lisp")
 ```
 

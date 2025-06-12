@@ -212,7 +212,7 @@ func TestInterpreterFunctions(t *testing.T) {
 	}{
 		{
 			name:  "lambda expression",
-			input: "(lambda (x) (+ x 1))",
+			input: "(lambda [x] (+ x 1))",
 			expected: types.FunctionValue{
 				Params: []string{"x"},
 				Body: &types.ListExpr{
@@ -226,7 +226,7 @@ func TestInterpreterFunctions(t *testing.T) {
 		},
 		{
 			name:  "lambda with multiple parameters",
-			input: "(lambda (x y) (* x y))",
+			input: "(lambda [x y] (* x y))",
 			expected: types.FunctionValue{
 				Params: []string{"x", "y"},
 				Body: &types.ListExpr{
@@ -240,7 +240,7 @@ func TestInterpreterFunctions(t *testing.T) {
 		},
 		{
 			name:  "lambda with no parameters",
-			input: "(lambda () 42)",
+			input: "(lambda [] 42)",
 			expected: types.FunctionValue{
 				Params: []string{},
 				Body:   &types.NumberExpr{Value: 42},
@@ -274,27 +274,27 @@ func TestInterpreterFunctionCalls(t *testing.T) {
 	}{
 		{
 			name:     "simple function call",
-			setup:    []string{"(define add1 (lambda (x) (+ x 1)))"},
+			setup:    []string{"(define add1 (lambda [x] (+ x 1)))"},
 			input:    "(add1 5)",
 			expected: types.NumberValue(6),
 		},
 		{
 			name:     "function with multiple parameters",
-			setup:    []string{"(define multiply (lambda (x y) (* x y)))"},
+			setup:    []string{"(define multiply (lambda [x y] (* x y)))"},
 			input:    "(multiply 3 4)",
 			expected: types.NumberValue(12),
 		},
 		{
 			name:     "function with no parameters",
-			setup:    []string{"(define get-answer (lambda () 42))"},
+			setup:    []string{"(define get-answer (lambda [] 42))"},
 			input:    "(get-answer)",
 			expected: types.NumberValue(42),
 		},
 		{
 			name: "nested function calls",
 			setup: []string{
-				"(define add1 (lambda (x) (+ x 1)))",
-				"(define double (lambda (x) (* x 2)))",
+				"(define add1 (lambda [x] (+ x 1)))",
+				"(define double (lambda [x] (* x 2)))",
 			},
 			input:    "(double (add1 5))",
 			expected: types.NumberValue(12),
@@ -303,22 +303,22 @@ func TestInterpreterFunctionCalls(t *testing.T) {
 			name: "function using outer variables",
 			setup: []string{
 				"(define y 10)",
-				"(define add-y (lambda (x) (+ x y)))",
+				"(define add-y (lambda [x] (+ x y)))",
 			},
 			input:    "(add-y 5)",
 			expected: types.NumberValue(15),
 		},
 		{
 			name:     "recursive function",
-			setup:    []string{"(define factorial (lambda (n) (if (= n 0) 1 (* n (factorial (- n 1))))))"},
+			setup:    []string{"(define factorial (lambda [n] (if (= n 0) 1 (* n (factorial (- n 1))))))"},
 			input:    "(factorial 5)",
 			expected: types.NumberValue(120),
 		},
 		{
 			name: "higher-order function",
 			setup: []string{
-				"(define apply-twice (lambda (f x) (f (f x))))",
-				"(define add1 (lambda (x) (+ x 1)))",
+				"(define apply-twice (lambda [f x] (f (f x))))",
+				"(define add1 (lambda [x] (+ x 1)))",
 			},
 			input:    "(apply-twice add1 5)",
 			expected: types.NumberValue(7),
@@ -366,16 +366,16 @@ func TestInterpreterFunctionErrors(t *testing.T) {
 		},
 		{
 			name:  "lambda with non-symbol in parameter list",
-			input: "(lambda (x 42) (+ x 1))",
+			input: "(lambda [x 42] (+ x 1))",
 		},
 		{
 			name:  "function call with wrong number of arguments - too few",
-			setup: []string{"(define add (lambda (x y) (+ x y)))"},
+			setup: []string{"(define add (lambda [x y] (+ x y)))"},
 			input: "(add 5)",
 		},
 		{
 			name:  "function call with wrong number of arguments - too many",
-			setup: []string{"(define add1 (lambda (x) (+ x 1)))"},
+			setup: []string{"(define add1 (lambda [x] (+ x 1)))"},
 			input: "(add1 5 6)",
 		},
 		{
@@ -410,7 +410,7 @@ func TestInterpreterClosure(t *testing.T) {
 	interpreter := NewInterpreter()
 
 	// Define a function that returns a closure
-	_, err := interpreter.Interpret("(define make-adder (lambda (n) (lambda (x) (+ x n))))")
+	_, err := interpreter.Interpret("(define make-adder (lambda [n] (lambda [x] (+ x n))))")
 	if err != nil {
 		t.Fatalf("unexpected error defining make-adder: %v", err)
 	}
@@ -456,28 +456,28 @@ func TestInterpreterComplexFunctionExample(t *testing.T) {
 		expected types.Value
 	}{
 		// Define helper functions
-		{"(define square (lambda (x) (* x x)))", types.NumberValue(0)}, // Function value comparison not straightforward
-		{"(define add (lambda (x y) (+ x y)))", types.NumberValue(0)},
+		{"(define square (lambda [x] (* x x)))", types.NumberValue(0)}, // Function value comparison not straightforward
+		{"(define add (lambda [x y] (+ x y)))", types.NumberValue(0)},
 
 		// Test basic function calls
 		{"(square 4)", types.NumberValue(16)},
 		{"(add 3 7)", types.NumberValue(10)},
 
 		// Test higher-order functions
-		{"(define apply-twice (lambda (f x) (f (f x))))", types.NumberValue(0)},
-		{"(define increment (lambda (x) (+ x 1)))", types.NumberValue(0)},
+		{"(define apply-twice (lambda [f x] (f (f x))))", types.NumberValue(0)},
+		{"(define increment (lambda [x] (+ x 1)))", types.NumberValue(0)},
 		{"(apply-twice increment 5)", types.NumberValue(7)},
 		{"(apply-twice square 2)", types.NumberValue(16)}, // square(square(2)) = square(4) = 16
 
 		// Test closures
-		{"(define make-multiplier (lambda (n) (lambda (x) (* x n))))", types.NumberValue(0)},
+		{"(define make-multiplier (lambda [n] (lambda [x] (* x n))))", types.NumberValue(0)},
 		{"(define double (make-multiplier 2))", types.NumberValue(0)},
 		{"(define triple (make-multiplier 3))", types.NumberValue(0)},
 		{"(double 5)", types.NumberValue(10)},
 		{"(triple 4)", types.NumberValue(12)},
 
 		// Test recursion
-		{"(define sum-to (lambda (n) (if (= n 0) 0 (+ n (sum-to (- n 1))))))", types.NumberValue(0)},
+		{"(define sum-to (lambda [n] (if (= n 0) 0 (+ n (sum-to (- n 1))))))", types.NumberValue(0)},
 		{"(sum-to 5)", types.NumberValue(15)}, // 1+2+3+4+5 = 15
 	}
 
@@ -636,17 +636,17 @@ func TestInterpreterListsWithFunctions(t *testing.T) {
 		expected types.Value
 	}{
 		// Define a function that works with lists
-		{"(define list-add1 (lambda (lst) (cons (+ (first lst) 1) (rest lst))))", types.NumberValue(0)}, // Function definition
+		{"(define list-add1 (lambda [lst] (cons (+ (first lst) 1) (rest lst))))", types.NumberValue(0)}, // Function definition
 
 		// Test the function
 		{"(list-add1 (list 5 10 15))", &types.ListValue{Elements: []types.Value{types.NumberValue(6), types.NumberValue(10), types.NumberValue(15)}}},
 
 		// Define a function that creates lists
-		{"(define make-range (lambda (n) (if (= n 0) (list) (cons n (make-range (- n 1))))))", types.NumberValue(0)},
+		{"(define make-range (lambda [n] (if (= n 0) (list) (cons n (make-range (- n 1))))))", types.NumberValue(0)},
 		{"(make-range 3)", &types.ListValue{Elements: []types.Value{types.NumberValue(3), types.NumberValue(2), types.NumberValue(1)}}},
 
 		// Function that processes list recursively
-		{"(define sum-list (lambda (lst) (if (empty? lst) 0 (+ (first lst) (sum-list (rest lst))))))", types.NumberValue(0)},
+		{"(define sum-list (lambda [lst] (if (empty? lst) 0 (+ (first lst) (sum-list (rest lst))))))", types.NumberValue(0)},
 		{"(sum-list (list 1 2 3 4))", types.NumberValue(10)},
 	}
 
@@ -675,22 +675,22 @@ func TestMapFunction(t *testing.T) {
 	}{
 		{
 			name:     "map with square function",
-			input:    "(map (lambda (x) (* x x)) (list 1 2 3 4))",
+			input:    "(map (lambda [x] (* x x)) (list 1 2 3 4))",
 			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(4), types.NumberValue(9), types.NumberValue(16)}},
 		},
 		{
 			name:     "map with add one function",
-			input:    "(map (lambda (x) (+ x 1)) (list 10 20 30))",
+			input:    "(map (lambda [x] (+ x 1)) (list 10 20 30))",
 			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(11), types.NumberValue(21), types.NumberValue(31)}},
 		},
 		{
 			name:     "map with empty list",
-			input:    "(map (lambda (x) (* x 2)) (list))",
+			input:    "(map (lambda [x] (* x 2)) (list))",
 			expected: &types.ListValue{Elements: []types.Value{}},
 		},
 		{
 			name:     "map with string transformation",
-			input:    "(map (lambda (s) s) (list \"a\" \"b\" \"c\"))",
+			input:    "(map (lambda [s] s) (list \"a\" \"b\" \"c\"))",
 			expected: &types.ListValue{Elements: []types.Value{types.StringValue("a"), types.StringValue("b"), types.StringValue("c")}},
 		},
 	}
@@ -719,27 +719,27 @@ func TestFilterFunction(t *testing.T) {
 	}{
 		{
 			name:     "filter positive numbers",
-			input:    "(filter (lambda (x) (> x 0)) (list -1 2 -3 4 5))",
+			input:    "(filter (lambda [x] (> x 0)) (list -1 2 -3 4 5))",
 			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(2), types.NumberValue(4), types.NumberValue(5)}},
 		},
 		{
 			name:     "filter numbers greater than 3",
-			input:    "(filter (lambda (x) (> x 3)) (list 1 2 3 4 5 6))",
+			input:    "(filter (lambda [x] (> x 3)) (list 1 2 3 4 5 6))",
 			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(4), types.NumberValue(5), types.NumberValue(6)}},
 		},
 		{
 			name:     "filter with empty list",
-			input:    "(filter (lambda (x) (> x 0)) (list))",
+			input:    "(filter (lambda [x] (> x 0)) (list))",
 			expected: &types.ListValue{Elements: []types.Value{}},
 		},
 		{
 			name:     "filter all elements match",
-			input:    "(filter (lambda (x) (> x 0)) (list 1 2 3))",
+			input:    "(filter (lambda [x] (> x 0)) (list 1 2 3))",
 			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2), types.NumberValue(3)}},
 		},
 		{
 			name:     "filter no elements match",
-			input:    "(filter (lambda (x) (< x 0)) (list 1 2 3))",
+			input:    "(filter (lambda [x] (< x 0)) (list 1 2 3))",
 			expected: &types.ListValue{Elements: []types.Value{}},
 		},
 	}
@@ -768,27 +768,27 @@ func TestReduceFunction(t *testing.T) {
 	}{
 		{
 			name:     "reduce sum with initial value",
-			input:    "(reduce (lambda (acc x) (+ acc x)) 0 (list 1 2 3 4))",
+			input:    "(reduce (lambda [acc x] (+ acc x)) 0 (list 1 2 3 4))",
 			expected: types.NumberValue(10),
 		},
 		{
 			name:     "reduce product with initial value",
-			input:    "(reduce (lambda (acc x) (* acc x)) 1 (list 2 3 4))",
+			input:    "(reduce (lambda [acc x] (* acc x)) 1 (list 2 3 4))",
 			expected: types.NumberValue(24),
 		},
 		{
 			name:     "reduce with empty list",
-			input:    "(reduce (lambda (acc x) (+ acc x)) 0 (list))",
+			input:    "(reduce (lambda [acc x] (+ acc x)) 0 (list))",
 			expected: types.NumberValue(0),
 		},
 		{
 			name:     "reduce with single element",
-			input:    "(reduce (lambda (acc x) (+ acc x)) 10 (list 5))",
+			input:    "(reduce (lambda [acc x] (+ acc x)) 10 (list 5))",
 			expected: types.NumberValue(15),
 		},
 		{
 			name:     "reduce with lambda function",
-			input:    "(reduce (lambda (acc x) (+ acc (* x x))) 0 (list 1 2 3))",
+			input:    "(reduce (lambda [acc x] (+ acc (* x x))) 0 (list 1 2 3))",
 			expected: types.NumberValue(14), // 0 + 1² + 2² + 3² = 14
 		},
 	}
@@ -817,17 +817,17 @@ func TestHigherOrderFunctionCombinations(t *testing.T) {
 	}{
 		{
 			name:     "map then reduce",
-			input:    "(reduce (lambda (acc x) (+ acc x)) 0 (map (lambda (x) (* x x)) (list 1 2 3)))",
+			input:    "(reduce (lambda [acc x] (+ acc x)) 0 (map (lambda [x] (* x x)) (list 1 2 3)))",
 			expected: types.NumberValue(14), // sum of squares: 1 + 4 + 9 = 14
 		},
 		{
 			name:     "filter then map",
-			input:    "(map (lambda (x) (* x 2)) (filter (lambda (x) (> x 0)) (list -1 2 -3 4)))",
+			input:    "(map (lambda [x] (* x 2)) (filter (lambda [x] (> x 0)) (list -1 2 -3 4)))",
 			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(4), types.NumberValue(8)}},
 		},
 		{
 			name:     "filter then reduce",
-			input:    "(reduce (lambda (acc x) (+ acc x)) 0 (filter (lambda (x) (> x 0)) (list -1 2 -3 4 5)))",
+			input:    "(reduce (lambda [acc x] (+ acc x)) 0 (filter (lambda [x] (> x 0)) (list -1 2 -3 4 5)))",
 			expected: types.NumberValue(11), // 2 + 4 + 5 = 11
 		},
 	}

@@ -14,7 +14,7 @@ func TestEvaluatorLambda(t *testing.T) {
 	lambdaExpr := &types.ListExpr{
 		Elements: []types.Expr{
 			&types.SymbolExpr{Name: "lambda"},
-			&types.ListExpr{
+			&types.BracketExpr{
 				Elements: []types.Expr{
 					&types.SymbolExpr{Name: "x"},
 					&types.SymbolExpr{Name: "y"},
@@ -120,7 +120,7 @@ func TestEvaluatorDefun(t *testing.T) {
 	env := NewEnvironment()
 	evaluator := NewEvaluator(env)
 
-	// Test defun creation
+	// Test defun creation - this should now fail since we only accept square brackets
 	defunExpr := &types.ListExpr{
 		Elements: []types.Expr{
 			&types.SymbolExpr{Name: "defun"},
@@ -140,7 +140,32 @@ func TestEvaluatorDefun(t *testing.T) {
 		},
 	}
 
-	result, err := evaluator.Eval(defunExpr)
+	_, err := evaluator.Eval(defunExpr)
+	if err == nil {
+		t.Fatal("expected error since parentheses are no longer supported for parameters")
+	}
+
+	// Now test with square brackets - this should work
+	defunExprBrackets := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "square"},
+			&types.BracketExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "x"},
+				},
+			},
+			&types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "*"},
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "x"},
+				},
+			},
+		},
+	}
+
+	result, err := evaluator.Eval(defunExprBrackets)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -191,7 +216,7 @@ func TestEvaluatorDefunMultipleParams(t *testing.T) {
 	env := NewEnvironment()
 	evaluator := NewEvaluator(env)
 
-	// Test defun with multiple parameters
+	// Test defun with multiple parameters using parentheses - should fail
 	defunExpr := &types.ListExpr{
 		Elements: []types.Expr{
 			&types.SymbolExpr{Name: "defun"},
@@ -213,6 +238,32 @@ func TestEvaluatorDefunMultipleParams(t *testing.T) {
 	}
 
 	_, err := evaluator.Eval(defunExpr)
+	if err == nil {
+		t.Fatal("expected error since parentheses are no longer supported for parameters")
+	}
+
+	// Now test with square brackets - should work
+	defunExprBrackets := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "add"},
+			&types.BracketExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "y"},
+				},
+			},
+			&types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "+"},
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "y"},
+				},
+			},
+		},
+	}
+
+	_, err = evaluator.Eval(defunExprBrackets)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -266,12 +317,27 @@ func TestEvaluatorDefunErrors(t *testing.T) {
 			},
 		},
 		{
-			name: "defun with non-list parameters",
+			name: "defun with parentheses for parameters (should now fail)",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
 					&types.SymbolExpr{Name: "defun"},
 					&types.SymbolExpr{Name: "foo"},
-					&types.SymbolExpr{Name: "x"}, // should be a list
+					&types.ListExpr{ // should be BracketExpr now
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "x"},
+						},
+					},
+					&types.NumberExpr{Value: 42},
+				},
+			},
+		},
+		{
+			name: "defun with non-bracket parameters",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "defun"},
+					&types.SymbolExpr{Name: "foo"},
+					&types.SymbolExpr{Name: "x"}, // should be BracketExpr
 					&types.NumberExpr{Value: 42},
 				},
 			},
@@ -282,7 +348,219 @@ func TestEvaluatorDefunErrors(t *testing.T) {
 				Elements: []types.Expr{
 					&types.SymbolExpr{Name: "defun"},
 					&types.SymbolExpr{Name: "foo"},
-					&types.ListExpr{
+					&types.BracketExpr{
+						Elements: []types.Expr{
+							&types.NumberExpr{Value: 42}, // should be symbol
+						},
+					},
+					&types.NumberExpr{Value: 42},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := evaluator.Eval(tt.expr)
+			if err == nil {
+				t.Errorf("expected error for %s", tt.name)
+			}
+		})
+	}
+}
+
+// Test square bracket parameter syntax
+func TestEvaluatorDefunSquareBrackets(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	// Test defun with square bracket parameters - single parameter
+	defunExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "square"},
+			&types.BracketExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "x"},
+				},
+			},
+			&types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "*"},
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "x"},
+				},
+			},
+		},
+	}
+
+	result, err := evaluator.Eval(defunExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Check that the function was created correctly
+	function, ok := result.(types.FunctionValue)
+	if !ok {
+		t.Fatalf("expected FunctionValue, got %T", result)
+	}
+
+	if len(function.Params) != 1 {
+		t.Errorf("expected 1 parameter, got %d", len(function.Params))
+	}
+
+	if function.Params[0] != "x" {
+		t.Errorf("unexpected parameter: %v", function.Params[0])
+	}
+
+	// Test calling the function
+	callExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "square"},
+			&types.NumberExpr{Value: 5},
+		},
+	}
+
+	callResult, err := evaluator.Eval(callExpr)
+	if err != nil {
+		t.Fatalf("unexpected error calling function: %v", err)
+	}
+
+	if !valuesEqual(callResult, types.NumberValue(25)) {
+		t.Errorf("expected 25, got %v", callResult)
+	}
+}
+
+func TestEvaluatorDefunSquareBracketsMultipleParams(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	// Test defun with square bracket parameters - multiple parameters
+	defunExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "add"},
+			&types.BracketExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "y"},
+				},
+			},
+			&types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "+"},
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "y"},
+				},
+			},
+		},
+	}
+
+	_, err := evaluator.Eval(defunExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Test calling the function
+	callExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "add"},
+			&types.NumberExpr{Value: 3},
+			&types.NumberExpr{Value: 4},
+		},
+	}
+
+	result, err := evaluator.Eval(callExpr)
+	if err != nil {
+		t.Fatalf("unexpected error calling function: %v", err)
+	}
+
+	if !valuesEqual(result, types.NumberValue(7)) {
+		t.Errorf("expected 7, got %v", result)
+	}
+}
+
+func TestEvaluatorLambdaSquareBrackets(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	// Test lambda with square bracket parameters
+	lambdaExpr := &types.ListExpr{
+		Elements: []types.Expr{
+			&types.SymbolExpr{Name: "lambda"},
+			&types.BracketExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "y"},
+				},
+			},
+			&types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "+"},
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "y"},
+				},
+			},
+		},
+	}
+
+	result, err := evaluator.Eval(lambdaExpr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	function, ok := result.(types.FunctionValue)
+	if !ok {
+		t.Fatalf("expected FunctionValue, got %T", result)
+	}
+
+	if len(function.Params) != 2 {
+		t.Errorf("expected 2 parameters, got %d", len(function.Params))
+	}
+
+	if function.Params[0] != "x" || function.Params[1] != "y" {
+		t.Errorf("unexpected parameters: %v", function.Params)
+	}
+}
+
+func TestEvaluatorLambdaErrors(t *testing.T) {
+	env := NewEnvironment()
+	evaluator := NewEvaluator(env)
+
+	tests := []struct {
+		name string
+		expr types.Expr
+	}{
+		{
+			name: "lambda with parentheses for parameters (should fail)",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "lambda"},
+					&types.ListExpr{ // should be BracketExpr now
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "x"},
+						},
+					},
+					&types.NumberExpr{Value: 42},
+				},
+			},
+		},
+		{
+			name: "lambda with non-bracket parameters",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "lambda"},
+					&types.SymbolExpr{Name: "x"}, // should be BracketExpr
+					&types.NumberExpr{Value: 42},
+				},
+			},
+		},
+		{
+			name: "lambda with non-symbol parameter",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "lambda"},
+					&types.BracketExpr{
 						Elements: []types.Expr{
 							&types.NumberExpr{Value: 42}, // should be symbol
 						},

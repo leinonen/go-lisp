@@ -29,6 +29,20 @@ func NewEnvironment() *Environment {
 	env.bindings["/"] = &types.ArithmeticFunctionValue{Operation: "/"}
 	env.bindings["%"] = &types.ArithmeticFunctionValue{Operation: "%"}
 
+	// Register other built-in functions as callable functions
+	env.bindings["list"] = &types.BuiltinFunctionValue{Name: "list"}
+	env.bindings["first"] = &types.BuiltinFunctionValue{Name: "first"}
+	env.bindings["rest"] = &types.BuiltinFunctionValue{Name: "rest"}
+	env.bindings["cons"] = &types.BuiltinFunctionValue{Name: "cons"}
+	env.bindings["length"] = &types.BuiltinFunctionValue{Name: "length"}
+	env.bindings["empty?"] = &types.BuiltinFunctionValue{Name: "empty?"}
+	env.bindings["map"] = &types.BuiltinFunctionValue{Name: "map"}
+	env.bindings["filter"] = &types.BuiltinFunctionValue{Name: "filter"}
+	env.bindings["reduce"] = &types.BuiltinFunctionValue{Name: "reduce"}
+	env.bindings["append"] = &types.BuiltinFunctionValue{Name: "append"}
+	env.bindings["reverse"] = &types.BuiltinFunctionValue{Name: "reverse"}
+	env.bindings["nth"] = &types.BuiltinFunctionValue{Name: "nth"}
+
 	return env
 }
 

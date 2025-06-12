@@ -54,6 +54,9 @@ func (e *Evaluator) Eval(expr types.Expr) (types.Value, error) {
 		return value, nil
 	case *types.ListExpr:
 		return e.evalList(ex)
+	case *types.BracketExpr:
+		// Evaluate bracket expressions as lists
+		return e.evalBracket(ex)
 	case *types.ModuleExpr:
 		return e.evalModule(ex)
 	case *types.ImportExpr:
@@ -237,4 +240,17 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 
 	// Call the function
 	return e.callFunctionWithTailCheck(funcValue, list.Elements[1:])
+}
+
+func (e *Evaluator) evalBracket(bracket *types.BracketExpr) (types.Value, error) {
+	// Evaluate bracket expressions as lists - they create list values
+	values := make([]types.Value, len(bracket.Elements))
+	for i, elem := range bracket.Elements {
+		val, err := e.Eval(elem)
+		if err != nil {
+			return nil, err
+		}
+		values[i] = val
+	}
+	return &types.ListValue{Elements: values}, nil
 }

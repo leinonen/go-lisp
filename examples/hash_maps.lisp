@@ -86,7 +86,7 @@ user-profile
 (hash-map-get (hash-map-get user-profile "stats") "login-count")
 
 ;; Helper function for safe access with defaults
-(define get-with-default (lambda (map key default)
+(define get-with-default (lambda [map key default]
   (if (hash-map-contains? map key)
       (hash-map-get map key)
       default)))
@@ -95,7 +95,7 @@ user-profile
 (get-with-default person "name" "unknown")
 
 ;; Example: Building a simple database record
-(define create-user (lambda (name email age)
+(define create-user (lambda [name email age]
   (hash-map 
     "name" name 
     "email" email 
@@ -117,7 +117,7 @@ user2
   "yellow" "#FFFF00"
   "purple" "#800080"))
 
-(define get-color-code (lambda (color)
+(define get-color-code (lambda [color]
   (get-with-default color-codes color "unknown color")))
 
 (get-color-code "red")

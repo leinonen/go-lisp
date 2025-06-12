@@ -116,7 +116,7 @@
 (print "------------------")
 
 ;; Define a function using multiple macros
-(defun process-numbers (n)
+(defun process-numbers [n]
   (let* ((start 0)
          (end n)
          (sum 0))

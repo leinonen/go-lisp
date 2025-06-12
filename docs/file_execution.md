@@ -5,7 +5,7 @@ The Lisp interpreter supports executing Lisp code directly from files, allowing 
 
 ## Usage
 ```bash
-./lisp-interpreter <filename.lisp>
+./lisp <filename.lisp>
 ```
 
 ## Features
@@ -18,13 +18,13 @@ Files can contain multiple expressions that are executed sequentially:
 (define x 10)
 (define y 20)
 (+ x y)
-(defun greet (name) (list "Hello" name))
+(defun greet [name] (list "Hello" name))
 (greet "World")
 ```
 
 When executed:
 ```bash
-./lisp-interpreter example.lisp
+./lisp example.lisp
 ```
 
 Output:
@@ -41,9 +41,9 @@ Files can define and export modules:
 (module math-utils
   (export square cube)
   
-  (defun square (x) (* x x))
-  (defun cube (x) (* x x x))
-  (defun helper (x) (+ x 1))  ; private function
+  (defun square [x] (* x x))
+  (defun cube [x] (* x x x))
+  (defun helper [x] (+ x 1))  ; private function
 )
 ```
 
@@ -75,7 +75,7 @@ For executable scripts:
 ; file: calculator.lisp
 ; Simple calculator script
 
-(defun calculate (op a b)
+(defun calculate [op a b]
   (if (= op "+") (+ a b)
       (if (= op "-") (- a b)
           (if (= op "*") (* a b)
@@ -94,15 +94,15 @@ For reusable libraries:
 (module string-utils
   (export string-length string-empty? string-reverse)
   
-  (defun string-length (s)
+  (defun string-length [s]
     ; Implementation...
     )
     
-  (defun string-empty? (s)
+  (defun string-empty? [s]
     ; Implementation...
     )
     
-  (defun string-reverse (s)
+  (defun string-reverse [s]
     ; Implementation...
     )
 )
@@ -113,13 +113,13 @@ For reusable libraries:
 ### Basic Execution
 ```bash
 # Execute a simple script
-./lisp-interpreter examples/examples.lisp
+./lisp examples/examples.lisp
 
 # Run mathematical calculations
-./lisp-interpreter examples/math_demo.lisp
+./lisp examples/math_demo.lisp
 
 # Execute core library demonstrations
-./lisp-interpreter examples/core_usage_demo.lisp
+./lisp examples/core_usage_demo.lisp
 ```
 
 ### Integration with Shell Scripts
@@ -128,10 +128,10 @@ For reusable libraries:
 # Script to run multiple Lisp files
 
 echo "Running core library tests..."
-./lisp-interpreter examples/core.lisp
+./lisp examples/core.lisp
 
 echo "Running mathematical computations..."
-./lisp-interpreter examples/math_examples.lisp
+./lisp examples/math_examples.lisp
 
 echo "All tests completed."
 ```

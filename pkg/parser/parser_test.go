@@ -90,6 +90,29 @@ func TestParser(t *testing.T) {
 			},
 			expected: &types.ListExpr{Elements: []types.Expr{}},
 		},
+		{
+			name: "square bracket list",
+			tokens: []types.Token{
+				{Type: types.LBRACKET, Value: "["},
+				{Type: types.SYMBOL, Value: "x"},
+				{Type: types.SYMBOL, Value: "y"},
+				{Type: types.RBRACKET, Value: "]"},
+			},
+			expected: &types.BracketExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "x"},
+					&types.SymbolExpr{Name: "y"},
+				},
+			},
+		},
+		{
+			name: "empty square brackets",
+			tokens: []types.Token{
+				{Type: types.LBRACKET, Value: "["},
+				{Type: types.RBRACKET, Value: "]"},
+			},
+			expected: &types.BracketExpr{Elements: []types.Expr{}},
+		},
 	}
 
 	for _, tt := range tests {

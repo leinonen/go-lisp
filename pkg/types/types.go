@@ -12,6 +12,8 @@ type TokenType int
 const (
 	LPAREN TokenType = iota
 	RPAREN
+	LBRACKET
+	RBRACKET
 	NUMBER
 	SYMBOL
 	STRING
@@ -91,6 +93,14 @@ type ListExpr struct {
 
 func (l *ListExpr) String() string {
 	return fmt.Sprintf("ListExpr(%v)", l.Elements)
+}
+
+type BracketExpr struct {
+	Elements []Expr
+}
+
+func (b *BracketExpr) String() string {
+	return fmt.Sprintf("BracketExpr(%v)", b.Elements)
 }
 
 // Value types
@@ -318,4 +328,13 @@ type ArithmeticFunctionValue struct {
 
 func (a ArithmeticFunctionValue) String() string {
 	return fmt.Sprintf("#<built-in:%s>", a.Operation)
+}
+
+// BuiltinFunctionValue represents a built-in function as a callable value
+type BuiltinFunctionValue struct {
+	Name string // name of the builtin function
+}
+
+func (b BuiltinFunctionValue) String() string {
+	return fmt.Sprintf("#<built-in:%s>", b.Name)
 }

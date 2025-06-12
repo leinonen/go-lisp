@@ -144,7 +144,7 @@ func TestContainsExpression(t *testing.T) {
 		},
 		{
 			name:     "complex multiline expression",
-			input:    "(defun factorial (n)\n  (if (= n 0)\n      1\n      (* n (factorial (- n 1)))))",
+			input:    "(defun factorial [n]\n  (if (= n 0)\n      1\n      (* n (factorial (- n 1)))))",
 			expected: true,
 		},
 	}
@@ -461,7 +461,7 @@ func TestStringAndCommentParsing(t *testing.T) {
 // Benchmark tests
 func BenchmarkContainsExpression(b *testing.B) {
 	input := `; This is a comment
-(defun factorial (n)
+(defun factorial [n]
   (if (= n 0)
       1
       (* n (factorial (- n 1)))))
@@ -474,7 +474,7 @@ func BenchmarkContainsExpression(b *testing.B) {
 }
 
 func BenchmarkReadCompleteExpression(b *testing.B) {
-	input := "(defun factorial (n)\n  (if (= n 0)\n      1\n      (* n (factorial (- n 1)))))\n"
+	input := "(defun factorial [n]\n  (if (= n 0)\n      1\n      (* n (factorial (- n 1)))))\n"
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

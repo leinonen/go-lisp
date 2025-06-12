@@ -29,7 +29,7 @@
 ; String building and formatting
 (println "\n--- String Building ---")
 (define build-greeting
-  (lambda (name time)
+  (lambda [name time]
     (string-concat "Good " time ", " name "!")))
 
 (println (build-greeting "Alice" "morning"))
@@ -38,7 +38,7 @@
 ; Data formatting with print
 (println "\n--- Data Formatting ---")
 (define format-person
-  (lambda (name age)
+  (lambda [name age]
     (string-concat name " is " (number->string age) " years old")))
 
 (println (format-person "Charlie" 25))
@@ -51,7 +51,7 @@
 
 ; Process and display each number
 (define print-squares
-  (lambda (nums)
+  (lambda [nums]
     (if (= (length nums) 0)
         (println "Done processing squares")
         (begin
@@ -64,7 +64,7 @@
 ; Mathematical expressions with output
 (println "\n--- Mathematical Results ---")
 (define show-calculation
-  (lambda (a b operation)
+  (lambda [a b operation]
     (cond
       ((= operation 1) (println a "+" b "=" (+ a b)))
       ((= operation 2) (println a "*" b "=" (* a b)))
@@ -85,7 +85,7 @@
 ; Text processing pipeline
 (println "\n--- Text Processing Pipeline ---")
 (define process-text
-  (lambda (text)
+  (lambda [text]
     (begin
       (println "Input text:" text)
       (define trimmed (string-trim text))
@@ -103,7 +103,7 @@
 ; Interactive menu simulation
 (println "\n--- Menu Simulation ---")
 (define show-menu
-  (lambda ()
+  (lambda []
     (begin
       (println "===== LISP CALCULATOR =====")
       (println "1. Addition")
@@ -118,7 +118,7 @@
 ; Progress display
 (println "\n--- Progress Display ---")
 (define show-progress
-  (lambda (step total task)
+  (lambda [step total task]
     (println "Step" step "of" total ":" task)))
 
 (show-progress 1 4 "Initializing")

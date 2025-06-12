@@ -7,6 +7,7 @@ A modern, production-ready Lisp interpreter with comprehensive language support 
 **Basic**: Variables, functions, lists, arithmetic, comparisons, comments  
 **Advanced**: Closures, recursion, tail-call optimization, error handling  
 **Data Types**: Numbers (including big integers), strings, booleans, lists, hash maps, keywords  
+**Modern Syntax**: Square bracket function parameters for improved readability and reduced confusion  
 
 ## Modern Capabilities
 
@@ -29,13 +30,14 @@ Automatic big number support for arbitrary precision.
 ### Hash Maps
 `(hash-map :key "value")` `(hash-map-get hm :key)` `(hash-map-put hm :key val)`
 
-### Functions
-`(defun name (params) body)` `(lambda (x) (* x x))`  
-`(apply fn args)` `(compose f g)` `(partial fn arg1)`
+### Functions (Modern Square Bracket Syntax)
+`(defun name [params] body)` `(lambda [x] (* x x))`  
+`(apply fn args)` `(compose f g)` `(partial fn arg1)`  
+Square brackets make parameters visually distinct and reduce confusion.
 
 ### Control Flow
 `(if condition then else)` `(cond ...)` `(when pred body)`  
-`(defmacro name (params) template)`
+`(defmacro name [params] template)`
 
 See `examples/` directory for comprehensive demonstrations.
 - **Big Numbers**: Arbitrary precision integers (e.g., `1000000000000000000000000000000`)
@@ -90,12 +92,12 @@ The interpreter provides a comprehensive module system for organizing code into 
 (module math-utils
   (export square cube add-squares)
   
-  (defun square (x) (* x x))
-  (defun cube (x) (* x x x))
-  (defun add-squares (x y) (+ (square x) (square y)))
+  (defun square [x] (* x x))
+  (defun cube [x] (* x x x))
+  (defun add-squares [x y] (+ (square x) (square y)))
   
   ; Private helper function (not exported)
-  (defun helper (x) (+ x 1)))
+  (defun helper [x] (+ x 1)))
 ```
 
 ### Loading and Importing
@@ -205,7 +207,7 @@ The interpreter provides comprehensive support for arbitrary precision arithmeti
 => 1000000000000000000000000000000
 
 ; Factorial of large numbers
-(defun factorial (n acc)
+(defun factorial [n acc]
   (if (= n 0) acc (factorial (- n 1) (* n acc))))
 
 (factorial 50 1)
@@ -221,7 +223,7 @@ The interpreter provides comprehensive support for arbitrary precision arithmeti
 The interpreter includes a powerful macro system that enables code transformation at evaluation time, allowing developers to extend the language with custom syntax and control structures.
 
 ### Macro Definition
-- `(defmacro name (params) body)` - Define a macro that transforms code before evaluation
+- `(defmacro name [params] body)` - Define a macro that transforms code before evaluation
 - Macros receive unevaluated arguments and return code to be evaluated
 - Macro expansion happens at evaluation time, not parse time
 
@@ -233,7 +235,7 @@ The interpreter includes a powerful macro system that enables code transformatio
 ### Examples
 ```lisp
 ; Define a 'when' control structure
-(defmacro when (condition body)
+(defmacro when [condition body]
   (list 'if condition body 'nil))
 
 ; Use the when macro
@@ -241,7 +243,7 @@ The interpreter includes a powerful macro system that enables code transformatio
 ; Expands to: (if (> x 5) (print "x is greater than 5") nil)
 
 ; Define an 'unless' macro
-(defmacro unless (condition then else)
+(defmacro unless [condition then else]
   (list 'if condition else then))
 
 (unless (< x 5) "not less" "is less")
@@ -253,11 +255,11 @@ The interpreter includes a powerful macro system that enables code transformatio
 (+ 1 2)            ; => 3
 
 ; Complex macro - let-like binding
-(defmacro let1 (var value body)
+(defmacro let1 [var value body]
   (list (list 'lambda (list var) body) value))
 
 (let1 x 10 (+ x 5))  ; => 15
-; Expands to: ((lambda (x) (+ x 5)) 10)
+; Expands to: ((lambda [x] (+ x 5)) 10)
 ```
 
 ### Macro Benefits

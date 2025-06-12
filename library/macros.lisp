@@ -55,7 +55,7 @@
 ;; Let1 - Single variable binding
 (defmacro let1 (var value body)
   "Bind a single variable: (let1 x 10 (+ x 5))"
-  (list (list 'lambda (list var) body) value))
+  (list (list 'lambda [list var] body) value))
 
 ;; Let* - Sequential variable binding
 (defmacro let* (bindings body)
@@ -114,7 +114,7 @@
   "Execute body count times with var bound to index"
   (list 'let1 'dotimes-count count
         (list 'let1 'dotimes-helper 
-              (list 'lambda (list var)
+              (list 'lambda [list var]
                     (list 'if (list '< var 'dotimes-count)
                           (list 'list body 
                                 (list 'dotimes-helper (list '+ var 1)))
@@ -125,7 +125,7 @@
 (defmacro while (condition body)
   "Execute body while condition is true"
   (list 'let1 'while-helper
-        (list 'lambda (list)
+        (list 'lambda [list]
               (list 'if condition
                     (list 'list body (list 'while-helper))
                     'nil))
@@ -178,7 +178,7 @@
   "Pattern match on expression"
   (list 'let1 'match-val expr
         (cons 'cond
-              (map (lambda (pattern)
+              (map (lambda [pattern]
                      (if (= (first pattern) '_)
                        (list 'else (first (rest pattern)))
                        (list (list '= 'match-val (first pattern))

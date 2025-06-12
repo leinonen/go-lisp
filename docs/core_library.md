@@ -102,18 +102,18 @@ Returns the square of the length of a list (useful for complexity analysis).
 Tests if all elements in a list satisfy a predicate.
 
 ```lisp
-(all (lambda (x) (> x 0)) (list 1 2 3))     ; Returns #t
-(all (lambda (x) (> x 0)) (list 1 -2 3))    ; Returns #f
-(all (lambda (x) (> x 0)) (list))           ; Returns #t (vacuous truth)
+(all (lambda [x] (> x 0)) (list 1 2 3))     ; Returns #t
+(all (lambda [x] (> x 0)) (list 1 -2 3))    ; Returns #f
+(all (lambda [x] (> x 0)) (list))           ; Returns #t (vacuous truth)
 ```
 
 ### any(predicate, lst)
 Tests if any element in a list satisfies a predicate.
 
 ```lisp
-(any (lambda (x) (> x 0)) (list -1 2 -3))   ; Returns #t
-(any (lambda (x) (> x 0)) (list -1 -2 -3))  ; Returns #f
-(any (lambda (x) (> x 0)) (list))           ; Returns #f
+(any (lambda [x] (> x 0)) (list -1 2 -3))   ; Returns #t
+(any (lambda [x] (> x 0)) (list -1 -2 -3))  ; Returns #f
+(any (lambda [x] (> x 0)) (list))           ; Returns #f
 ```
 
 ### take(n, lst)
@@ -140,8 +140,8 @@ Returns the list with the first n elements removed.
 Returns a function that is the composition of f and g.
 
 ```lisp
-(define square (lambda (x) (* x x)))
-(define increment (lambda (x) (+ x 1)))
+(define square (lambda [x] (* x x)))
+(define increment (lambda [x] (+ x 1)))
 (define square-then-increment (compose increment square))
 
 (square-then-increment 5)       ; Returns 26 (5² + 1)
@@ -154,7 +154,7 @@ Returns a function that is the composition of f and g.
 Applies function f to x exactly n times.
 
 ```lisp
-(define increment (lambda (x) (+ x 1)))
+(define increment (lambda [x] (+ x 1)))
 
 (apply-n increment 0 5)         ; Returns 5
 (apply-n increment 3 5)         ; Returns 8
@@ -211,10 +211,10 @@ Helper functions are not exported and remain internal:
 (define numbers (list 1 2 3 4 5 6 7 8 9 10))
 
 ; Check if all are positive
-(all (lambda (x) (> x 0)) numbers)     ; #t
+(all (lambda [x] (> x 0)) numbers)     ; #t
 
 ; Check if any are even
-(any (lambda (x) (= (% x 2) 0)) numbers) ; #t
+(any (lambda [x] (= (% x 2) 0)) numbers) ; #t
 
 ; Take first 5, drop first 3
 (take 5 numbers)        ; (1 2 3 4 5)
@@ -223,8 +223,8 @@ Helper functions are not exported and remain internal:
 
 ### Function Composition
 ```lisp
-(define double (lambda (x) (* x 2)))
-(define add-one (lambda (x) (+ x 1)))
+(define double (lambda [x] (* x 2)))
+(define add-one (lambda [x] (+ x 1)))
 
 ; Create composed function
 (define double-then-add-one (compose add-one double))

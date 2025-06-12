@@ -159,11 +159,11 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 
 		// Variable and function definition
 		"define": "(define name value)\nDefine a variable with a name and value.\nExample: (define x 42)",
-		"lambda": "(lambda (params) body)\nCreate an anonymous function.\nExample: (lambda (x) (+ x 1))",
-		"defun":  "(defun name (params) body)\nDefine a named function.\nExample: (defun square (x) (* x x))",
+		"lambda": "(lambda [params] body)\nCreate an anonymous function.\nExample: (lambda [x] (+ x 1))",
+		"defun":  "(defun name [params] body)\nDefine a named function.\nExample: (defun square [x] (* x x))",
 
 		// Macro system
-		"defmacro": "(defmacro name (params) body)\nDefine a macro that transforms code at evaluation time.\nExample: (defmacro when (condition body) (list 'if condition body 'nil))",
+		"defmacro": "(defmacro name [params] body)\nDefine a macro that transforms code at evaluation time.\nExample: (defmacro when [condition body] (list 'if condition body 'nil))",
 		"quote":    "(quote expr) or 'expr\nReturn expression without evaluating it.\nExample: (quote (+ 1 2)) => (+ 1 2), '(+ 1 2) => (+ 1 2)",
 
 		// List operations
@@ -175,9 +175,9 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"empty?": "(empty? lst)\nCheck if a list is empty.\nExample: (empty? (list)) => #t",
 
 		// Higher-order functions
-		"map":    "(map func lst)\nApply a function to each element of a list.\nExample: (map (lambda (x) (* x x)) (list 1 2 3)) => (1 4 9)",
-		"filter": "(filter predicate lst)\nKeep only elements that satisfy a predicate.\nExample: (filter (lambda (x) (> x 0)) (list -1 2 -3 4)) => (2 4)",
-		"reduce": "(reduce func init lst)\nReduce a list to a single value using a function.\nExample: (reduce (lambda (acc x) (+ acc x)) 0 (list 1 2 3)) => 6",
+		"map":    "(map func lst)\nApply a function to each element of a list.\nExample: (map (lambda [x] (* x x)) (list 1 2 3)) => (1 4 9)",
+		"filter": "(filter predicate lst)\nKeep only elements that satisfy a predicate.\nExample: (filter (lambda [x] (> x 0)) (list -1 2 -3 4)) => (2 4)",
+		"reduce": "(reduce func init lst)\nReduce a list to a single value using a function.\nExample: (reduce (lambda [acc x] (+ acc x)) 0 (list 1 2 3)) => 6",
 
 		// List manipulation
 		"append":  "(append lst1 lst2)\nCombine two lists into one.\nExample: (append (list 1 2) (list 3 4)) => (1 2 3 4)",

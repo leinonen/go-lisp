@@ -10,25 +10,34 @@ import (
 
 // Function definition
 
+// Helper function to extract parameter names from BracketExpr only
+func extractParameters(paramsExpr types.Expr) ([]string, error) {
+	bracketExpr, ok := paramsExpr.(*types.BracketExpr)
+	if !ok {
+		return nil, fmt.Errorf("parameter list must use square brackets [], got %T", paramsExpr)
+	}
+
+	params := make([]string, len(bracketExpr.Elements))
+	for i, paramExpr := range bracketExpr.Elements {
+		symbolExpr, ok := paramExpr.(*types.SymbolExpr)
+		if !ok {
+			return nil, fmt.Errorf("parameter must be a symbol, got %T", paramExpr)
+		}
+		params[i] = symbolExpr.Name
+	}
+
+	return params, nil
+}
+
 func (e *Evaluator) evalLambda(args []types.Expr) (types.Value, error) {
 	if len(args) != 2 {
 		return nil, fmt.Errorf("lambda requires exactly 2 arguments: parameters and body")
 	}
 
-	// First argument must be a list of parameter names
-	paramsExpr, ok := args[0].(*types.ListExpr)
-	if !ok {
-		return nil, fmt.Errorf("lambda first argument must be a parameter list")
-	}
-
-	// Extract parameter names
-	params := make([]string, len(paramsExpr.Elements))
-	for i, paramExpr := range paramsExpr.Elements {
-		symbolExpr, ok := paramExpr.(*types.SymbolExpr)
-		if !ok {
-			return nil, fmt.Errorf("lambda parameter must be a symbol, got %T", paramExpr)
-		}
-		params[i] = symbolExpr.Name
+	// Extract parameter names from square brackets
+	params, err := extractParameters(args[0])
+	if err != nil {
+		return nil, err
 	}
 
 	// Create the function value with captured environment
@@ -50,20 +59,10 @@ func (e *Evaluator) evalDefun(args []types.Expr) (types.Value, error) {
 		return nil, fmt.Errorf("defun first argument must be a symbol")
 	}
 
-	// Second argument must be a list of parameter names
-	paramsExpr, ok := args[1].(*types.ListExpr)
-	if !ok {
-		return nil, fmt.Errorf("defun second argument must be a parameter list")
-	}
-
-	// Extract parameter names
-	params := make([]string, len(paramsExpr.Elements))
-	for i, paramExpr := range paramsExpr.Elements {
-		symbolExpr, ok := paramExpr.(*types.SymbolExpr)
-		if !ok {
-			return nil, fmt.Errorf("defun parameter must be a symbol, got %T", paramExpr)
-		}
-		params[i] = symbolExpr.Name
+	// Second argument must be a list of parameter names in square brackets
+	params, err := extractParameters(args[1])
+	if err != nil {
+		return nil, err
 	}
 
 	// If there's only one body expression, use it directly
@@ -162,6 +161,11 @@ func (e *Evaluator) callFunction(funcValue types.Value, args []types.Expr) (type
 	// Check if the value is an arithmetic operation
 	if arithFunc, ok := funcValue.(*types.ArithmeticFunctionValue); ok {
 		return e.callArithmeticFunction(arithFunc, args)
+	}
+
+	// Check if the value is a built-in function
+	if builtinFunc, ok := funcValue.(*types.BuiltinFunctionValue); ok {
+		return e.callBuiltinFunction(builtinFunc, args)
 	}
 
 	function, ok := funcValue.(types.FunctionValue)
@@ -324,4 +328,10 @@ func (e *Evaluator) callArithmeticFunction(arithFunc *types.ArithmeticFunctionVa
 	default:
 		return nil, fmt.Errorf("unknown arithmetic operation: %s", arithFunc.Operation)
 	}
+}
+
+// callBuiltinFunction handles calling built-in functions as callable values
+func (e *Evaluator) callBuiltinFunction(builtinFunc *types.BuiltinFunctionValue, args []types.Expr) (types.Value, error) {
+	// Simply call the built-in function by name through the existing evaluation mechanism
+	return e.evalFunctionCall(builtinFunc.Name, args)
 }

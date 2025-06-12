@@ -360,7 +360,7 @@ func TestEnvironmentInspection(t *testing.T) {
 			Elements: []types.Expr{
 				&types.SymbolExpr{Name: "defun"},
 				&types.SymbolExpr{Name: "square"},
-				&types.ListExpr{
+				&types.BracketExpr{
 					Elements: []types.Expr{
 						&types.SymbolExpr{Name: "x"},
 					},

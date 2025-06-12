@@ -17,7 +17,7 @@ func TestTailCallOptimization(t *testing.T) {
 			Elements: []types.Expr{
 				&types.SymbolExpr{Name: "defun"},
 				&types.SymbolExpr{Name: "fact-tail"},
-				&types.ListExpr{
+				&types.BracketExpr{
 					Elements: []types.Expr{
 						&types.SymbolExpr{Name: "n"},
 						&types.SymbolExpr{Name: "acc"},
@@ -89,7 +89,7 @@ func TestTailCallOptimization(t *testing.T) {
 			Elements: []types.Expr{
 				&types.SymbolExpr{Name: "defun"},
 				&types.SymbolExpr{Name: "sum-tail"},
-				&types.ListExpr{
+				&types.BracketExpr{
 					Elements: []types.Expr{
 						&types.SymbolExpr{Name: "n"},
 						&types.SymbolExpr{Name: "acc"},
@@ -168,7 +168,7 @@ func TestNonTailRecursion(t *testing.T) {
 			Elements: []types.Expr{
 				&types.SymbolExpr{Name: "defun"},
 				&types.SymbolExpr{Name: "factorial"},
-				&types.ListExpr{
+				&types.BracketExpr{
 					Elements: []types.Expr{
 						&types.SymbolExpr{Name: "n"},
 					},
@@ -243,7 +243,7 @@ func TestMutualTailRecursion(t *testing.T) {
 			Elements: []types.Expr{
 				&types.SymbolExpr{Name: "defun"},
 				&types.SymbolExpr{Name: "even?"},
-				&types.ListExpr{
+				&types.BracketExpr{
 					Elements: []types.Expr{
 						&types.SymbolExpr{Name: "n"},
 					},
@@ -286,7 +286,7 @@ func TestMutualTailRecursion(t *testing.T) {
 			Elements: []types.Expr{
 				&types.SymbolExpr{Name: "defun"},
 				&types.SymbolExpr{Name: "odd?"},
-				&types.ListExpr{
+				&types.BracketExpr{
 					Elements: []types.Expr{
 						&types.SymbolExpr{Name: "n"},
 					},

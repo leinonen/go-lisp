@@ -14,12 +14,12 @@ func TestDefmacro(t *testing.T) {
 	}{
 		{
 			name:     "simple macro definition",
-			input:    "(defmacro when (condition body) (list 'if condition body 'nil))",
+			input:    "(defmacro when [condition body] (list 'if condition body 'nil))",
 			expected: "#<macro([condition body])>",
 		},
 		{
 			name:     "macro with multiple parameters",
-			input:    "(defmacro unless (condition then else) (list 'if condition else then))",
+			input:    "(defmacro unless [condition then else] (list 'if condition else then))",
 			expected: "#<macro([condition then else])>",
 		},
 	}
@@ -51,19 +51,19 @@ func TestMacroExpansion(t *testing.T) {
 	}{
 		{
 			name:     "when macro expansion",
-			setup:    "(defmacro when (condition body) (list 'if condition body 'nil))",
+			setup:    "(defmacro when [condition body] (list 'if condition body 'nil))",
 			input:    "(when (> 5 3) 42)",
 			expected: "42",
 		},
 		{
 			name:     "unless macro expansion",
-			setup:    "(defmacro unless (condition then else) (list 'if condition else then))",
+			setup:    "(defmacro unless [condition then else] (list 'if condition else then))",
 			input:    "(unless (< 5 3) 42 99)",
 			expected: "42",
 		},
 		{
 			name:     "macro with symbol interpolation",
-			setup:    "(defmacro inc (var) (list 'define var (list '+ var 1)))",
+			setup:    "(defmacro inc [var] (list 'define var (list '+ var 1)))",
 			input:    "(define x 10)",
 			expected: "10",
 		},
@@ -100,7 +100,7 @@ func TestMacroExpansionComplex(t *testing.T) {
 	evaluator := NewEvaluator(env)
 
 	// Define a more complex macro that creates a let-like binding
-	macroDefExpr := parseString(t, `(defmacro let1 (var value body) 
+	macroDefExpr := parseString(t, `(defmacro let1 [var value body] 
 		(list (list 'lambda (list var) body) value))`)
 	_, err := evaluator.Eval(macroDefExpr)
 	if err != nil {
@@ -125,7 +125,7 @@ func TestMacroExpansionNestedQuotes(t *testing.T) {
 	evaluator := NewEvaluator(env)
 
 	// Define a macro that uses nested quoting
-	macroDefExpr := parseString(t, `(defmacro debug (expr) 
+	macroDefExpr := parseString(t, `(defmacro debug [expr] 
 		(list 'list (list 'quote expr) expr))`)
 	_, err := evaluator.Eval(macroDefExpr)
 	if err != nil {
@@ -180,7 +180,7 @@ func TestMacroErrors(t *testing.T) {
 		},
 		{
 			name:        "defmacro with non-symbol name",
-			input:       "(defmacro 123 (x) x)",
+			input:       "(defmacro 123 [x] x)",
 			expectError: true,
 			errorMsg:    "defmacro first argument must be a symbol",
 		},
@@ -188,11 +188,11 @@ func TestMacroErrors(t *testing.T) {
 			name:        "defmacro with non-list parameters",
 			input:       "(defmacro test x x)",
 			expectError: true,
-			errorMsg:    "defmacro second argument must be a parameter list",
+			errorMsg:    "defmacro second argument must be a parameter list using square brackets",
 		},
 		{
 			name:        "defmacro with non-symbol parameter",
-			input:       "(defmacro test (123) 456)",
+			input:       "(defmacro test [123] 456)",
 			expectError: true,
 			errorMsg:    "defmacro parameter must be a symbol",
 		},

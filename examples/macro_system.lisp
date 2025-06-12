@@ -40,7 +40,7 @@
 ;; ============================================================================
 
 (defmacro let1 (var value body)
-  (list (list 'lambda (list var) body) value))
+  (list (list 'lambda [list var] body) value))
 
 (print "\n=== Let1 Macro Demo ===")
 (let1 y 42 

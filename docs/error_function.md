@@ -39,7 +39,7 @@ This function never returns normally - it always raises an error with the specif
 
 ### Conditional Error Handling
 ```lisp
-(defun divide-safe (a b)
+(defun divide-safe [a b]
   (if (= b 0)
       (error "Division by zero!")
       (/ a b)))
@@ -50,7 +50,7 @@ This function never returns normally - it always raises an error with the specif
 
 ### Input Validation
 ```lisp
-(defun factorial (n)
+(defun factorial [n]
   (if (< n 0)
       (error "Factorial not defined for negative numbers")
       (if (= n 0)
@@ -63,14 +63,14 @@ This function never returns normally - it always raises an error with the specif
 
 ### Error Propagation
 ```lisp
-(defun validate-age (age)
+(defun validate-age [age]
   (if (< age 0)
       (error "Age cannot be negative")
       (if (> age 150)
           (error "Age seems unrealistic")
           age)))
 
-(defun create-person (name age)
+(defun create-person [name age]
   (list name (validate-age age)))
 
 (create-person "Alice" 30)   ; Returns ("Alice" 30)
@@ -92,14 +92,14 @@ This function never returns normally - it always raises an error with the specif
 
 ### Guard Clauses
 ```lisp
-(defun sqrt-positive (x)
+(defun sqrt-positive [x]
   (if (< x 0) (error "Square root of negative number"))
   (sqrt x))
 ```
 
 ### Assertion-Style Checks
 ```lisp
-(defun process-list (lst)
+(defun process-list [lst]
   (if (not (list? lst)) (error "Expected a list"))
   (if (empty? lst) (error "List cannot be empty"))
   ; Process the list...
@@ -108,7 +108,7 @@ This function never returns normally - it always raises an error with the specif
 
 ### Custom Error Types (Using Conventions)
 ```lisp
-(defun file-operation (filename)
+(defun file-operation [filename]
   (if (not (file-exists? filename))
       (error (list "FileNotFound" filename))
       ; Process file...

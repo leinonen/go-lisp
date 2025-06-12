@@ -18,12 +18,12 @@ func TestRequireFunction(t *testing.T) {
 	moduleContent := `(module test-utils
   (export double triple add-ten)
   
-  (defun double (x) (* x 2))
-  (defun triple (x) (* x 3))
-  (defun add-ten (x) (+ x 10))
+  (defun double [x] (* x 2))
+  (defun triple [x] (* x 3))
+  (defun add-ten [x] (+ x 10))
   
   ; Private function (not exported)
-  (defun private-helper (x) (+ x 1)))`
+  (defun private-helper [x] (+ x 1)))`
 
 	err := os.WriteFile(testModulePath, []byte(moduleContent), 0644)
 	if err != nil {
@@ -226,7 +226,7 @@ func TestRequireFunction(t *testing.T) {
 (module counter
   (export get-load-count)
   
-  (defun get-load-count () load-count))`
+  (defun get-load-count [] load-count))`
 
 		err := os.WriteFile(sideEffectModulePath, []byte(sideEffectContent), 0644)
 		if err != nil {

@@ -4,6 +4,16 @@
 
 The Lisp interpreter includes built-in `print` and `println` functions that enable programs to produce output. These functions are essential for creating interactive programs, debugging, displaying results, and creating user-friendly applications.
 
+```lisp
+;; Clear and modern function syntax
+(define format-greeting (lambda [name] 
+  (string-concat "Welcome, " name "!")))
+
+;; Nested functions are easier to read
+(define process-data (lambda [items processor]
+  (map (lambda [item] (processor item)) items)))
+```
+
 ## Functions
 
 ### `print`
@@ -70,7 +80,7 @@ Both functions support all Lisp data types:
 
 ### Functions
 ```lisp
-(define square (lambda (x) (* x x)))
+(define square (lambda [x] (* x x)))
 (println "Function:" square)       ; Function: #<function([x])>
 ```
 
@@ -102,7 +112,7 @@ Both functions support all Lisp data types:
 ```lisp
 (define numbers (list 1 2 3 4 5))
 (println "Original:" numbers)
-(println "Squared:" (map (lambda (x) (* x x)) numbers))
+(println "Squared:" (map (lambda [x] (* x x)) numbers))
 ```
 
 ### String Operations Integration
@@ -116,7 +126,7 @@ Both functions support all Lisp data types:
 ### Formatted Output
 ```lisp
 (define format-greeting
-  (lambda (name)
+  (lambda [name]
     (string-concat "Welcome, " name "!")))
 
 (println (format-greeting "Bob"))  ; Welcome, Bob!
@@ -125,7 +135,7 @@ Both functions support all Lisp data types:
 ### Progress Indication
 ```lisp
 (define show-progress
-  (lambda (current total)
+  (lambda [current total]
     (println "Progress:" current "/" total)))
 
 (show-progress 3 10)               ; Progress: 3 / 10
@@ -134,7 +144,7 @@ Both functions support all Lisp data types:
 ### Menu Systems
 ```lisp
 (define show-menu
-  (lambda ()
+  (lambda []
     (begin
       (println "===== MENU =====")
       (println "1. Option A")

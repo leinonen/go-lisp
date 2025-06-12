@@ -134,6 +134,34 @@ func TestTokenizer(t *testing.T) {
 				{Type: types.NUMBER, Value: "42"},
 			},
 		},
+		{
+			name:  "square brackets",
+			input: "[x y]",
+			expected: []types.Token{
+				{Type: types.LBRACKET, Value: "["},
+				{Type: types.SYMBOL, Value: "x"},
+				{Type: types.SYMBOL, Value: "y"},
+				{Type: types.RBRACKET, Value: "]"},
+			},
+		},
+		{
+			name:  "defun with square brackets",
+			input: "(defun square [x] (* x x))",
+			expected: []types.Token{
+				{Type: types.LPAREN, Value: "("},
+				{Type: types.SYMBOL, Value: "defun"},
+				{Type: types.SYMBOL, Value: "square"},
+				{Type: types.LBRACKET, Value: "["},
+				{Type: types.SYMBOL, Value: "x"},
+				{Type: types.RBRACKET, Value: "]"},
+				{Type: types.LPAREN, Value: "("},
+				{Type: types.SYMBOL, Value: "*"},
+				{Type: types.SYMBOL, Value: "x"},
+				{Type: types.SYMBOL, Value: "x"},
+				{Type: types.RPAREN, Value: ")"},
+				{Type: types.RPAREN, Value: ")"},
+			},
+		},
 	}
 
 	for _, tt := range tests {

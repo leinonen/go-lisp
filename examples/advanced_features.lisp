@@ -2,25 +2,25 @@
 ; This file demonstrates advanced interpreter capabilities
 
 ; Tail Call Optimization - prevents stack overflow
-(defun tail-factorial (n acc)
+(defun tail-factorial [n acc]
   "Tail-recursive factorial with accumulator"
   (if (= n 0) acc (tail-factorial (- n 1) (* n acc))))
 
-(defun factorial (n) (tail-factorial n 1))
+(defun factorial [n] [tail-factorial n 1])
 
 ; This can handle very large numbers without stack overflow
 (factorial 20)                          ; => 2432902008176640000
 
 ; Tail-recursive fibonacci
-(defun fib-tail (n a b)
+(defun fib-tail [n a b]
   (if (= n 0) a (fib-tail (- n 1) b (+ a b))))
 
-(defun fibonacci (n) (fib-tail n 0 1))
+(defun fibonacci [n] [fib-tail n 0 1])
 (fibonacci 30)                          ; => 832040
 
 ; Environment inspection and introspection
 (define my-var 42)
-(defun my-function (x) (+ x 1))
+(defun my-function [x] [+ x 1])
 
 ; Check what's in our environment
 (env)                                   ; Shows all defined variables and functions
@@ -36,9 +36,9 @@
 (define numbers (list 1 2 3 4 5 6 7 8 9 10))
 
 ; Chain operations together
-(define evens (filter (lambda (x) (= (% x 2) 0)) numbers))
-(define doubled-evens (map (lambda (x) (* x 2)) evens))
-(define sum-doubled-evens (reduce (lambda (acc x) (+ acc x)) 0 doubled-evens))
+(define evens (filter (lambda [x] (= (% x 2) 0)) numbers))
+(define doubled-evens (map (lambda [x] (* x 2)) evens))
+(define sum-doubled-evens (reduce (lambda [acc x] (+ acc x)) 0 doubled-evens))
 
 evens                                   ; => (2 4 6 8 10)
 doubled-evens                           ; => (4 8 12 16 20)

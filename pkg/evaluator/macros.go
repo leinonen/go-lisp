@@ -19,10 +19,10 @@ func (e *Evaluator) evalDefmacro(args []types.Expr) (types.Value, error) {
 		return nil, fmt.Errorf("defmacro first argument must be a symbol")
 	}
 
-	// Second argument must be a list of parameter names
-	paramsExpr, ok := args[1].(*types.ListExpr)
+	// Second argument must be a bracket expression of parameter names
+	paramsExpr, ok := args[1].(*types.BracketExpr)
 	if !ok {
-		return nil, fmt.Errorf("defmacro second argument must be a parameter list")
+		return nil, fmt.Errorf("defmacro second argument must be a parameter list using square brackets")
 	}
 
 	// Extract parameter names
@@ -99,6 +99,17 @@ func (e *Evaluator) exprToQuotedValue(expr types.Expr) (types.Value, error) {
 			elements[i] = value
 		}
 		return &types.ListValue{Elements: elements}, nil
+	case *types.BracketExpr:
+		// Convert bracket elements to quoted values (same as list)
+		elements := make([]types.Value, len(ex.Elements))
+		for i, elem := range ex.Elements {
+			value, err := e.exprToQuotedValue(elem)
+			if err != nil {
+				return nil, err
+			}
+			elements[i] = value
+		}
+		return &types.ListValue{Elements: elements}, nil
 	default:
 		return nil, fmt.Errorf("cannot quote expression of type %T", expr)
 	}
@@ -106,8 +117,9 @@ func (e *Evaluator) exprToQuotedValue(expr types.Expr) (types.Value, error) {
 
 // expandMacro expands a macro call
 func (e *Evaluator) expandMacro(macro types.MacroValue, args []types.Expr) (types.Expr, error) {
-	// Create a new environment for macro expansion
-	macroEnv := macro.Env.NewChildEnvironment()
+	// Create a new environment for macro expansion that inherits from the current environment
+	// This ensures access to built-in functions like 'list'
+	macroEnv := e.env.NewChildEnvironment()
 
 	// Handle special case: single parameter macros that should collect all arguments
 	// This is specifically for macros like 'progn' that need variadic behavior
@@ -186,12 +198,33 @@ func (e *Evaluator) valueToExpr(val types.Value) (types.Expr, error) {
 			}
 			elements[i] = expr
 		}
+
+		// Special case: if this is a list that will be used as lambda parameters,
+		// convert it to BracketExpr. We detect this by checking if all elements
+		// are symbols (typical for parameter lists)
+		allSymbols := true
+		for _, elem := range elements {
+			if _, ok := elem.(*types.SymbolExpr); !ok {
+				allSymbols = false
+				break
+			}
+		}
+
+		// If all elements are symbols and we're in a potential parameter context,
+		// create BracketExpr for lambda parameter compatibility
+		if allSymbols && len(elements) > 0 {
+			return &types.BracketExpr{Elements: elements}, nil
+		}
+
 		return &types.ListExpr{Elements: elements}, nil
 	case *types.QuotedValue:
 		// Quoted values should return their contained expression
 		return v.Value, nil
 	case *types.NilValue:
 		return &types.SymbolExpr{Name: "nil"}, nil
+	case *types.BuiltinFunctionValue:
+		// Built-in functions should become symbol expressions with their names
+		return &types.SymbolExpr{Name: v.Name}, nil
 	default:
 		return nil, fmt.Errorf("cannot convert value of type %T to expression", val)
 	}

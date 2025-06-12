@@ -7,8 +7,8 @@
 (+ x y (* 3 4))
 
 ; Function definition with defun
-(defun square (n) (* n n))
-(defun add (a b) (+ a b))
+(defun square [n] (* n n))
+(defun add [a b] (+ a b))
 
 ; List operations
 (define my-list (list 1 2 3 4 5))
@@ -19,16 +19,16 @@
 
 ; Higher-order functions
 (map square my-list)                    ; => (1 4 9 16 25)
-(filter (lambda (x) (> x 3)) my-list)  ; => (4 5)
-(reduce (lambda (acc x) (+ acc x)) 0 my-list)  ; => 15
+(filter (lambda [x] (> x 3)) my-list)  ; => (4 5)
+(reduce (lambda [acc x] (+ acc x)) 0 my-list)  ; => 15
 
 ; Closures and function composition
-(define make-adder (lambda (n) (lambda (x) (+ x n))))
+(define make-adder (lambda [n] (lambda [x] (+ x n))))
 (define add-five (make-adder 5))
 (add-five 10)                           ; => 15
 
 ; Recursion with automatic tail call optimization
-(defun factorial (n)
+(defun factorial [n]
   (if (= n 0) 1 (* n (factorial (- n 1)))))
 (factorial 10)                          ; => 3628800
 

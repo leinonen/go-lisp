@@ -45,6 +45,10 @@ The Lisp interpreter supports multiple modes of operation through command line p
 ./lisp -e "(list 1 2 3 4 5)"    # => (1 2 3 4 5)
 ./lisp -e "(* 6 7)"             # => 42
 
+# Modern square bracket function syntax
+./lisp -e "(defun square [x] (* x x))"
+./lisp -e "((lambda [x y] (+ x y)) 10 20)"  # => 30
+
 # Perfect for quick calculations and one-liners
 ./lisp -e "(% 1000000000000000001 7)"  # => 0
 ```
@@ -102,6 +106,7 @@ This Lisp interpreter is **feature-complete** and **production-ready** with:
 - **⚡ Functional Programming**: Complete functional library with currying, composition, and higher-order utilities
 - **🎨 Output Functions**: Built-in `print` and `println` for program output
 - **🔍 Keywords Support**: Self-evaluating symbols perfect for hash map keys
+- **📖 Modern Syntax**: Square bracket function parameters for improved readability and reduced confusion
 
 ## Libraries
 
@@ -135,7 +140,7 @@ Control flow and utility macros for enhanced syntax.
 
 ### Library Documentation
 - **[Core Library](docs/core_library.md)** - Mathematical and utility functions
-- **[Functional Library](docs/functional_library.md)** - Functional programming utilities
+- **[Functional Library](docs/functional_library.md)** - Functional programming utilities with modern syntax
 - **[Hash Maps](docs/hash_maps.md)** - Associative data structures
 - **[Keywords](docs/keywords.md)** - Self-evaluating symbols
 

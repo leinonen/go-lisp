@@ -11,6 +11,20 @@ Hash maps in this Lisp interpreter:
 - Display in a readable format: `{key1: value1, key2: value2, ...}`
 - Return `nil` for missing keys
 
+```lisp
+;; Clear function parameter syntax
+(define get-with-default (lambda [map key default]
+  (if (hash-map-contains? map key)
+      (hash-map-get map key)
+      default)))
+
+;; Nested functions are easier to distinguish
+(define transform-values (lambda [map transformer]
+  (reduce (lambda [acc key]
+    (hash-map-put acc key (transformer (hash-map-get map key))))
+    (hash-map) (hash-map-keys map))))
+```
+
 ## Creating Hash Maps
 
 ### `hash-map`
@@ -271,7 +285,7 @@ lisp> (hash-map-get (hash-map-get nested "user") "name")
 
 ### Safe Access with Default Values
 ```lisp
-lisp> (define get-with-default (lambda (map key default)
+lisp> (define get-with-default (lambda [map key default]
         (if (hash-map-contains? map key)
             (hash-map-get map key)
             default)))
@@ -282,7 +296,7 @@ lisp> (get-with-default my-map "missing" "not found")
 
 ### Bulk Updates
 ```lisp
-lisp> (define bulk-put (lambda (map pairs)
+lisp> (define bulk-put (lambda [map pairs]
         (if (empty? pairs)
             map
             (bulk-put 
@@ -295,16 +309,16 @@ lisp> (bulk-put (hash-map) (list "a" 1 "b" 2 "c" 3))
 
 ### Filtering Hash Maps
 ```lisp
-lisp> (define filter-map (lambda (predicate map)
+lisp> (define filter-map (lambda [predicate map]
         (define filtered-pairs 
-          (filter (lambda (key) (predicate (hash-map-get map key)))
+          (filter (lambda [key] (predicate (hash-map-get map key)))
                   (hash-map-keys map)))
         (bulk-put (hash-map) 
           (reduce append () 
-            (map (lambda (key) (list key (hash-map-get map key))) 
+            (map (lambda [key] (list key (hash-map-get map key))) 
                  filtered-pairs)))))
 
-lisp> (filter-map (lambda (val) (> val 5)) 
+lisp> (filter-map (lambda [val] (> val 5)) 
                   (hash-map "a" 3 "b" 7 "c" 10))
 => {b: 7, c: 10}
 ```

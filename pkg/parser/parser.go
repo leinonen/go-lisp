@@ -63,10 +63,14 @@ func (p *Parser) parseExpr() (types.Expr, error) {
 		return p.parseKeyword()
 	case types.LPAREN:
 		return p.parseList()
+	case types.LBRACKET:
+		return p.parseBracket()
 	case types.QUOTE:
 		return p.parseQuote()
 	case types.RPAREN:
 		return nil, fmt.Errorf("unexpected closing parenthesis")
+	case types.RBRACKET:
+		return nil, fmt.Errorf("unexpected closing bracket")
 	default:
 		return nil, fmt.Errorf("unexpected token: %v", p.current)
 	}
@@ -323,4 +327,27 @@ func (p *Parser) parseQuote() (types.Expr, error) {
 	// Convert 'expr to (quote expr)
 	quoteSymbol := &types.SymbolExpr{Name: "quote"}
 	return &types.ListExpr{Elements: []types.Expr{quoteSymbol, expr}}, nil
+}
+
+func (p *Parser) parseBracket() (types.Expr, error) {
+	p.readToken() // consume '['
+
+	elements := make([]types.Expr, 0)
+
+	for p.current.Type != types.RBRACKET {
+		if p.current.Type == types.TokenType(-1) { // EOF
+			return nil, fmt.Errorf("unmatched opening bracket")
+		}
+
+		expr, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+
+		elements = append(elements, expr)
+	}
+
+	p.readToken() // consume ']'
+
+	return &types.BracketExpr{Elements: elements}, nil
 }

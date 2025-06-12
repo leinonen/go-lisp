@@ -57,21 +57,21 @@
 ; These show how to build higher-level functions from the primitive built-ins
 
 (define str-reverse 
-  (lambda (str)
+  (lambda [str]
     "Reverse a string by converting to list and back"
-    (let ((chars (map (lambda (i) (string-char-at str i))
+    (let ((chars (map (lambda [i] (string-char-at str i))
                       (range 0 (string-length str)))))
       (string-join (reverse chars) ""))))
 
 (define range
-  (lambda (start end)
+  (lambda [start end]
     "Create a list of numbers from start to end-1"
     (if (>= start end)
         (list)
         (cons start (range (+ start 1) end)))))
 
 (define str-capitalize
-  (lambda (str)
+  (lambda [str]
     "Capitalize first character of string - built from primitives"
     (if (string-empty? str)
         str
@@ -79,18 +79,18 @@
                       (string-lower (string-substring str 1 (string-length str)))))))
 
 (define str-title-case
-  (lambda (str)
+  (lambda [str]
     "Convert to title case - capitalize each word"
     (let ((words (string-split (string-trim str) " ")))
       (string-join (map str-capitalize words) " "))))
 
 (define str-blank?
-  (lambda (str)
+  (lambda [str]
     "Check if string is empty or only whitespace"
     (string-empty? (string-trim str))))
 
 (define str-numeric?
-  (lambda (str)
+  (lambda [str]
     "Check if string contains only numeric characters"
     (string-regex-match? str "^[0-9]+$")))
 
@@ -126,7 +126,7 @@
 
 ; Example 1: Text formatting
 (define format-name 
-  (lambda (first last)
+  (lambda [first last]
     (string-concat (str-capitalize first) " " (str-capitalize last))))
 
 (println "Formatted name:" (format-name "john" "doe"))
@@ -140,7 +140,7 @@
 
 ; Print each fruit with formatting
 (define print-fruit-list
-  (lambda (fruits)
+  (lambda [fruits]
     (if (null? fruits)
         "Done!"
         (begin
@@ -166,27 +166,27 @@
 ; (use strings)
 
 ; For this demo, we'll define some of the functions inline to test them
-(defun str-words (str)
+(defun str-words [str]
   "Split string into words (by whitespace)"
-  (filter (lambda (word) (not (string-empty? word)))
+  (filter (lambda [word] (not (string-empty? word)))
           (string-split (string-trim str) " ")))
 
-(defun str-capitalize (str)
+(defun str-capitalize [str]
   "Capitalize first character of string"
   (if (string-empty? str)
       str
       (string-concat (string-upper (string-substring str 0 1))
                     (string-lower (string-substring str 1 (string-length str))))))
 
-(defun str-title-case (str)
+(defun str-title-case [str]
   "Convert string to title case (capitalize each word)"
   (string-join (map str-capitalize (str-words str)) " "))
 
-(defun str-blank? (str)
+(defun str-blank? [str]
   "Check if string is empty or contains only whitespace"
   (string-empty? (string-trim str)))
 
-(defun str-pad-left (str width pad-char)
+(defun str-pad-left [str width pad-char]
   "Pad string on the left to specified width"
   (let ((current-len (string-length str))
         (needed (- width current-len)))

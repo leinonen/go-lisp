@@ -6,12 +6,12 @@ For comprehensive, runnable examples, see the `examples/` directory. This docume
 
 ```lisp
 ; Functions
-(defun square (x) (* x x))
+(defun square [x] (* x x))
 (square 5) ; => 25
 
 ; Lists and higher-order functions
 (map square (list 1 2 3 4)) ; => (1 4 9 16)
-(filter (lambda (x) (> x 5)) (list 1 8 3 10)) ; => (8 10)
+(filter (lambda [x] (> x 5)) (list 1 8 3 10)) ; => (8 10)
 
 ; Data structures
 (define user (hash-map :name "Alice" :age 30))
@@ -23,19 +23,19 @@ For comprehensive, runnable examples, see the `examples/` directory. This docume
 ```lisp
 ; Modules
 (module math (export factorial))
-(defun factorial (n) (if (<= n 1) 1 (* n (factorial (- n 1)))))
+(defun factorial [n] (if (<= n 1) 1 (* n (factorial (- n 1)))))
 
 ; Functional programming (load "library/functional.lisp")
 (define add-then-double (comp (partial * 2) (partial + 1)))
 (add-then-double 5) ; => 12
 
 ; Macros
-(defmacro when (condition &rest body)
+(defmacro when [condition &rest body]
   `(if ~condition (do ~@body)))
 ```
 
 For complete, working examples with detailed explanations, run:
 ```bash
-./lisp-interpreter examples/basic_features.lisp
-./lisp-interpreter examples/functional_library_demo.lisp
+./lisp examples/basic_features.lisp
+./lisp examples/functional_library_demo.lisp
 ```

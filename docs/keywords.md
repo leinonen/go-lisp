@@ -11,6 +11,12 @@ Keywords in this Lisp interpreter:
 - Are distinct from strings (`:name` is different from `"name"`)
 - Display with the colon prefix: `:keyword-name`
 
+```lisp
+;; Clear distinction between function parameters and function calls
+(define create-user (lambda [name email] ...))  ; Function definition
+(create-user "Alice" "alice@example.com")       ; Function call
+```
+
 ## Syntax
 
 ```lisp
@@ -142,7 +148,7 @@ lisp> (hash-map-get config :debug)
 Use keywords for creating structured data:
 
 ```lisp
-lisp> (define create-user (lambda (name email)
+lisp> (define create-user (lambda [name email]
         (hash-map
           :name name
           :email email

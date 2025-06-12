@@ -2,7 +2,22 @@
 
 ## Overview
 
-A comprehensive functional programming library that provides essential functional programming utilities.
+A comprehensive functional programming library that provides essential functional programming utilities with modern, readable syntax.
+
+### Syntax Examples
+```lisp
+;; Function composition with clear parameter boundaries
+(defun comp [f g] (lambda [x] (f (g x))))
+
+;; Higher-order functions with readable parameter lists
+(defun map-indexed [fn lst] 
+  (map-indexed-helper fn lst 0))
+
+;; Complex functional pipelines remain readable
+(defun create-processor [transform filter reducer]
+  (lambda [data]
+    (reducer (filter (map transform data)))))
+```
 
 ## Library Features Implemented
 
@@ -118,11 +133,30 @@ Function composition chain: 121
 ;; Create a data processing pipeline
 (define process-numbers 
   (comp3 
-    (partial map (lambda (x) (* x 2)))     ; Double all numbers
-    (partial filter (lambda (x) (> x 5)))  ; Keep > 5
-    (partial reduce (lambda (acc x) (+ acc x)) 0))) ; Sum them
+    (partial map (lambda [x] (* x 2)))     ; Double all numbers
+    (partial filter (lambda [x] (> x 5)))  ; Keep > 5
+    (partial reduce (lambda [acc x] (+ acc x)) 0))) ; Sum them
 
 (process-numbers (list 1 2 3 4 5 6))  ; => 36
+
+;; Function composition with improved readability
+(define square [x] (* x x))
+(define increment [x] (+ x 1))
+(define double [x] (* x 2))
+
+(define complex-transform 
+  (comp4 double increment square abs))
+
+;; Currying and partial application
+(define add-ten (partial + 10))
+(define multiply-by (curry2 *))
+(define times-three (multiply-by 3))
+
+;; Higher-order utilities with readable syntax
+(define safe-divide (fnil (lambda [x] (/ 100 x)) 1))
+(define indexed-processor 
+  (map-indexed (lambda [index element] 
+                 (+ index element))))
 ```
 
 ## Next Steps
@@ -133,5 +167,3 @@ The functional programming library is now complete and production-ready! This im
 2. **Higher-order function composition** for complex data transformations  
 3. **Nil-safe programming** with utilities like `fnil`
 4. **Pipeline-style programming** with `pipe` and `comp` functions
-
-The library follows all established conventions and integrates seamlessly with the existing codebase architecture.

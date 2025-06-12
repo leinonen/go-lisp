@@ -4,10 +4,10 @@
 
 ```bash
 # Interactive REPL
-./lisp-interpreter
+./lisp
 
 # Run file
-./lisp-interpreter examples/basic_features.lisp
+./lisp examples/basic_features.lisp
 
 # Build from source
 make build
