@@ -26,7 +26,7 @@
 (env)                                   ; Shows all defined variables and functions
 
 ; Check available built-in functions
-(length (builtins))                     ; Count of built-in functions
+(length (help))                         ; Count of built-in functions
 
 ; Environment introspection - check what's available in current scope
 (define my-functions (env))

@@ -181,7 +181,7 @@ make test     # Run comprehensive test suite (100% coverage)
 
 # Interactive exploration
 ./lisp -help                    # Show all options
-./lisp -e "(builtins)"         # List all built-in functions
+./lisp -e "(help)"               # List all built-in functions
 ./lisp -e "(env)"              # Show current environment
 ```
 

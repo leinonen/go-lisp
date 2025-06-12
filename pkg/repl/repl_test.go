@@ -366,7 +366,7 @@ func TestPrintWelcomeMessage(t *testing.T) {
 		"Welcome to the Lisp Interpreter!",
 		"Type expressions to evaluate them",
 		"Multi-line expressions are supported",
-		"(builtins)",
+		"(help)",
 		"(env)",
 		"(modules)",
 	}

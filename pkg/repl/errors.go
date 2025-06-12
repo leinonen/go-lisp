@@ -201,7 +201,7 @@ func (ef *ErrorFormatter) generateSuggestion(errMsg string) string {
 		strings.Contains(errLower, "requires exactly") ||
 		strings.Contains(errLower, "too few") ||
 		strings.Contains(errLower, "too many") {
-		return "Check the function signature with (builtins function-name)"
+		return "Check the function signature with (help function-name)"
 	}
 
 	if strings.Contains(errLower, "unmatched") || strings.Contains(errLower, "unexpected token") {

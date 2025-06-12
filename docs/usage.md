@@ -16,8 +16,8 @@ make build
 
 ## REPL Commands
 
-- `(builtins)` - List all built-in functions  
-- `(builtins <func>)` - Get help for specific function  
+- `(help)` - List all built-in functions  
+- `(help <func>)` - Get help for specific function  
 - `(env)` - Show current environment  
 - `(modules)` - Show loaded modules  
 - `quit` - Exit interpreter
@@ -46,8 +46,8 @@ Once in the REPL, you can:
 
 - Enter any Lisp expression to evaluate it
 - Type `quit` to exit the interpreter
-- Use `(builtins)` to see all available functions
-- Use `(builtins function-name)` to get help for a specific function
+- Use `(help)` to see all available functions
+- Use `(help function-name)` to get help for a specific function
 - Use `(env)` to inspect the current environment
 - Use `(modules)` to see loaded modules
 

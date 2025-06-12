@@ -416,18 +416,18 @@ func TestEnvironmentInspection(t *testing.T) {
 		}
 	})
 
-	t.Run("builtins function shows all built-in functions", func(t *testing.T) {
+	t.Run("help function shows all built-in functions", func(t *testing.T) {
 		env := NewEnvironment()
 		evaluator := NewEvaluator(env)
 
-		// Call (builtins) to get list of built-in functions
-		builtinsExpr := &types.ListExpr{
+		// Call (help) to get list of built-in functions
+		helpExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "builtins"},
+				&types.SymbolExpr{Name: "help"},
 			},
 		}
 
-		result, err := evaluator.Eval(builtinsExpr)
+		result, err := evaluator.Eval(helpExpr)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -454,29 +454,29 @@ func TestEnvironmentInspection(t *testing.T) {
 		essentialBuiltins := []string{"+", "-", "*", "/", "if", "define", "lambda", "defun", "list", "env", "modules"}
 		for _, builtin := range essentialBuiltins {
 			if !builtinMap[builtin] {
-				t.Errorf("essential built-in function '%s' not found in builtins listing", builtin)
+				t.Errorf("essential built-in function '%s' not found in help listing", builtin)
 			}
 		}
 
-		// Check that 'builtins' itself is included (meta!)
-		if !builtinMap["builtins"] {
-			t.Error("'builtins' function should include itself in the listing")
+		// Check that 'help' itself is included (meta!)
+		if !builtinMap["help"] {
+			t.Error("'help' function should include itself in the listing")
 		}
 	})
 
-	t.Run("builtins function shows help for specific functions", func(t *testing.T) {
+	t.Run("help function shows help for specific functions", func(t *testing.T) {
 		env := NewEnvironment()
 		evaluator := NewEvaluator(env)
 
 		// Test help for reduce function
-		builtinsHelpExpr := &types.ListExpr{
+		helpHelpExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "builtins"},
+				&types.SymbolExpr{Name: "help"},
 				&types.SymbolExpr{Name: "reduce"},
 			},
 		}
 
-		result, err := evaluator.Eval(builtinsHelpExpr)
+		result, err := evaluator.Eval(helpHelpExpr)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -502,7 +502,7 @@ func TestEnvironmentInspection(t *testing.T) {
 		// Test help for a simple arithmetic function
 		plusHelpExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "builtins"},
+				&types.SymbolExpr{Name: "help"},
 				&types.SymbolExpr{Name: "+"},
 			},
 		}
@@ -526,14 +526,14 @@ func TestEnvironmentInspection(t *testing.T) {
 		}
 	})
 
-	t.Run("builtins function fails for unknown functions", func(t *testing.T) {
+	t.Run("help function fails for unknown functions", func(t *testing.T) {
 		env := NewEnvironment()
 		evaluator := NewEvaluator(env)
 
 		// Test help for non-existent function
 		unknownHelpExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "builtins"},
+				&types.SymbolExpr{Name: "help"},
 				&types.SymbolExpr{Name: "unknown-function"},
 			},
 		}
@@ -549,14 +549,14 @@ func TestEnvironmentInspection(t *testing.T) {
 		}
 	})
 
-	t.Run("builtins function fails with too many arguments", func(t *testing.T) {
+	t.Run("help function fails with too many arguments", func(t *testing.T) {
 		env := NewEnvironment()
 		evaluator := NewEvaluator(env)
 
 		// Test with too many arguments
 		tooManyArgsExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "builtins"},
+				&types.SymbolExpr{Name: "help"},
 				&types.SymbolExpr{Name: "reduce"},
 				&types.SymbolExpr{Name: "extra"},
 			},
@@ -567,7 +567,7 @@ func TestEnvironmentInspection(t *testing.T) {
 			t.Error("expected error for too many arguments, but got none")
 		}
 
-		expectedError := "builtins requires 0 or 1 arguments"
+		expectedError := "help requires 0 or 1 arguments"
 		if !strings.Contains(err.Error(), expectedError) {
 			t.Errorf("expected error to contain '%s', got: %v", expectedError, err)
 		}

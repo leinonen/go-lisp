@@ -24,7 +24,7 @@ type CompletionContext struct {
 	inFunctionPosition bool   // true if we're in a position where a function name is expected
 	afterOpenParen     bool   // true if we're right after an opening parenthesis
 	parenDepth         int    // current parenthesis nesting depth
-	inSpecialFunction  string // name of special function if we're completing its arguments (e.g., "builtins")
+	inSpecialFunction  string // name of special function if we're completing its arguments (e.g., "help")
 }
 
 // GetCompletions returns a list of possible completions for the given prefix
@@ -144,7 +144,7 @@ func (cp *CompletionProvider) getBuiltinFunctions() []string {
 		// Module system
 		"load", "import",
 		// Environment inspection
-		"env", "modules", "builtins",
+		"env", "modules", "help",
 		// Print functions
 		"print", "println",
 		// Constants
@@ -219,8 +219,8 @@ func (cp *CompletionProvider) getSpecialFunctionCompletions(functionName, prefix
 	var completions []string
 
 	switch functionName {
-	case "builtins":
-		// For builtins function, complete with all built-in function names
+	case "help":
+		// For help function, complete with all built-in function names
 		builtins := cp.getBuiltinFunctions()
 		for _, builtin := range builtins {
 			if strings.HasPrefix(builtin, prefix) {
@@ -239,7 +239,7 @@ func (cp *CompletionProvider) getSpecialFunctionCompletions(functionName, prefix
 	return completions
 }
 
-// findSpecialFunction checks if we're completing arguments for a special function like "builtins"
+// findSpecialFunction checks if we're completing arguments for a special function like "help"
 func (cp *CompletionProvider) findSpecialFunction(line string, wordStart int) string {
 	// Look backwards to find the function name at the start of the current expression
 
@@ -306,8 +306,8 @@ func (cp *CompletionProvider) findSpecialFunction(line string, wordStart int) st
 	if wordStart > funcEnd {
 		// Check if this is a special function that takes function names as arguments
 		switch functionName {
-		case "builtins":
-			// For builtins, only complete the first argument
+		case "help":
+			// For help, only complete the first argument
 			// Count how many completed arguments we've already seen (excluding the current word being completed)
 			argCount := 0
 			pos := funcEnd
@@ -349,7 +349,7 @@ func (cp *CompletionProvider) findSpecialFunction(line string, wordStart int) st
 			// argCount == 0 means we're completing the first argument
 			// argCount == 1 means we're completing the second argument (which should not be allowed)
 			if argCount == 0 {
-				return "builtins"
+				return "help"
 			}
 			return ""
 		default:

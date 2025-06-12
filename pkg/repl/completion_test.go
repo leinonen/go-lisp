@@ -117,20 +117,20 @@ func TestCompletionProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("builtins function should be in completions", func(t *testing.T) {
-		// Should include 'builtins' when typing 'buil'
-		completions := cp.GetCompletions("(buil", 5)
+	t.Run("help function should be in completions", func(t *testing.T) {
+		// Should include 'help' when typing 'hel'
+		completions := cp.GetCompletions("(hel", 4)
 
-		// Should include 'builtins'
+		// Should include 'help'
 		found := false
 		for _, comp := range completions {
-			if comp == "builtins" {
+			if comp == "help" {
 				found = true
 				break
 			}
 		}
 		if !found {
-			t.Error("Expected 'builtins' in completions for '(buil'")
+			t.Error("Expected 'help' in completions for '(hel'")
 		}
 	})
 }
@@ -299,14 +299,14 @@ func TestCompletionContext(t *testing.T) {
 	}
 }
 
-func TestBuiltinsArgumentCompletion(t *testing.T) {
+func TestHelpArgumentCompletion(t *testing.T) {
 	// Create a test environment
 	env := evaluator.NewEnvironment()
 	cp := NewCompletionProvider(env)
 
-	t.Run("completion for builtins function arguments", func(t *testing.T) {
-		// Should complete function names when typing builtins arguments
-		completions := cp.GetCompletions("(builtins ma", 12)
+	t.Run("completion for help function arguments", func(t *testing.T) {
+		// Should complete function names when typing help arguments
+		completions := cp.GetCompletions("(help ma", 8)
 
 		// Should include 'map' builtin function
 		found := false
@@ -317,13 +317,13 @@ func TestBuiltinsArgumentCompletion(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Error("Expected 'map' in completions for '(builtins ma'")
+			t.Error("Expected 'map' in completions for '(help ma'")
 		}
 	})
 
-	t.Run("completion for builtins with plus sign", func(t *testing.T) {
-		// Should complete '+' when typing it as argument to builtins
-		completions := cp.GetCompletions("(builtins +", 11)
+	t.Run("completion for help with plus sign", func(t *testing.T) {
+		// Should complete '+' when typing it as argument to help
+		completions := cp.GetCompletions("(help +", 7)
 
 		// Should include '+'
 		found := false
@@ -334,13 +334,13 @@ func TestBuiltinsArgumentCompletion(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Error("Expected '+' in completions for '(builtins +'")
+			t.Error("Expected '+' in completions for '(help +'")
 		}
 	})
 
-	t.Run("completion for builtins with filter prefix", func(t *testing.T) {
-		// Should complete 'filter' when typing 'fil' as argument to builtins
-		completions := cp.GetCompletions("(builtins fil", 13)
+	t.Run("completion for help with filter prefix", func(t *testing.T) {
+		// Should complete 'filter' when typing 'fil' as argument to help
+		completions := cp.GetCompletions("(help fil", 9)
 
 		// Should include 'filter'
 		found := false
@@ -351,13 +351,13 @@ func TestBuiltinsArgumentCompletion(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Error("Expected 'filter' in completions for '(builtins fil'")
+			t.Error("Expected 'filter' in completions for '(help fil'")
 		}
 	})
 
-	t.Run("completion for builtins with spaces", func(t *testing.T) {
+	t.Run("completion for help with spaces", func(t *testing.T) {
 		// Should work with extra spaces
-		completions := cp.GetCompletions("(builtins  ma", 13)
+		completions := cp.GetCompletions("(help  ma", 9)
 
 		// Should include 'map'
 		found := false
@@ -368,17 +368,17 @@ func TestBuiltinsArgumentCompletion(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Error("Expected 'map' in completions for '(builtins  ma' (with extra space)")
+			t.Error("Expected 'map' in completions for '(help  ma' (with extra space)")
 		}
 	})
 
-	t.Run("no completion for second argument to builtins", func(t *testing.T) {
-		// Should not complete second argument to builtins (it only takes one)
-		completions := cp.GetCompletions("(builtins map ma", 16)
+	t.Run("no completion for second argument to help", func(t *testing.T) {
+		// Should not complete second argument to help (it only takes one)
+		completions := cp.GetCompletions("(help map ma", 12)
 
-		// Should be empty since builtins only takes one argument
+		// Should be empty since help only takes one argument
 		if len(completions) > 0 {
-			t.Errorf("Expected no completions for second argument to builtins, got %v", completions)
+			t.Errorf("Expected no completions for second argument to help, got %v", completions)
 		}
 	})
 }

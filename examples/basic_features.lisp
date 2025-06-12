@@ -44,5 +44,5 @@
 ; (error "This would stop execution with a message")
 
 ; Environment inspection
-(builtins)  ; Show all built-in functions
+(help)  ; Show all built-in functions
 (env)       ; Show current variables and functions

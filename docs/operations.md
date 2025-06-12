@@ -336,15 +336,15 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 ```lisp
 (env)                             ; Show current environment
 (modules)                         ; Show loaded modules
-(builtins)                        ; Show all built-in functions
-(builtins function-name)          ; Get help for specific function
+(help)                            ; Show all built-in functions
+(help function-name)              ; Get help for specific function
 ```
 
 **Examples:**
 ```lisp
 (env)                             ; List all variables and functions
 (modules)                         ; Show available modules
-(builtins +)                      ; Get help for + function
+(help +)                          ; Get help for + function
 ```
 
 ## I/O Operations

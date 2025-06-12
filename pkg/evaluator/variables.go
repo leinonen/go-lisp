@@ -60,7 +60,7 @@ func (e *Evaluator) evalEnv(args []types.Expr) (types.Value, error) {
 
 func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 	if len(args) > 1 {
-		return nil, fmt.Errorf("builtins requires 0 or 1 arguments")
+		return nil, fmt.Errorf("help requires 0 or 1 arguments")
 	}
 
 	// If no arguments, list all built-in functions
@@ -98,7 +98,7 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			// Module system
 			"load", "import",
 			// Environment inspection
-			"env", "modules", "builtins",
+			"env", "modules", "help",
 			// Print functions
 			"print", "println",
 			// Constants
@@ -122,7 +122,7 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 	// If one argument, show help for that function
 	funcNameExpr, ok := args[0].(*types.SymbolExpr)
 	if !ok {
-		return nil, fmt.Errorf("builtins argument must be a symbol")
+		return nil, fmt.Errorf("help argument must be a symbol")
 	}
 
 	funcName := funcNameExpr.Name
@@ -223,9 +223,9 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"import": "(import module-name)\nImport all exported symbols from a module.\nExample: (import math) => imports all functions from math module",
 
 		// Environment inspection
-		"env":      "(env)\nShow all variables and functions in the current environment.\nExample: (env) => ((x 42) (square #<function([x])>))",
-		"modules":  "(modules)\nShow all loaded modules and their exported symbols.\nExample: (modules) => ((math (square cube)))",
-		"builtins": "(builtins) or (builtins func-name)\nShow all built-in functions or help for a specific function.\nExample: (builtins) => (+ - * / ...) or (builtins reduce) => help for reduce",
+		"env":     "(env)\nShow all variables and functions in the current environment.\nExample: (env) => ((x 42) (square #<function([x])>))",
+		"modules": "(modules)\nShow all loaded modules and their exported symbols.\nExample: (modules) => ((math (square cube)))",
+		"help":    "(help) or (help func-name)\nShow all built-in functions or help for a specific function.\nExample: (help) => (+ - * / ...) or (help reduce) => help for reduce",
 
 		// Print functions
 		"print":   "(print value1 value2 ...)\nOutput values to stdout without newline.\nExample: (print \"Hello\" \" \" \"World\") outputs: Hello World",

@@ -147,7 +147,7 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalEnv(list.Elements[1:])
 		case "modules":
 			return e.evalModules(list.Elements[1:])
-		case "builtins":
+		case "help":
 			return e.evalBuiltins(list.Elements[1:])
 		case "hash-map":
 			return e.evalHashMap(list.Elements[1:])

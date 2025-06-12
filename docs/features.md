@@ -57,14 +57,14 @@ See `examples/` directory for comprehensive demonstrations.
 
 - **Interactive REPL**: Full-featured development environment with:
   - Command history and line editing
-  - Integrated help system (`(builtins)`, `(env)`, `(modules)`)
+  - Integrated help system (`(help)`, `(env)`, `(modules)`)
   - Syntax error recovery and helpful error messages
   - Multi-line expression support
 - **Environment Inspection**: Complete introspection capabilities:
   - `(env)` - View all variables and functions in current scope
   - `(modules)` - List all loaded modules with their exports
-  - `(builtins)` - Discover all available built-in functions
-  - `(builtins function-name)` - Get detailed help for specific functions
+  - `(help)` - Discover all available built-in functions
+  - `(help function-name)` - Get detailed help for specific functions
 - **Module System**: Production-ready namespace management:
   - Module definition with explicit exports
   - Import system with qualified and unqualified access
