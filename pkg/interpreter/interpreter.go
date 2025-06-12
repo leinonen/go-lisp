@@ -37,3 +37,8 @@ func (i *Interpreter) Interpret(input string) (types.Value, error) {
 	evaluator := evaluator.NewEvaluator(i.env)
 	return evaluator.Eval(ast)
 }
+
+// GetEnvironment returns the interpreter's environment for completion support
+func (i *Interpreter) GetEnvironment() *evaluator.Environment {
+	return i.env
+}

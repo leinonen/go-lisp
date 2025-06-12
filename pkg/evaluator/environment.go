@@ -102,3 +102,28 @@ func (e *Environment) MarkFileLoaded(filename string) {
 	}
 	e.loadedFiles[filename] = true
 }
+
+// Methods for completion support
+
+// GetBindings returns a copy of the current environment's bindings
+func (e *Environment) GetBindings() map[string]types.Value {
+	bindings := make(map[string]types.Value)
+	for name, value := range e.bindings {
+		bindings[name] = value
+	}
+	return bindings
+}
+
+// GetParent returns the parent environment (can be nil)
+func (e *Environment) GetParent() *Environment {
+	return e.parent
+}
+
+// GetModules returns a copy of the modules map
+func (e *Environment) GetModules() map[string]*types.ModuleValue {
+	modules := make(map[string]*types.ModuleValue)
+	for name, module := range e.modules {
+		modules[name] = module
+	}
+	return modules
+}

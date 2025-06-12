@@ -3,9 +3,13 @@ package repl
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
+	"github.com/chzyer/readline"
 	"github.com/fatih/color"
+	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
 
@@ -21,6 +25,11 @@ func REPL(interp Interpreter, scanner *bufio.Scanner) {
 
 // REPLWithOptions starts a REPL with configurable options
 func REPLWithOptions(interp Interpreter, scanner *bufio.Scanner, enableColors bool) {
+	// Create a default scanner if none provided
+	if scanner == nil {
+		scanner = bufio.NewScanner(os.Stdin)
+	}
+
 	// Configure colors based on the enableColors parameter
 	if !enableColors {
 		color.NoColor = true
@@ -62,6 +71,113 @@ func REPLWithOptions(interp Interpreter, scanner *bufio.Scanner, enableColors bo
 	} else {
 		printGoodbyeMessageNoColor()
 	}
+}
+
+// REPLWithCompletion starts a REPL with tab completion support
+func REPLWithCompletion(interp Interpreter, enableColors bool) error {
+	// Get the environment for completion if the interpreter supports it
+	var env *evaluator.Environment
+	if envProvider, ok := interp.(interface{ GetEnvironment() *evaluator.Environment }); ok {
+		env = envProvider.GetEnvironment()
+	}
+
+	// Set up completion provider
+	var completer readline.AutoCompleter
+	if env != nil {
+		completionProvider := NewCompletionProvider(env)
+
+		// Use a more sophisticated completer that understands the cursor position
+		completer = readline.NewPrefixCompleter()
+
+		// Override the default completion behavior
+		completer = &lispCompleter{
+			provider: completionProvider,
+		}
+	}
+
+	// Configure readline
+	config := &readline.Config{
+		Prompt:          "lisp> ",
+		HistoryFile:     "/tmp/lisp_history",
+		AutoComplete:    completer,
+		InterruptPrompt: "^C",
+		EOFPrompt:       "exit",
+	}
+
+	rl, err := readline.NewEx(config)
+	if err != nil {
+		// Fallback to basic REPL if readline fails
+		fmt.Printf("Warning: Tab completion unavailable (%v). Using basic REPL.\n", err)
+		REPLWithOptions(interp, nil, enableColors)
+		return nil
+	}
+	defer rl.Close()
+
+	// Configure colors based on the enableColors parameter
+	if !enableColors {
+		color.NoColor = true
+		printWelcomeMessageNoColor()
+	} else {
+		printWelcomeMessage()
+	}
+
+	// Add tab completion info to welcome message
+	if enableColors {
+		instructionColor := color.New(color.FgYellow)
+		instructionColor.Println("✨ Tab completion is enabled! Press TAB to see available functions.")
+		fmt.Println()
+	} else {
+		fmt.Println("✨ Tab completion is enabled! Press TAB to see available functions.")
+		fmt.Println()
+	}
+
+	// Create error formatter for colored output
+	errorFormatter := NewErrorFormatter()
+
+	for {
+		input, err := readCompleteExpressionWithReadline(rl, enableColors)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			fmt.Printf("Input error: %v\n", err)
+			continue
+		}
+
+		if input == "" {
+			continue
+		}
+
+		input = strings.TrimSpace(input)
+		if input == "" {
+			continue
+		}
+		if input == "quit" || input == "exit" {
+			break
+		}
+
+		result, err := interp.Interpret(input)
+		if err != nil {
+			// Use colored error formatting with smart suggestions
+			fmt.Println(errorFormatter.FormatErrorWithSmartSuggestion(err))
+		} else {
+			// Color the result output
+			if enableColors {
+				resultColor := color.New(color.FgGreen)
+				fmt.Printf("=> %s\n", resultColor.Sprint(result.String()))
+			} else {
+				fmt.Printf("=> %s\n", result.String())
+			}
+		}
+	}
+
+	if enableColors {
+		printGoodbyeMessage()
+	} else {
+		printGoodbyeMessageNoColor()
+	}
+
+	return nil
 }
 
 // printWelcomeMessage prints a welcome message and instructions for the REPL
@@ -203,6 +319,93 @@ func readCompleteExpressionWithColors(scanner *bufio.Scanner, enableColors bool)
 	}
 
 	return strings.Join(lines, "\n")
+}
+
+// readCompleteExpressionWithReadline reads input using readline until we have a complete s-expression
+func readCompleteExpressionWithReadline(rl *readline.Instance, enableColors bool) (string, error) {
+	var lines []string
+	parenCount := 0
+	inString := false
+	escaped := false
+	isFirstLine := true
+
+	// Colors for prompts
+	primaryPromptColor := color.New(color.FgBlue, color.Bold)
+	continuationPromptColor := color.New(color.FgHiBlack)
+
+	for {
+		var prompt string
+		if isFirstLine {
+			if enableColors {
+				prompt = primaryPromptColor.Sprint("lisp> ")
+			} else {
+				prompt = "lisp> "
+			}
+			isFirstLine = false
+		} else {
+			if enableColors {
+				prompt = continuationPromptColor.Sprint("...   ")
+			} else {
+				prompt = "...   "
+			}
+		}
+
+		rl.SetPrompt(prompt)
+		line, err := rl.Readline()
+		if err != nil {
+			return strings.Join(lines, "\n"), err
+		}
+
+		lines = append(lines, line)
+
+		// Check if this is a simple quit/exit command
+		trimmed := strings.TrimSpace(line)
+		if len(lines) == 1 && (trimmed == "quit" || trimmed == "exit") {
+			return trimmed, nil
+		}
+
+		// Count parentheses, respecting strings and escapes
+		for _, ch := range line {
+			if escaped {
+				escaped = false
+				continue
+			}
+
+			switch ch {
+			case '\\':
+				if inString {
+					escaped = true
+				}
+			case '"':
+				inString = !inString
+			case '(':
+				if !inString {
+					parenCount++
+				}
+			case ')':
+				if !inString {
+					parenCount--
+				}
+			case ';':
+				if !inString {
+					// Comment - ignore rest of line
+					break
+				}
+			}
+		}
+
+		// If we have balanced parentheses and at least one complete expression, we're done
+		if parenCount == 0 && containsExpression(strings.Join(lines, "\n")) {
+			break
+		}
+
+		// If parentheses count goes negative, we have unmatched closing parens
+		if parenCount < 0 {
+			break
+		}
+	}
+
+	return strings.Join(lines, "\n"), nil
 }
 
 // containsExpression checks if the input contains at least one meaningful expression

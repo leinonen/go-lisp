@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -73,7 +72,10 @@ func main() {
 		return
 	}
 
-	// If no arguments provided, start REPL
-	scanner := bufio.NewScanner(os.Stdin)
-	repl.REPL(interpreter, scanner)
+	// If no arguments provided, start REPL with tab completion
+	err := repl.REPLWithCompletion(interpreter, true)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error starting REPL: %v\n", err)
+		os.Exit(1)
+	}
 }
