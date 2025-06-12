@@ -34,7 +34,7 @@
 
 ; Import another module
 (import list-utils)
-(define test-list (list 1 2 3 4 5))
+(def test-list (list 1 2 3 4 5))
 (sum-list test-list)                    ; => 15
 (reverse-and-double test-list)          ; => (10 8 6 4 2)
 

@@ -131,7 +131,7 @@ Function composition chain: 121
 (import functional)
 
 ;; Create a data processing pipeline
-(define process-numbers 
+(def process-numbers 
   (comp3 
     (partial map (lambda [x] (* x 2)))     ; Double all numbers
     (partial filter (lambda [x] (> x 5)))  ; Keep > 5
@@ -140,21 +140,21 @@ Function composition chain: 121
 (process-numbers (list 1 2 3 4 5 6))  ; => 36
 
 ;; Function composition with improved readability
-(define square [x] (* x x))
-(define increment [x] (+ x 1))
-(define double [x] (* x 2))
+(def square [x] (* x x))
+(def increment [x] (+ x 1))
+(def double [x] (* x 2))
 
-(define complex-transform 
+(def complex-transform 
   (comp4 double increment square abs))
 
 ;; Currying and partial application
-(define add-ten (partial + 10))
-(define multiply-by (curry2 *))
-(define times-three (multiply-by 3))
+(def add-ten (partial + 10))
+(def multiply-by (curry2 *))
+(def times-three (multiply-by 3))
 
 ;; Higher-order utilities with readable syntax
-(define safe-divide (fnil (lambda [x] (/ 100 x)) 1))
-(define indexed-processor 
+(def safe-divide (fnil (lambda [x] (/ 100 x)) 1))
+(def indexed-processor 
   (map-indexed (lambda [index element] 
                  (+ index element))))
 ```

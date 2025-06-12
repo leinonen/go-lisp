@@ -13,7 +13,7 @@ Keywords in this Lisp interpreter:
 
 ```lisp
 ;; Clear distinction between function parameters and function calls
-(define create-user (lambda [name email] ...))  ; Function definition
+(def create-user (lambda [name email] ...))  ; Function definition
 (create-user "Alice" "alice@example.com")       ; Function call
 ```
 
@@ -54,7 +54,7 @@ lisp> :user-status
 Keywords can be stored in variables:
 
 ```lisp
-lisp> (define status-key :status)
+lisp> (def status-key :status)
 => :status
 
 lisp> status-key
@@ -81,7 +81,7 @@ lisp> (hash-map :name "Alice" :age 30 :city "Boston")
 
 ### Accessing Values
 ```lisp
-lisp> (define person (hash-map :name "Alice" :age 30))
+lisp> (def person (hash-map :name "Alice" :age 30))
 => {:name Alice, :age 30}
 
 lisp> (hash-map-get person :name)
@@ -133,7 +133,7 @@ lisp> (hash-map-get mixed-map :name)     ; Keyword key
 Keywords make configuration more readable:
 
 ```lisp
-lisp> (define config (hash-map
+lisp> (def config (hash-map
         :debug #t
         :port 8080
         :host "localhost"
@@ -148,7 +148,7 @@ lisp> (hash-map-get config :debug)
 Use keywords for creating structured data:
 
 ```lisp
-lisp> (define create-user (lambda [name email]
+lisp> (def create-user (lambda [name email]
         (hash-map
           :name name
           :email email
@@ -163,7 +163,7 @@ lisp> (create-user "Alice" "alice@example.com")
 Keywords work well for nested hash maps:
 
 ```lisp
-lisp> (define app-state (hash-map
+lisp> (def app-state (hash-map
         :user (hash-map :name "Alice" :id 123)
         :settings (hash-map :theme :dark :lang :en)))
 => {:user {:name Alice, :id 123}, :settings {:theme :dark, :lang :en}}

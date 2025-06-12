@@ -14,7 +14,7 @@
 (abs -42)                              ; => 42
 
 ; List utility functions
-(define test-list (list 1 2 3 4 5 6))
+(def test-list (list 1 2 3 4 5 6))
 (take 3 test-list)                      ; => (1 2 3)
 (drop 2 test-list)                      ; => (3 4 5 6)
 
@@ -23,11 +23,11 @@
 (any (lambda [x] (> x 5)) test-list)    ; => #t (some > 5)
 
 ; Higher-order function utilities
-(define double (lambda [x] (* x 2)))
-(define add-one (lambda [x] (+ x 1)))
+(def double (lambda [x] (* x 2)))
+(def add-one (lambda [x] (+ x 1)))
 
 ; Function composition: apply add-one then double
-(define double-then-add-one (compose add-one double))
+(def double-then-add-one (compose add-one double))
 (double-then-add-one 5)                 ; => 11
 
 ; Apply a function multiple times

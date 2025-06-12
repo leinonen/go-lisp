@@ -33,9 +33,9 @@
 (print (filter (lambda [x] (= (% x 2) 0)) (list 1 2 3 4 5 6 7 8)))
 
 (print "Compose function example:")
-(define add-one (lambda [x] (+ x 1)))
-(define double (lambda [x] (* x 2)))
-(define add-one-then-double (comp double add-one))
+(def add-one (lambda [x] (+ x 1)))
+(def double (lambda [x] (* x 2)))
+(def add-one-then-double (comp double add-one))
 (print "Add 1 then double 5:")
 (print (add-one-then-double 5))
 

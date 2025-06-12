@@ -13,13 +13,13 @@ Hash maps in this Lisp interpreter:
 
 ```lisp
 ;; Clear function parameter syntax
-(define get-with-default (lambda [map key default]
+(def get-with-default (lambda [map key default]
   (if (hash-map-contains? map key)
       (hash-map-get map key)
       default)))
 
 ;; Nested functions are easier to distinguish
-(define transform-values (lambda [map transformer]
+(def transform-values (lambda [map transformer]
   (reduce (lambda [acc key]
     (hash-map-put acc key (transformer (hash-map-get map key))))
     (hash-map) (hash-map-keys map))))
@@ -71,7 +71,7 @@ Retrieves a value from a hash map by key.
 
 **Examples:**
 ```lisp
-lisp> (define my-map (hash-map "name" "Alice" "age" 30))
+lisp> (def my-map (hash-map "name" "Alice" "age" 30))
 => {name: Alice, age: 30}
 
 lisp> (hash-map-get my-map "name")
@@ -105,7 +105,7 @@ Creates a new hash map with an additional or updated key-value pair.
 
 **Examples:**
 ```lisp
-lisp> (define original (hash-map "name" "Alice"))
+lisp> (def original (hash-map "name" "Alice"))
 => {name: Alice}
 
 lisp> (hash-map-put original "age" 30)
@@ -129,7 +129,7 @@ Creates a new hash map with a key-value pair removed.
 
 **Examples:**
 ```lisp
-lisp> (define my-map (hash-map "name" "Alice" "age" 30 "city" "Boston"))
+lisp> (def my-map (hash-map "name" "Alice" "age" 30 "city" "Boston"))
 => {name: Alice, age: 30, city: Boston}
 
 lisp> (hash-map-remove my-map "age")
@@ -151,7 +151,7 @@ Tests whether a hash map contains a specific key.
 
 **Examples:**
 ```lisp
-lisp> (define my-map (hash-map "name" "Alice" "age" nil))
+lisp> (def my-map (hash-map "name" "Alice" "age" nil))
 => {name: Alice, age: nil}
 
 lisp> (hash-map-contains? my-map "name")
@@ -236,10 +236,10 @@ lisp> (hash-map-empty? (hash-map "key" "value"))
 
 ### Building a Person Record
 ```lisp
-lisp> (define person (hash-map "name" "Alice" "age" 30 "email" "alice@example.com"))
+lisp> (def person (hash-map "name" "Alice" "age" 30 "email" "alice@example.com"))
 => {name: Alice, age: 30, email: alice@example.com}
 
-lisp> (define updated-person (hash-map-put person "phone" "555-1234"))
+lisp> (def updated-person (hash-map-put person "phone" "555-1234"))
 => {name: Alice, age: 30, email: alice@example.com, phone: 555-1234}
 
 lisp> (hash-map-get updated-person "phone")
@@ -248,7 +248,7 @@ lisp> (hash-map-get updated-person "phone")
 
 ### Configuration Management
 ```lisp
-lisp> (define config (hash-map "debug" #t "port" 8080 "host" "localhost"))
+lisp> (def config (hash-map "debug" #t "port" 8080 "host" "localhost"))
 => {debug: #t, port: 8080, host: localhost}
 
 lisp> (if (hash-map-get config "debug")
@@ -259,10 +259,10 @@ lisp> (if (hash-map-get config "debug")
 
 ### Data Processing
 ```lisp
-lisp> (define inventory (hash-map "apples" 10 "oranges" 5 "bananas" 8))
+lisp> (def inventory (hash-map "apples" 10 "oranges" 5 "bananas" 8))
 => {apples: 10, oranges: 5, bananas: 8}
 
-lisp> (define total-items 
+lisp> (def total-items 
         (reduce + 0 (hash-map-values inventory)))
 => 23
 
@@ -272,7 +272,7 @@ lisp> (hash-map-keys inventory)
 
 ### Nested Hash Maps
 ```lisp
-lisp> (define nested (hash-map 
+lisp> (def nested (hash-map 
         "user" (hash-map "name" "Alice" "id" 123)
         "settings" (hash-map "theme" "dark" "notifications" #t)))
 => {user: {name: Alice, id: 123}, settings: {theme: dark, notifications: #t}}
@@ -285,7 +285,7 @@ lisp> (hash-map-get (hash-map-get nested "user") "name")
 
 ### Safe Access with Default Values
 ```lisp
-lisp> (define get-with-default (lambda [map key default]
+lisp> (def get-with-default (lambda [map key default]
         (if (hash-map-contains? map key)
             (hash-map-get map key)
             default)))
@@ -296,7 +296,7 @@ lisp> (get-with-default my-map "missing" "not found")
 
 ### Bulk Updates
 ```lisp
-lisp> (define bulk-put (lambda [map pairs]
+lisp> (def bulk-put (lambda [map pairs]
         (if (empty? pairs)
             map
             (bulk-put 
@@ -309,8 +309,8 @@ lisp> (bulk-put (hash-map) (list "a" 1 "b" 2 "c" 3))
 
 ### Filtering Hash Maps
 ```lisp
-lisp> (define filter-map (lambda [predicate map]
-        (define filtered-pairs 
+lisp> (def filter-map (lambda [predicate map]
+        (def filtered-pairs 
           (filter (lambda [key] (predicate (hash-map-get map key)))
                   (hash-map-keys map)))
         (bulk-put (hash-map) 

@@ -14,7 +14,7 @@ For comprehensive, runnable examples, see the `examples/` directory. This docume
 (filter (lambda [x] (> x 5)) (list 1 8 3 10)) ; => (8 10)
 
 ; Data structures
-(define user (hash-map :name "Alice" :age 30))
+(def user (hash-map :name "Alice" :age 30))
 (hash-map-get user :name) ; => "Alice"
 ```
 
@@ -26,7 +26,7 @@ For comprehensive, runnable examples, see the `examples/` directory. This docume
 (defun factorial [n] (if (<= n 1) 1 (* n (factorial (- n 1)))))
 
 ; Functional programming (load "library/functional.lisp")
-(define add-then-double (comp (partial * 2) (partial + 1)))
+(def add-then-double (comp (partial * 2) (partial + 1)))
 (add-then-double 5) ; => 12
 
 ; Macros

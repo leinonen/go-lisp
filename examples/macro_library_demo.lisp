@@ -16,7 +16,7 @@
 (print "----------------------")
 
 ;; When macro
-(define x 10)
+(def x 10)
 (when (> x 5) (print "x is greater than 5"))
 
 ;; Unless macro  
@@ -42,7 +42,7 @@
   (print (string-concat "a=" (number->string a) ", b=" (number->string b))))
 
 ;; Assignment macros
-(define counter 0)
+(def counter 0)
 (print (string-concat "Counter before: " (number->string counter)))
 (incf counter)
 (print (string-concat "Counter after incf: " (number->string counter)))
@@ -87,7 +87,7 @@
 (print "-----------------")
 
 ;; Progn macro (sequential execution)
-(define result 
+(def result 
   (progn
     (print "First expression")
     (print "Second expression")
@@ -99,8 +99,8 @@
 (print "Comments work - they return nil and don't execute")
 
 ;; Pattern matching macro
-(define day 2)
-(define day-name
+(def day 2)
+(def day-name
   (match day
     (1 "Monday")
     (2 "Tuesday") 
@@ -125,7 +125,7 @@
         (incf sum i)))
     sum))
 
-(define result (process-numbers 10))
+(def result (process-numbers 10))
 (debug result)
 
 ;; ============================================================================

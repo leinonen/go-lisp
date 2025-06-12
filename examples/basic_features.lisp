@@ -2,8 +2,8 @@
 ; This file demonstrates the core features of the Lisp interpreter
 
 ; Basic arithmetic and variables
-(define x 10)
-(define y 20)
+(def x 10)
+(def y 20)
 (+ x y (* 3 4))
 
 ; Function definition with defun
@@ -11,7 +11,7 @@
 (defun add [a b] (+ a b))
 
 ; List operations
-(define my-list (list 1 2 3 4 5))
+(def my-list (list 1 2 3 4 5))
 (first my-list)
 (rest my-list)
 (cons 0 my-list)
@@ -23,8 +23,8 @@
 (reduce (lambda [acc x] (+ acc x)) 0 my-list)  ; => 15
 
 ; Closures and function composition
-(define make-adder (lambda [n] (lambda [x] (+ x n))))
-(define add-five (make-adder 5))
+(def make-adder (lambda [n] (lambda [x] (+ x n))))
+(def add-five (make-adder 5))
 (add-five 10)                           ; => 15
 
 ; Recursion with automatic tail call optimization

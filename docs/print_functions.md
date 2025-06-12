@@ -6,11 +6,11 @@ The Lisp interpreter includes built-in `print` and `println` functions that enab
 
 ```lisp
 ;; Clear and modern function syntax
-(define format-greeting (lambda [name] 
+(def format-greeting (lambda [name] 
   (string-concat "Welcome, " name "!")))
 
 ;; Nested functions are easier to read
-(define process-data (lambda [items processor]
+(def process-data (lambda [items processor]
   (map (lambda [item] (processor item)) items)))
 ```
 
@@ -80,7 +80,7 @@ Both functions support all Lisp data types:
 
 ### Functions
 ```lisp
-(define square (lambda [x] (* x x)))
+(def square (lambda [x] (* x x)))
 (println "Function:" square)       ; Function: #<function([x])>
 ```
 
@@ -95,29 +95,29 @@ Both functions support all Lisp data types:
 
 ### Variable Display
 ```lisp
-(define name "Alice")
-(define age 25)
+(def name "Alice")
+(def age 25)
 (println "Name:" name "Age:" age)  ; Name: Alice Age: 25
 ```
 
 ### Mathematical Results
 ```lisp
-(define a 10)
-(define b 5)
+(def a 10)
+(def b 5)
 (println a "+" b "=" (+ a b))      ; 10 + 5 = 15
 (println a "*" b "=" (* a b))      ; 10 * 5 = 50
 ```
 
 ### List Processing
 ```lisp
-(define numbers (list 1 2 3 4 5))
+(def numbers (list 1 2 3 4 5))
 (println "Original:" numbers)
 (println "Squared:" (map (lambda [x] (* x x)) numbers))
 ```
 
 ### String Operations Integration
 ```lisp
-(define text "Hello World")
+(def text "Hello World")
 (println "Text:" text)
 (println "Length:" (string-length text))
 (println "Upper:" (string-upper text))
@@ -125,7 +125,7 @@ Both functions support all Lisp data types:
 
 ### Formatted Output
 ```lisp
-(define format-greeting
+(def format-greeting
   (lambda [name]
     (string-concat "Welcome, " name "!")))
 
@@ -134,7 +134,7 @@ Both functions support all Lisp data types:
 
 ### Progress Indication
 ```lisp
-(define show-progress
+(def show-progress
   (lambda [current total]
     (println "Progress:" current "/" total)))
 
@@ -143,7 +143,7 @@ Both functions support all Lisp data types:
 
 ### Menu Systems
 ```lisp
-(define show-menu
+(def show-menu
   (lambda []
     (begin
       (println "===== MENU =====")

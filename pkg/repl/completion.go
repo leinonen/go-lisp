@@ -122,7 +122,7 @@ func (cp *CompletionProvider) getBuiltinFunctions() []string {
 		// Control flow
 		"if",
 		// Variable and function definition
-		"define", "lambda", "defun",
+		"def", "lambda", "defun",
 		// Macro system
 		"defmacro", "quote",
 		// List operations

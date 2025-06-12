@@ -15,8 +15,8 @@ Files can contain multiple expressions that are executed sequentially:
 
 ```lisp
 ; file: example.lisp
-(define x 10)
-(define y 20)
+(def x 10)
+(def y 20)
 (+ x y)
 (defun greet [name] (list "Hello" name))
 (greet "World")

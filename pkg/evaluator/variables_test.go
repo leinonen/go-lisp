@@ -7,14 +7,14 @@ import (
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
 
-func TestEvaluatorDefine(t *testing.T) {
+func TestEvaluatorDef(t *testing.T) {
 	env := NewEnvironment()
 	evaluator := NewEvaluator(env)
 
 	// Test basic variable definition
 	defineExpr := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "define"},
+			&types.SymbolExpr{Name: "def"},
 			&types.SymbolExpr{Name: "x"},
 			&types.NumberExpr{Value: 42},
 		},
@@ -25,7 +25,7 @@ func TestEvaluatorDefine(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	// define should return the value that was defined
+	// def should return the value that was defined
 	if !valuesEqual(result, types.NumberValue(42)) {
 		t.Errorf("expected 42, got %v", result)
 	}
@@ -41,14 +41,14 @@ func TestEvaluatorDefine(t *testing.T) {
 	}
 }
 
-func TestEvaluatorDefineWithExpression(t *testing.T) {
+func TestEvaluatorDefWithExpression(t *testing.T) {
 	env := NewEnvironment()
 	evaluator := NewEvaluator(env)
 
 	// Define a variable with a computed expression
 	defineExpr := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "define"},
+			&types.SymbolExpr{Name: "def"},
 			&types.SymbolExpr{Name: "y"},
 			&types.ListExpr{
 				Elements: []types.Expr{
@@ -87,14 +87,14 @@ func TestEvaluatorDefineWithExpression(t *testing.T) {
 	}
 }
 
-func TestEvaluatorDefineOverwrite(t *testing.T) {
+func TestEvaluatorDefOverwrite(t *testing.T) {
 	env := NewEnvironment()
 	evaluator := NewEvaluator(env)
 
 	// Define a variable
 	defineExpr1 := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "define"},
+			&types.SymbolExpr{Name: "def"},
 			&types.SymbolExpr{Name: "z"},
 			&types.NumberExpr{Value: 100},
 		},
@@ -108,7 +108,7 @@ func TestEvaluatorDefineOverwrite(t *testing.T) {
 	// Redefine the same variable with a different value
 	defineExpr2 := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "define"},
+			&types.SymbolExpr{Name: "def"},
 			&types.SymbolExpr{Name: "z"},
 			&types.StringExpr{Value: "hello"},
 		},
@@ -134,7 +134,7 @@ func TestEvaluatorDefineOverwrite(t *testing.T) {
 	}
 }
 
-func TestEvaluatorDefineErrors(t *testing.T) {
+func TestEvaluatorDefErrors(t *testing.T) {
 	env := NewEnvironment()
 	evaluator := NewEvaluator(env)
 
@@ -146,7 +146,7 @@ func TestEvaluatorDefineErrors(t *testing.T) {
 			name: "too few arguments",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "define"},
+					&types.SymbolExpr{Name: "def"},
 					&types.SymbolExpr{Name: "x"},
 				},
 			},
@@ -155,7 +155,7 @@ func TestEvaluatorDefineErrors(t *testing.T) {
 			name: "too many arguments",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "define"},
+					&types.SymbolExpr{Name: "def"},
 					&types.SymbolExpr{Name: "x"},
 					&types.NumberExpr{Value: 1},
 					&types.NumberExpr{Value: 2},
@@ -166,7 +166,7 @@ func TestEvaluatorDefineErrors(t *testing.T) {
 			name: "first argument not a symbol",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "define"},
+					&types.SymbolExpr{Name: "def"},
 					&types.NumberExpr{Value: 42}, // should be a symbol
 					&types.NumberExpr{Value: 1},
 				},
@@ -451,7 +451,7 @@ func TestEnvironmentInspection(t *testing.T) {
 			}
 		}
 
-		essentialBuiltins := []string{"+", "-", "*", "/", "if", "define", "lambda", "defun", "list", "env", "modules"}
+		essentialBuiltins := []string{"+", "-", "*", "/", "if", "def", "lambda", "defun", "list", "env", "modules"}
 		for _, builtin := range essentialBuiltins {
 			if !builtinMap[builtin] {
 				t.Errorf("essential built-in function '%s' not found in help listing", builtin)

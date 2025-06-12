@@ -70,7 +70,7 @@
 ;; Setf - Assignment macro (for mutable variables)
 (defmacro setf (var value)
   "Set variable to new value: (setf x (+ x 1))"
-  (list 'define var value))
+  (list 'def var value))
 
 ;; Incf/Decf - Increment/decrement macros
 (defmacro incf (var delta)

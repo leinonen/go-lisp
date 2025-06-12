@@ -18,7 +18,7 @@
 
 ; String operations with output
 (println "\n--- String Operations ---")
-(define sample-text "Hello, Lisp World!")
+(def sample-text "Hello, Lisp World!")
 (println "Original:" sample-text)
 (println "Length:" (string-length sample-text))
 (println "Uppercase:" (string-upper sample-text))
@@ -28,7 +28,7 @@
 
 ; String building and formatting
 (println "\n--- String Building ---")
-(define build-greeting
+(def build-greeting
   (lambda [name time]
     (string-concat "Good " time ", " name "!")))
 
@@ -37,7 +37,7 @@
 
 ; Data formatting with print
 (println "\n--- Data Formatting ---")
-(define format-person
+(def format-person
   (lambda [name age]
     (string-concat name " is " (number->string age) " years old")))
 
@@ -46,16 +46,16 @@
 
 ; List processing with output
 (println "\n--- List Processing ---")
-(define numbers (list 1 2 3 4 5))
+(def numbers (list 1 2 3 4 5))
 (println "Original numbers:" numbers)
 
 ; Process and display each number
-(define print-squares
+(def print-squares
   (lambda [nums]
     (if (= (length nums) 0)
         (println "Done processing squares")
         (begin
-          (define n (first nums))
+          (def n (first nums))
           (println "Square of" n "is" (* n n))
           (print-squares (rest nums))))))
 
@@ -63,7 +63,7 @@
 
 ; Mathematical expressions with output
 (println "\n--- Mathematical Results ---")
-(define show-calculation
+(def show-calculation
   (lambda [a b operation]
     (cond
       ((= operation 1) (println a "+" b "=" (+ a b)))
@@ -76,7 +76,7 @@
 
 ; Hash map operations with output
 (println "\n--- Hash Map Display ---")
-(define person (hash-map "name" "John" "age" 28 "city" "Boston"))
+(def person (hash-map "name" "John" "age" 28 "city" "Boston"))
 (println "Person record:" person)
 (println "Name field:" (hash-map-get person "name"))
 (println "Age field:" (hash-map-get person "age"))
@@ -84,25 +84,25 @@
 
 ; Text processing pipeline
 (println "\n--- Text Processing Pipeline ---")
-(define process-text
+(def process-text
   (lambda [text]
     (begin
       (println "Input text:" text)
-      (define trimmed (string-trim text))
+      (def trimmed (string-trim text))
       (println "After trim:" trimmed)
-      (define upper (string-upper trimmed))
+      (def upper (string-upper trimmed))
       (println "Uppercase:" upper)
-      (define length (string-length upper))
+      (def length (string-length upper))
       (println "Final length:" length)
       (println "Processing complete!")
       upper)))
 
-(define result (process-text "  welcome to lisp programming  "))
+(def result (process-text "  welcome to lisp programming  "))
 (println "Final result:" result)
 
 ; Interactive menu simulation
 (println "\n--- Menu Simulation ---")
-(define show-menu
+(def show-menu
   (lambda []
     (begin
       (println "===== LISP CALCULATOR =====")
@@ -117,7 +117,7 @@
 
 ; Progress display
 (println "\n--- Progress Display ---")
-(define show-progress
+(def show-progress
   (lambda [step total task]
     (println "Step" step "of" total ":" task)))
 

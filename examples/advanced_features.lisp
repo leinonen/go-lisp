@@ -19,7 +19,7 @@
 (fibonacci 30)                          ; => 832040
 
 ; Environment inspection and introspection
-(define my-var 42)
+(def my-var 42)
 (defun my-function [x] [+ x 1])
 
 ; Check what's in our environment
@@ -29,23 +29,23 @@
 (length (help))                         ; Count of built-in functions
 
 ; Environment introspection - check what's available in current scope
-(define my-functions (env))
+(def my-functions (env))
 (length my-functions)                   ; Show number of defined symbols
 
 ; Advanced list operations with higher-order functions
-(define numbers (list 1 2 3 4 5 6 7 8 9 10))
+(def numbers (list 1 2 3 4 5 6 7 8 9 10))
 
 ; Chain operations together
-(define evens (filter (lambda [x] (= (% x 2) 0)) numbers))
-(define doubled-evens (map (lambda [x] (* x 2)) evens))
-(define sum-doubled-evens (reduce (lambda [acc x] (+ acc x)) 0 doubled-evens))
+(def evens (filter (lambda [x] (= (% x 2) 0)) numbers))
+(def doubled-evens (map (lambda [x] (* x 2)) evens))
+(def sum-doubled-evens (reduce (lambda [acc x] (+ acc x)) 0 doubled-evens))
 
 evens                                   ; => (2 4 6 8 10)
 doubled-evens                           ; => (4 8 12 16 20)
 sum-doubled-evens                       ; => 60
 
 ; Big number arithmetic
-(define big-num 123456789012345678901234567890)
+(def big-num 123456789012345678901234567890)
 (% big-num 7)                          ; => 4 (modulo works with big numbers)
 
 ; Comments and documentation

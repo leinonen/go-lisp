@@ -140,9 +140,9 @@ Returns the list with the first n elements removed.
 Returns a function that is the composition of f and g.
 
 ```lisp
-(define square (lambda [x] (* x x)))
-(define increment (lambda [x] (+ x 1)))
-(define square-then-increment (compose increment square))
+(def square (lambda [x] (* x x)))
+(def increment (lambda [x] (+ x 1)))
+(def square-then-increment (compose increment square))
 
 (square-then-increment 5)       ; Returns 26 (5² + 1)
 
@@ -154,7 +154,7 @@ Returns a function that is the composition of f and g.
 Applies function f to x exactly n times.
 
 ```lisp
-(define increment (lambda [x] (+ x 1)))
+(def increment (lambda [x] (+ x 1)))
 
 (apply-n increment 0 5)         ; Returns 5
 (apply-n increment 3 5)         ; Returns 8
@@ -208,7 +208,7 @@ Helper functions are not exported and remain internal:
 
 ### List Processing
 ```lisp
-(define numbers (list 1 2 3 4 5 6 7 8 9 10))
+(def numbers (list 1 2 3 4 5 6 7 8 9 10))
 
 ; Check if all are positive
 (all (lambda [x] (> x 0)) numbers)     ; #t
@@ -223,11 +223,11 @@ Helper functions are not exported and remain internal:
 
 ### Function Composition
 ```lisp
-(define double (lambda [x] (* x 2)))
-(define add-one (lambda [x] (+ x 1)))
+(def double (lambda [x] (* x 2)))
+(def add-one (lambda [x] (+ x 1)))
 
 ; Create composed function
-(define double-then-add-one (compose add-one double))
+(def double-then-add-one (compose add-one double))
 (double-then-add-one 5)  ; Returns 11
 
 ; Apply function multiple times

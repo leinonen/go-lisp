@@ -124,7 +124,7 @@ Higher-level utilities that combine the primitives for common tasks and provide 
   (_ "Other day"))
 
 ; Assignment macros
-(define x 10)
+(def x 10)
 (incf x 5)                           ; x is now 15
 (decf x 3)                           ; x is now 12
 ```

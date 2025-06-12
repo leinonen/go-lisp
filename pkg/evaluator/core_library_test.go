@@ -353,11 +353,11 @@ func TestCoreLibraryFunctions(t *testing.T) {
 		// Test compose function
 		t.Run("compose function", func(t *testing.T) {
 			// Define helper functions for testing
-			_, err := evalExpr("(define square (lambda [x] (* x x)))")
+			_, err := evalExpr("(def square (lambda [x] (* x x)))")
 			if err != nil {
 				t.Fatalf("failed to define square: %v", err)
 			}
-			_, err = evalExpr("(define increment (lambda [x] (+ x 1)))")
+			_, err = evalExpr("(def increment (lambda [x] (+ x 1)))")
 			if err != nil {
 				t.Fatalf("failed to define increment: %v", err)
 			}
@@ -377,7 +377,7 @@ func TestCoreLibraryFunctions(t *testing.T) {
 		// Test apply-n function
 		t.Run("apply-n function", func(t *testing.T) {
 			// Define increment function if not already defined
-			_, err := evalExpr("(define increment (lambda [x] (+ x 1)))")
+			_, err := evalExpr("(def increment (lambda [x] (+ x 1)))")
 			if err != nil {
 				t.Fatalf("failed to define increment: %v", err)
 			}

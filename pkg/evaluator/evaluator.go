@@ -109,8 +109,8 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalNot(list.Elements[1:])
 		case "if":
 			return e.evalIf(list.Elements[1:])
-		case "define":
-			return e.evalDefine(list.Elements[1:])
+		case "def":
+			return e.evalDef(list.Elements[1:])
 		case "lambda":
 			return e.evalLambda(list.Elements[1:])
 		case "defun":

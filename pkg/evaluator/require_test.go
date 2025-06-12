@@ -221,7 +221,7 @@ func TestRequireFunction(t *testing.T) {
 		// Create a module that prints during loading to test caching
 		sideEffectModulePath := filepath.Join(tempDir, "side-effect-module.lisp")
 		sideEffectContent := `; This module will create a side effect during loading
-(define load-count 1)
+(def load-count 1)
 
 (module counter
   (export get-load-count)

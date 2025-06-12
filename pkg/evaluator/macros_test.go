@@ -63,8 +63,8 @@ func TestMacroExpansion(t *testing.T) {
 		},
 		{
 			name:     "macro with symbol interpolation",
-			setup:    "(defmacro inc [var] (list 'define var (list '+ var 1)))",
-			input:    "(define x 10)",
+			setup:    "(defmacro inc [var] (list 'def var (list '+ var 1)))",
+			input:    "(def x 10)",
 			expected: "10",
 		},
 	}

@@ -10,15 +10,15 @@ import (
 
 // Variable definition
 
-func (e *Evaluator) evalDefine(args []types.Expr) (types.Value, error) {
+func (e *Evaluator) evalDef(args []types.Expr) (types.Value, error) {
 	if len(args) != 2 {
-		return nil, fmt.Errorf("define requires exactly 2 arguments: name and value")
+		return nil, fmt.Errorf("def requires exactly 2 arguments: name and value")
 	}
 
 	// First argument must be a symbol (variable name)
 	nameExpr, ok := args[0].(*types.SymbolExpr)
 	if !ok {
-		return nil, fmt.Errorf("define first argument must be a symbol")
+		return nil, fmt.Errorf("def first argument must be a symbol")
 	}
 
 	// Evaluate the second argument (the value)
@@ -76,7 +76,7 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			// Control flow
 			"if",
 			// Variable and function definition
-			"define", "lambda", "defun",
+			"def", "lambda", "defun",
 			// Macro system
 			"defmacro", "quote",
 			// List operations
@@ -158,7 +158,7 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"if": "(if condition then-expr else-expr)\nConditional expression.\nExample: (if (< 3 5) \"yes\" \"no\") => \"yes\"",
 
 		// Variable and function definition
-		"define": "(define name value)\nDefine a variable with a name and value.\nExample: (define x 42)",
+		"def":    "(def name value)\nDefine a variable with a name and value.\nExample: (def x 42)",
 		"lambda": "(lambda [params] body)\nCreate an anonymous function.\nExample: (lambda [x] (+ x 1))",
 		"defun":  "(defun name [params] body)\nDefine a named function.\nExample: (defun square [x] (* x x))",
 

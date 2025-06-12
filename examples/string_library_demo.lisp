@@ -26,7 +26,7 @@
 
 ; Test string splitting and joining
 (println "\n--- String Splitting & Joining ---")
-(define words (string-split "apple,banana,cherry" ","))
+(def words (string-split "apple,banana,cherry" ","))
 (println "Split by comma:" words)
 (println "Join with ' | ':" (string-join words " | "))
 
@@ -56,21 +56,21 @@
 ; For now, let's demonstrate the concept with inline implementations
 ; These show how to build higher-level functions from the primitive built-ins
 
-(define str-reverse 
+(def str-reverse 
   (lambda [str]
     "Reverse a string by converting to list and back"
     (let ((chars (map (lambda [i] (string-char-at str i))
                       (range 0 (string-length str)))))
       (string-join (reverse chars) ""))))
 
-(define range
+(def range
   (lambda [start end]
     "Create a list of numbers from start to end-1"
     (if (>= start end)
         (list)
         (cons start (range (+ start 1) end)))))
 
-(define str-capitalize
+(def str-capitalize
   (lambda [str]
     "Capitalize first character of string - built from primitives"
     (if (string-empty? str)
@@ -78,18 +78,18 @@
         (string-concat (string-upper (string-substring str 0 1))
                       (string-lower (string-substring str 1 (string-length str)))))))
 
-(define str-title-case
+(def str-title-case
   (lambda [str]
     "Convert to title case - capitalize each word"
     (let ((words (string-split (string-trim str) " ")))
       (string-join (map str-capitalize words) " "))))
 
-(define str-blank?
+(def str-blank?
   (lambda [str]
     "Check if string is empty or only whitespace"
     (string-empty? (string-trim str))))
 
-(define str-numeric?
+(def str-numeric?
   (lambda [str]
     "Check if string contains only numeric characters"
     (string-regex-match? str "^[0-9]+$")))
@@ -104,7 +104,7 @@
 
 ; Demonstrate interactive string processing
 (println "\n--- Interactive String Processing ---")
-(define sample-text "  The Quick Brown Fox Jumps Over The Lazy Dog  ")
+(def sample-text "  The Quick Brown Fox Jumps Over The Lazy Dog  ")
 (println "Original text:" sample-text)
 (println "Trimmed:" (string-trim sample-text))
 (println "Uppercase:" (string-upper (string-trim sample-text)))
@@ -113,7 +113,7 @@
 
 ; Demonstrate string analysis with output
 (println "\n--- String Analysis ---")
-(define analysis-text "Hello World 123!")
+(def analysis-text "Hello World 123!")
 (println "Analyzing text:" analysis-text)
 (println "Length:" (string-length analysis-text))
 (println "Contains digits:" (string-regex-match? analysis-text "[0-9]"))
@@ -125,21 +125,21 @@
 (println "\n--- Practical Examples ---")
 
 ; Example 1: Text formatting
-(define format-name 
+(def format-name 
   (lambda [first last]
     (string-concat (str-capitalize first) " " (str-capitalize last))))
 
 (println "Formatted name:" (format-name "john" "doe"))
 
 ; Example 2: Data processing with output
-(define csv-line "apple,banana,cherry,date")
+(def csv-line "apple,banana,cherry,date")
 (println "CSV data:" csv-line)
-(define fruits (string-split csv-line ","))
+(def fruits (string-split csv-line ","))
 (println "Parsed fruits:" fruits)
 (println "Fruit count:" (length fruits))
 
 ; Print each fruit with formatting
-(define print-fruit-list
+(def print-fruit-list
   (lambda [fruits]
     (if (null? fruits)
         "Done!"
@@ -205,7 +205,7 @@
 
 ; Test string processing pipeline
 (println "\n--- String Processing Pipeline ---")
-(define text "  HELLO world from LISP interpreter  ")
+(def text "  HELLO world from LISP interpreter  ")
 (println "Original:" text)
 (println "Trimmed & title case:" (str-title-case (string-trim text)))
 

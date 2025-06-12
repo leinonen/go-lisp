@@ -2,18 +2,18 @@
 ;;; Demonstrates the keyword data type and its use with hash maps
 
 ;; Basic keyword usage - keywords are self-evaluating
-(define example-keywords (list :name :first-name :user-id))
+(def example-keywords (list :name :first-name :user-id))
 example-keywords
 
 ;; Keywords are self-evaluating
-(define my-keyword :status)
+(def my-keyword :status)
 my-keyword
 
 ;; Keywords in lists
 (list :name :age :email)
 
 ;; Hash maps with keyword keys (more idiomatic)
-(define person (hash-map
+(def person (hash-map
   :name "Alice"
   :age 30
   :city "Boston"))
@@ -26,11 +26,11 @@ person
 (hash-map-get person :missing)  ; Returns nil
 
 ;; Adding and updating with keywords
-(define updated-person (hash-map-put person :email "alice@example.com"))
+(def updated-person (hash-map-put person :email "alice@example.com"))
 updated-person
 
 ;; Mixed string and keyword keys
-(define mixed-map (hash-map
+(def mixed-map (hash-map
   "string-key" "string-value"
   :keyword-key "keyword-value"))
 
@@ -45,11 +45,11 @@ mixed-map
 (hash-map-contains? person :missing)
 
 ;; Removing with keywords
-(define minimal-person (hash-map-remove person :city))
+(def minimal-person (hash-map-remove person :city))
 minimal-person
 
 ;; Keywords are great for configuration
-(define config (hash-map
+(def config (hash-map
   :debug #t
   :port 8080
   :host "localhost"
@@ -59,7 +59,7 @@ minimal-person
 config
 
 ;; Using keywords for function parameters (more readable)
-(define create-user (lambda [name email age]
+(def create-user (lambda [name email age]
   (hash-map
     :name name
     :email email
@@ -67,14 +67,14 @@ config
     :created-at "2024-01-15"
     :active #t)))
 
-(define user1 (create-user "Charlie" "charlie@example.com" 28))
-(define user2 (create-user "Diana" "diana@example.com" 32))
+(def user1 (create-user "Charlie" "charlie@example.com" 28))
+(def user2 (create-user "Diana" "diana@example.com" 32))
 
 user1
 user2
 
 ;; Helper function for safe access with defaults
-(define get-with-default (lambda [map key default]
+(def get-with-default (lambda [map key default]
   (if (hash-map-contains? map key)
       (hash-map-get map key)
       default)))
@@ -83,7 +83,7 @@ user2
 (get-with-default user1 :name "unknown")
 
 ;; Example: Application state with keywords
-(define app-state (hash-map
+(def app-state (hash-map
   :current-user nil
   :logged-in #f
   :theme :dark

@@ -10,7 +10,7 @@
   (list 'if condition body 'nil))
 
 (print "=== When Macro Demo ===")
-(define x 10)
+(def x 10)
 (when (> x 5) (print "x is greater than 5"))
 (when (< x 5) (print "This won't print"))
 
@@ -56,7 +56,7 @@
     expr))
 
 (print "\n=== Debug Macro Demo ===")
-(define result (debug (+ 10 20 30)))
+(def result (debug (+ 10 20 30)))
 (print (str "Expression: " (first result)))
 (print (str "Result: " (first (rest result))))
 
@@ -68,7 +68,7 @@
   (if condition true-branch false-branch))
 
 (print "\n=== Compile-time Conditional ===")
-(define debug-mode #t)
+(def debug-mode #t)
 (compile-time-if debug-mode
   (print "Debug mode is enabled")
   (print "Debug mode is disabled"))
@@ -81,7 +81,7 @@
   (list 'define var (list '+ var 1)))
 
 (print "\n=== Increment Macro Demo ===")
-(define counter 0)
+(def counter 0)
 (print (str "Counter before: " counter))
 (inc! counter)
 (print (str "Counter after inc!: " counter))

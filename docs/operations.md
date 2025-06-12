@@ -110,14 +110,14 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 
 ### Variable Definition
 ```lisp
-(define name value)
+(def name value)
 ```
 
 **Examples:**
 ```lisp
-(define x 42)
-(define my-list (list 1 2 3))
-(define square-fn (lambda [x] (* x x)))
+(def x 42)
+(def my-list (list 1 2 3))
+(def square-fn (lambda [x] (* x x)))
 ```
 
 ## List Operations
@@ -214,7 +214,7 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 
 **Examples:**
 ```lisp
-(define person (hash-map :name "Bob" :age 25))
+(def person (hash-map :name "Bob" :age 25))
 (hash-map-get person :name)       ; => "Bob"
 (hash-map-contains? person :age)  ; => #t
 (hash-map-keys person)            ; => (:name :age)
