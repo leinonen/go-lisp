@@ -149,6 +149,16 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalModules(list.Elements[1:])
 		case "help":
 			return e.evalBuiltins(list.Elements[1:])
+		// Atom operations
+		case "atom":
+			return e.evalAtom(list.Elements[1:])
+		case "deref":
+			return e.evalDeref(list.Elements[1:])
+		case "swap!":
+			return e.evalSwap(list.Elements[1:])
+		case "reset!":
+			return e.evalReset(list.Elements[1:])
+		// Hash map operations
 		case "hash-map":
 			return e.evalHashMap(list.Elements[1:])
 		case "hash-map-get":

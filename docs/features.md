@@ -6,7 +6,7 @@ A modern, production-ready Lisp interpreter with comprehensive language support 
 
 **Basic**: Variables, functions, lists, arithmetic, comparisons, comments  
 **Advanced**: Closures, recursion, tail-call optimization, error handling  
-**Data Types**: Numbers (including big integers), strings, booleans, lists, hash maps, keywords  
+**Data Types**: Numbers (including big integers), strings, booleans, lists, hash maps, keywords, atoms  
 **Modern Syntax**: Square bracket function parameters for improved readability and reduced confusion  
 
 ## Modern Capabilities
@@ -14,6 +14,7 @@ A modern, production-ready Lisp interpreter with comprehensive language support 
 **Functional Programming**: Higher-order functions, currying, composition, partial application  
 **Module System**: Namespaces, exports/imports, qualified access  
 **Macro System**: Code transformation with `defmacro`, `quote`, and templating  
+**Thread-safe State**: Clojure-style atoms for mutable references with atomic operations  
 **String Processing**: 20+ functions including regex support  
 **Development Tools**: Interactive REPL, environment inspection, built-in help  
 
@@ -29,6 +30,9 @@ Automatic big number support for arbitrary precision.
 
 ### Hash Maps
 `(hash-map :key "value")` `(hash-map-get hm :key)` `(hash-map-put hm :key val)`
+
+### Atoms (Thread-safe Mutable State)
+`(atom value)` `(deref atom)` `(swap! atom fn)` `(reset! atom new-value)`
 
 ### Functions (Modern Square Bracket Syntax)
 `(defn name [params] body)` `(fn [x] (* x x))`  
@@ -47,6 +51,7 @@ See `examples/` directory for comprehensive demonstrations.
 - **Keywords**: `:name`, `:status`, `:id` (self-evaluating symbols, perfect for hash map keys)
 - **Lists**: `(1 2 3)`, `("a" "b" "c")`, `()` (immutable linked lists)
 - **Hash Maps**: `{:name "Alice" :age 30}` (immutable key-value associative arrays)
+- **Atoms**: `#<atom:value>` (thread-safe mutable references for managing state)
 - **Symbols**: `+`, `-`, `x`, `my-var` (identifiers and operators)
 - **Functions**: `#<function([param1 param2])>` (first-class callable objects)
 - **Macros**: `#<macro([param1 param2])>` (code transformation functions)
@@ -267,3 +272,79 @@ The interpreter includes a powerful macro system that enables code transformatio
 - **Code Generation**: Automatically generate repetitive code patterns  
 - **DSL Creation**: Build domain-specific languages within Lisp
 - **Performance**: Code transformation happens at evaluation time, not runtime
+
+## Atom System (Thread-safe Mutable State)
+
+The interpreter provides Clojure-style atoms for managing mutable state in a thread-safe manner. Atoms offer atomic, synchronous access to a single piece of data using software transactional memory principles.
+
+### Core Atom Operations
+
+#### Atom Creation
+- `(atom value)` - Create a new atom with an initial value
+- Atoms can hold any data type: numbers, strings, lists, hash maps, etc.
+- Each atom is an independent mutable reference
+
+#### Value Access
+- `(deref atom)` - Get the current value of an atom
+- Dereferencing is always atomic and returns the current state
+- Non-blocking read operation
+
+#### Atomic Updates
+- `(swap! atom function)` - Apply a function to the current value atomically
+- The function receives the current value and returns the new value
+- If another thread modifies the atom during the swap, the operation retries
+- `(reset! atom new-value)` - Set the atom to a completely new value atomically
+
+### Thread Safety
+
+Atoms use Go mutexes internally to ensure thread-safe access:
+- **Atomic Reads**: `deref` operations are guaranteed to see consistent state
+- **Atomic Writes**: `swap!` and `reset!` operations are serialized and atomic
+- **Consistency**: No torn reads or partial updates possible
+- **Performance**: Optimized for high-concurrency scenarios
+
+### Examples
+
+```lisp
+; Basic atom usage
+(def counter (atom 0))
+(deref counter)                    ; => 0
+
+; Atomic increment
+(swap! counter (fn [x] (+ x 1)))
+(deref counter)                    ; => 1
+
+; Direct reset
+(reset! counter 100)
+(deref counter)                    ; => 100
+
+; Atoms with complex data
+(def person (atom {:name "Alice" :age 30}))
+(swap! person (fn [p] (hash-map-put p :age 31)))
+(deref person)                     ; => {:name "Alice" :age 31}
+
+; Safe concurrent updates
+(def shared-state (atom (list)))
+(defn add-item [item]
+  (swap! shared-state (fn [lst] (cons item lst))))
+
+(add-item "first")
+(add-item "second")
+(deref shared-state)               ; => ("second" "first")
+```
+
+### Use Cases
+
+- **Counters**: Thread-safe incrementing/decrementing
+- **Caches**: Atomic cache updates and invalidation  
+- **State Management**: Application state in concurrent environments
+- **Configuration**: Runtime configuration updates
+- **Statistics**: Collecting metrics atomically
+
+### Best Practices
+
+- Use atoms for coordinated state that needs thread safety
+- Keep atom update functions pure and side-effect free
+- Minimize the scope of data protected by atoms
+- Consider using multiple atoms instead of one large atom for better concurrency
+- Use `swap!` for transformations, `reset!` for complete replacement

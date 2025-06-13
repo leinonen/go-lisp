@@ -18,7 +18,7 @@ Comprehensive examples demonstrating all interpreter features. Each file focuses
 ### `core_library.lisp`
 **Built-in functions**: mathematical operations, list utilities, higher-order functions.
 
-### `functional_library_demo.lisp` ⭐ NEW
+### `functional_library_demo.lisp`
 **Functional programming**: currying, composition, partial application, higher-order utilities, data pipelines.
 
 ### `string_library_demo.lisp`
@@ -34,6 +34,9 @@ Comprehensive examples demonstrating all interpreter features. Each file focuses
 
 ### `keywords.lisp`
 **Keyword syntax**: self-evaluating symbols, hash map keys, data structure patterns.
+
+### `atoms_demo.lisp`
+**Thread-safe state**: Clojure-style atoms, atomic operations, mutable references, concurrency safety.
 
 ### `macro_system.lisp`
 **Macro programming**: defmacro, quote forms, code generation, DSL creation.

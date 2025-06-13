@@ -131,6 +131,8 @@ func (cp *CompletionProvider) getBuiltinFunctions() []string {
 		"map", "filter", "reduce",
 		// List manipulation
 		"append", "reverse", "nth",
+		// Atom operations
+		"atom", "deref", "swap!", "reset!",
 		// Hash map operations
 		"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
 		"hash-map-contains?", "hash-map-keys", "hash-map-values",

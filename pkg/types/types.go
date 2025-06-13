@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"strconv"
+	"sync"
 )
 
 // TokenType represents the type of a token
@@ -337,4 +338,48 @@ type BuiltinFunctionValue struct {
 
 func (b BuiltinFunctionValue) String() string {
 	return fmt.Sprintf("#<built-in:%s>", b.Name)
+}
+
+// AtomValue represents a mutable reference to a value, protected by a mutex
+type AtomValue struct {
+	value Value
+	mutex sync.RWMutex
+}
+
+// NewAtom creates a new atom with the given initial value
+func NewAtom(initialValue Value) *AtomValue {
+	return &AtomValue{
+		value: initialValue,
+	}
+}
+
+// Value returns the current value of the atom (thread-safe read)
+func (a *AtomValue) Value() Value {
+	a.mutex.RLock()
+	defer a.mutex.RUnlock()
+	return a.value
+}
+
+// SetValue sets the atom's value (thread-safe write)
+func (a *AtomValue) SetValue(newValue Value) Value {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	a.value = newValue
+	return newValue
+}
+
+// SwapValue applies a function to the current value and updates the atom (thread-safe)
+func (a *AtomValue) SwapValue(fn func(Value) Value) Value {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	a.value = fn(a.value)
+	return a.value
+}
+
+func (a *AtomValue) String() string {
+	currentValue := a.Value()
+	if currentValue == nil {
+		return "#<atom:nil>"
+	}
+	return fmt.Sprintf("#<atom:%s>", currentValue.String())
 }

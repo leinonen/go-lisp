@@ -66,6 +66,13 @@ func valuesEqual(a, b types.Value) bool {
 	case *types.NilValue:
 		_, ok := b.(*types.NilValue)
 		return ok
+	case *types.AtomValue:
+		if vb, ok := b.(*types.AtomValue); ok {
+			// For atoms, compare their current values
+			return valuesEqual(va.Value(), vb.Value())
+		}
+	case nil:
+		return b == nil
 	}
 	return false
 }

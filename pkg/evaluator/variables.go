@@ -85,6 +85,8 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			"map", "filter", "reduce",
 			// List manipulation
 			"append", "reverse", "nth",
+			// Atom operations
+			"atom", "deref", "swap!", "reset!",
 			// Hash map operations
 			"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
 			"hash-map-contains?", "hash-map-keys", "hash-map-values",
@@ -183,6 +185,12 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"append":  "(append lst1 lst2)\nCombine two lists into one.\nExample: (append (list 1 2) (list 3 4)) => (1 2 3 4)",
 		"reverse": "(reverse lst)\nReverse the order of elements in a list.\nExample: (reverse (list 1 2 3)) => (3 2 1)",
 		"nth":     "(nth index lst)\nGet the element at a specific index (0-based).\nExample: (nth 1 (list \"a\" \"b\" \"c\")) => \"b\"",
+
+		// Atom operations
+		"atom":   "(atom value)\nCreate an atom with an initial value.\nExample: (atom 42) => #<atom:42>",
+		"deref":  "(deref atom)\nGet the current value of an atom.\nExample: (deref (atom 42)) => 42",
+		"swap!":  "(swap! atom function)\nAtomically update an atom by applying a function to its current value.\nExample: (swap! (atom 42) (fn [x] (+ x 1))) => 43",
+		"reset!": "(reset! atom new-value)\nReset an atom to a new value.\nExample: (reset! (atom 42) 100) => 100",
 
 		// Hash map operations
 		"hash-map":           "(hash-map key1 value1 key2 value2 ...)\nCreate a hash map with key-value pairs.\nExample: (hash-map \"name\" \"Alice\" \"age\" 30) => {\"name\" Alice \"age\" 30}",
