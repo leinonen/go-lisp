@@ -11,7 +11,7 @@
 
 # Build from source
 make build
-# or: go build -o lisp-interpreter ./cmd/lisp-interpreter
+# or: go build -o lisp ./cmd/lisp-interpreter
 ```
 
 ## REPL Commands

@@ -1,6 +1,6 @@
-# Lisp Interpreter Library
+# Go Lisp Library
 
-This directory contains higher-level utilities and extensions built on top of the core interpreter functionality. The library is organized into specialized modules for different programming needs.
+This directory contains higher-level utilities and extensions built on top of the core Go Lisp functionality. The library is organized into specialized modules for different programming needs.
 
 ## Library Structure
 

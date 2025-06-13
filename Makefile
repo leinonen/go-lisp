@@ -9,7 +9,7 @@ BINARY_NAME=lisp
 all: build
 
 build: ## Build the interpreter binary
-	go build -o $(BINARY_NAME) ./cmd/lisp-interpreter
+	go build -o $(BINARY_NAME) ./cmd/go-lisp
 
 run: build ## Build and run the interpreter
 	./$(BINARY_NAME)

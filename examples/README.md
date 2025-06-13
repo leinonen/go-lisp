@@ -1,6 +1,6 @@
 # Examples
 
-Comprehensive examples demonstrating all interpreter features. Each file focuses on specific capabilities with practical, runnable code.
+Comprehensive examples demonstrating all Go Lisp features. Each file focuses on specific capabilities with practical, runnable code.
 
 ## Core Examples
 

@@ -1,6 +1,6 @@
 # Features
 
-A modern, production-ready Lisp interpreter with comprehensive language support and advanced capabilities.
+A modern, production-ready Go Lisp implementation with comprehensive language support and advanced capabilities.
 
 ## Core Language
 

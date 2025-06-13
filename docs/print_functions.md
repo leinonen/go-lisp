@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Lisp interpreter includes built-in `print!` and `println!` functions that enable programs to produce output. These functions are essential for creating interactive programs, debugging, displaying results, and creating user-friendly applications. The exclamation mark indicates that these functions perform side effects (output to stdout).
+Go Lisp includes built-in `print!` and `println!` functions that enable programs to produce output. These functions are essential for creating interactive programs, debugging, displaying results, and creating user-friendly applications. The exclamation mark indicates that these functions perform side effects (output to stdout).
 
 ```lisp
 ;; Clear and modern function syntax

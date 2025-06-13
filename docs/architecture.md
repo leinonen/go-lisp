@@ -1,6 +1,6 @@
 # Architecture
 
-The Lisp interpreter follows a traditional three-phase design with a modular, test-driven architecture.
+Go Lisp follows a traditional three-phase design with a modular, test-driven architecture.
 
 ## Core Design
 
@@ -24,7 +24,7 @@ This project was built using TDD principles:
 Built with modern Go practices and clean architecture principles:
 
 ```
-lisp-interpreter/
+go-lisp/
 ├── docs/                        # Comprehensive documentation
 │   ├── features.md             # Complete feature overview and operations reference
 │   ├── architecture.md         # Technical design and implementation details (this file)
@@ -60,7 +60,7 @@ lisp-interpreter/
 │   ├── functional.lisp        # Functional programming utilities
 │   ├── strings.lisp           # Advanced string operations
 │   └── macros.lisp            # Control flow and utility macros
-├── cmd/lisp-interpreter/       # Main application
+├── cmd/lisp-interpreter/       # Main Go Lisp application
 │   └── main.go                # REPL + file execution + command line interface
 └── pkg/                        # Core implementation packages
     ├── types/                  # Type system (14 types including keywords)
@@ -112,18 +112,6 @@ lisp-interpreter/
         ├── errors.go          # Error handling and formatting
         └── errors_test.go     # Error handling tests
 ```
-    │   └── tokenizer_test.go    # Tokenizer tests
-    ├── parser/
-    │   ├── parser.go            # Syntax analysis
-    │   └── parser_test.go       # Parser tests
-    ├── evaluator/
-    │   ├── evaluator.go         # Expression evaluation
-    │   ├── module_test.go       # Module system tests
-    │   └── evaluator_test.go    # Evaluator tests
-    └── interpreter/
-        ├── interpreter.go       # High-level interpreter API
-        └── interpreter_test.go  # Integration tests
-```
 
 ## Package Overview
 
@@ -158,7 +146,7 @@ lisp-interpreter/
 
 ### Application Layer
 
-- **`cmd/lisp-interpreter`** - Main application
+- **`cmd/lisp-interpreter`** - Main Go Lisp application
   - Implements interactive REPL
   - Handles command-line arguments
   - Provides user-friendly error messages

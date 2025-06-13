@@ -1,7 +1,7 @@
 # Core Library Documentation
 
 ## Overview
-The core library (`core.lisp`) provides a comprehensive collection of mathematical functions, list utilities, and higher-order functions that extend the basic capabilities of the Lisp interpreter.
+The core library (`core.lisp`) provides a comprehensive collection of mathematical functions, list utilities, and higher-order functions that extend the basic capabilities of Go Lisp.
 
 ## Installation and Usage
 

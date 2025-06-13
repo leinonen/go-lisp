@@ -1,6 +1,6 @@
 # Future Enhancements
 
-This document outlines planned improvements and potential future directions for the Lisp interpreter.
+This document outlines planned improvements and potential future directions for Go Lisp.
 
 ## Completed Features ✅
 
@@ -170,7 +170,7 @@ We welcome contributions in the following areas:
 
 ## Long-term Vision
 
-The goal is to create a fully-featured, production-ready Lisp interpreter that:
+The goal is to create a fully-featured, production-ready Go Lisp implementation that:
 
 - **Performs Well**: Competitive with other dynamic languages
 - **Scales Up**: Suitable for large applications and systems

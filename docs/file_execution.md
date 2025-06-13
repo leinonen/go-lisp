@@ -1,7 +1,7 @@
 # File Execution Documentation
 
 ## Overview
-The Lisp interpreter supports executing Lisp code directly from files, allowing you to run scripts and load libraries without using the interactive REPL.
+Go Lisp supports executing Lisp code directly from files, allowing you to run scripts and load libraries without using the interactive REPL.
 
 ## Usage
 ```bash

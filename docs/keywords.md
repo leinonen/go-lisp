@@ -4,7 +4,7 @@ Keywords are symbolic constants that start with a colon (`:`) and evaluate to th
 
 ## Overview
 
-Keywords in this Lisp interpreter:
+Keywords in Go Lisp:
 - Start with a colon `:` followed by valid symbol characters
 - Are self-evaluating (they evaluate to themselves)
 - Can contain letters, numbers, and common symbols like `-`, `_`, `?`, `!`
@@ -205,4 +205,4 @@ Keywords work seamlessly with:
 4. **Prefer keywords over strings** for configuration keys and record fields
 5. **Group related keywords** with common prefixes (`:user-name`, `:user-email`, `:user-status`)
 
-This implementation provides a clean and idiomatic way to work with symbolic constants and structured data in the Lisp interpreter.
+This implementation provides a clean and idiomatic way to work with symbolic constants and structured data in Go Lisp.

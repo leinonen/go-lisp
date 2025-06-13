@@ -1,10 +1,10 @@
 # Mathematical Functions Reference
 
-Complete reference for all built-in mathematical functions in the Lisp interpreter.
+Complete reference for all built-in mathematical functions in Go Lisp.
 
 ## Overview
 
-The interpreter provides a comprehensive set of mathematical functions covering:
+Go Lisp provides a comprehensive set of mathematical functions covering:
 - Basic mathematical operations (sqrt, pow, abs)
 - Trigonometric functions (sin, cos, tan and their inverses)
 - Hyperbolic functions (sinh, cosh, tanh)

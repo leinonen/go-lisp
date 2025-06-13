@@ -163,7 +163,7 @@ Function composition chain: 121
 
 The functional programming library is now complete and production-ready! This implementation provides a solid foundation for:
 
-1. **Advanced functional programming patterns** in your Lisp interpreter
+1. **Advanced functional programming patterns** in your Go Lisp programs
 2. **Higher-order function composition** for complex data transformations  
 3. **Nil-safe programming** with utilities like `fnil`
 4. **Pipeline-style programming** with `pipe` and `comp` functions

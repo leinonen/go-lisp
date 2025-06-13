@@ -1,6 +1,6 @@
 # Operations Reference
 
-Complete guide to all operations and built-in functions in the Lisp interpreter.
+Complete guide to all operations and built-in functions in Go Lisp.
 
 ## Function Definition
 
@@ -503,4 +503,4 @@ true                                ; Boolean true
 false                                ; Boolean false
 ```
 
-This reference covers all the core operations available in the Lisp interpreter. For more examples and advanced usage patterns, see the [Examples Guide](examples.md), [Mathematical Functions](mathematical_functions.md), and the various library documentation files.
+This reference covers all the core operations available in Go Lisp. For more examples and advanced usage patterns, see the [Examples Guide](examples.md), [Mathematical Functions](mathematical_functions.md), and the various library documentation files.

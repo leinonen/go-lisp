@@ -1,11 +1,11 @@
-# Lisp Interpreter
+# Go Lisp
 
-A modern, production-ready Lisp interpreter implemented in Go. Features comprehensive language support, advanced data types, functional programming utilities, and a powerful module system.
+A modern, production-ready Lisp dialect implemented in Go. Features comprehensive language support, advanced data types, functional programming utilities, and a powerful module system.
 
 ## Quick Start
 
 ```bash
-# Build the interpreter
+# Build go-lisp
 make build
 
 # Show help and available options
@@ -30,7 +30,7 @@ go run ./cmd/lisp-interpreter -f examples/basic_features.lisp
 
 ## Command Line Usage
 
-The Lisp interpreter supports multiple modes of operation through command line parameters:
+Go Lisp supports multiple modes of operation through command line parameters:
 
 ### Interactive REPL Mode
 ```bash
@@ -78,7 +78,7 @@ The Lisp interpreter supports multiple modes of operation through command line p
 
 ## Current Status
 
-This Lisp interpreter is **feature-complete** and **production-ready** with:
+Go Lisp is **feature-complete** and **production-ready** with:
 
 - ✅ **Full Language Support**: All core Lisp constructs implemented
 - ✅ **Advanced Features**: Big numbers, hash maps, keywords, modules, tail optimization
@@ -213,7 +213,7 @@ Built with modern Go practices and clean architecture principles. See **[Archite
 
 ## Contributing
 
-This project is a **mature, feature-complete Lisp interpreter** built with production-quality standards. We welcome contributions in several areas:
+This project is a **mature, feature-complete Go Lisp implementation** built with production-quality standards. We welcome contributions in several areas:
 
 ### Areas for Contribution
 - **🐛 Bug Reports**: Help us maintain reliability by reporting issues
@@ -235,7 +235,7 @@ See the [Architecture](docs/architecture.md) guide for technical details and the
 ## Recognition
 
 **Built in 2025** as a comprehensive demonstration of:
-- Modern Lisp interpreter implementation
+- Modern Go Lisp implementation
 - Test-driven development methodologies  
 - Clean architecture principles in Go
 - Production-quality documentation practices

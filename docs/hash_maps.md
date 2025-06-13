@@ -4,7 +4,7 @@ Hash maps are key-value associative data structures that provide efficient stora
 
 ## Overview
 
-Hash maps in this Lisp interpreter:
+Hash maps in Go Lisp:
 - Use strings as keys and any Lisp value as values
 - Support immutable operations (functional style)
 - Provide O(1) average case lookup, insertion, and deletion
@@ -350,4 +350,4 @@ Hash maps work seamlessly with other Lisp features:
 - **Modules**: Hash maps can be used within modules and exported/imported
 - **Recursion**: Safe to use in recursive functions with tail call optimization
 
-This implementation provides a solid foundation for associative data structures in the Lisp interpreter, enabling more sophisticated data manipulation and storage patterns.
+This implementation provides a solid foundation for associative data structures in Go Lisp, enabling more sophisticated data manipulation and storage patterns.

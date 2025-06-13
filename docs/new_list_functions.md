@@ -1,6 +1,6 @@
 # New List Functions Documentation
 
-This document describes the newly added list functions to the Lisp interpreter.
+This document describes the newly added list functions to Go Lisp.
 
 ## Functions
 

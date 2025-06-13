@@ -1,7 +1,7 @@
 # File Functions Documentation
 
 ## Overview
-The Lisp interpreter provides built-in file system operations for reading, writing, and checking file existence. These functions enable scripts to interact with the file system directly from Lisp code.
+Go Lisp provides built-in file system operations for reading, writing, and checking file existence. These functions enable scripts to interact with the file system directly from Lisp code.
 
 ## Available Functions
 
