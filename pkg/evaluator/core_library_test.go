@@ -251,9 +251,9 @@ func TestCoreLibraryFunctions(t *testing.T) {
 				input    string
 				expected string
 			}{
-				{"all positive", "(all (fn [x] (> x 0)) (list 1 2 3))", "#t"},
-				{"not all positive", "(all (fn [x] (> x 0)) (list 1 -2 3))", "#f"},
-				{"all on empty list", "(all (fn [x] (> x 0)) (list))", "#t"},
+				{"all positive", "(all (fn [x] (> x 0)) (list 1 2 3))", "true"},
+				{"not all positive", "(all (fn [x] (> x 0)) (list 1 -2 3))", "false"},
+				{"all on empty list", "(all (fn [x] (> x 0)) (list))", "true"},
 			}
 
 			for _, tt := range tests {
@@ -277,9 +277,9 @@ func TestCoreLibraryFunctions(t *testing.T) {
 				input    string
 				expected string
 			}{
-				{"any positive", "(any (fn [x] (> x 0)) (list -1 2 -3))", "#t"},
-				{"no positive", "(any (fn [x] (> x 0)) (list -1 -2 -3))", "#f"},
-				{"any on empty list", "(any (fn [x] (> x 0)) (list))", "#f"},
+				{"any positive", "(any (fn [x] (> x 0)) (list -1 2 -3))", "true"},
+				{"no positive", "(any (fn [x] (> x 0)) (list -1 -2 -3))", "false"},
+				{"any on empty list", "(any (fn [x] (> x 0)) (list))", "false"},
 			}
 
 			for _, tt := range tests {

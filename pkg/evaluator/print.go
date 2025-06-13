@@ -62,9 +62,9 @@ func (e *Evaluator) valueToString(value types.Value) string {
 		return fmt.Sprintf("%.0f", float64(v))
 	case types.BooleanValue:
 		if v {
-			return "#t"
+			return "true"
 		}
-		return "#f"
+		return "false"
 	case *types.ListValue:
 		result := "("
 		for i, elem := range v.Elements {

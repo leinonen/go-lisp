@@ -12,8 +12,8 @@
 
 ; Multiple arguments
 (println! "\n--- Multiple Arguments ---")
-(println! "Multiple args:" "arg1" "arg2" "arg3" 42 #t)
-(print! "Print multiple:" 1 2 3 "hello" #f)
+(println! "Multiple args:" "arg1" "arg2" "arg3" 42 true)
+(print! "Print multiple:" 1 2 3 "hello" false)
 (println!)  ; Empty println! for newline
 
 ; Different data types
@@ -21,8 +21,8 @@
 (println! "String:" "Hello World")
 (println! "Number:" 42)
 (println! "Big number:" 123456789012345678901234567890)
-(println! "Boolean true:" #t)
-(println! "Boolean false:" #f)
+(println! "Boolean true:" true)
+(println! "Boolean false:" false)
 (println! "List:" (list 1 2 3 4 5))
 (println! "Hash map:" (hash-map "name" "Alice" "age" 30))
 (println! "Function:" (fn [x] (* x x)))

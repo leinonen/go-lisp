@@ -122,9 +122,9 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 				input    string
 				expected string
 			}{
-				{"complement of positive number", "(not-positive? 5)", "#f"},
-				{"complement of negative number", "(not-positive? -3)", "#t"},
-				{"complement of zero", "(not-positive? 0)", "#t"},
+				{"complement of positive number", "(not-positive? 5)", "false"},
+				{"complement of negative number", "(not-positive? -3)", "true"},
+				{"complement of zero", "(not-positive? 0)", "true"},
 			}
 
 			for _, tt := range tests {
@@ -574,10 +574,10 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 				input    string
 				expected string
 			}{
-				{"positive and even", "(positive-and-even? 4)", "#t"},
-				{"positive but odd", "(positive-and-even? 3)", "#f"},
-				{"negative and even", "(positive-and-even? -2)", "#f"},
-				{"negative and odd", "(positive-and-even? -1)", "#f"},
+				{"positive and even", "(positive-and-even? 4)", "true"},
+				{"positive but odd", "(positive-and-even? 3)", "false"},
+				{"negative and even", "(positive-and-even? -2)", "false"},
+				{"negative and odd", "(positive-and-even? -1)", "false"},
 			}
 
 			for _, tt := range tests {
@@ -606,9 +606,9 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 				input    string
 				expected string
 			}{
-				{"satisfies all three", "(positive-even-small? 4)", "#t"},
-				{"positive even but large", "(positive-even-small? 12)", "#f"},
-				{"positive small but odd", "(positive-even-small? 5)", "#f"},
+				{"satisfies all three", "(positive-even-small? 4)", "true"},
+				{"positive even but large", "(positive-even-small? 12)", "false"},
+				{"positive small but odd", "(positive-even-small? 5)", "false"},
 			}
 
 			for _, tt := range tests {
@@ -637,10 +637,10 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 				input    string
 				expected string
 			}{
-				{"positive and even", "(positive-or-even? 4)", "#t"},
-				{"positive but odd", "(positive-or-even? 3)", "#t"},
-				{"negative but even", "(positive-or-even? -2)", "#t"},
-				{"negative and odd", "(positive-or-even? -1)", "#f"},
+				{"positive and even", "(positive-or-even? 4)", "true"},
+				{"positive but odd", "(positive-or-even? 3)", "true"},
+				{"negative but even", "(positive-or-even? -2)", "true"},
+				{"negative and odd", "(positive-or-even? -1)", "false"},
 			}
 
 			for _, tt := range tests {

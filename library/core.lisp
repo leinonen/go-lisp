@@ -67,17 +67,17 @@
   ; Check if all elements in a list satisfy a predicate
   (defn all [predicate lst]
     (if (empty? lst)
-        #t
+        true
         (if (predicate (first lst))
             (all predicate (rest lst))
-            #f)))
+            false)))
             
   ; Check if any element in a list satisfies a predicate
   (defn any [predicate lst]
     (if (empty? lst)
-        #f
+        false
         (if (predicate (first lst))
-            #t
+            true
             (any predicate (rest lst)))))
             
   ; Take first n elements from a list

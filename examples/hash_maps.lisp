@@ -43,13 +43,13 @@ minimal-person
 ;; Practical example: Configuration management
 (def config (hash-map 
   "database-url" "localhost:5432"
-  "debug" #t
+  "debug" true
   "max-connections" 100
   "timeout" 30))
 
 (def production-config 
   (hash-map-put 
-    (hash-map-put config "debug" #f)
+    (hash-map-put config "debug" false)
     "database-url" "prod-server:5432"))
 
 config
@@ -101,7 +101,7 @@ user-profile
     "email" email 
     "age" age
     "created-at" "2024-01-15"
-    "active" #t)))
+    "active" true)))
 
 (def user1 (create-user "Charlie" "charlie@example.com" 28))
 (def user2 (create-user "Diana" "diana@example.com" 32))
@@ -111,10 +111,10 @@ user2
 
 ;; Example: Hash map as a lookup table
 (def color-codes (hash-map
-  "red" "#FF0000"
+  "red" "falseF0000"
   "green" "#00FF00"
   "blue" "#0000FF"
-  "yellow" "#FFFF00"
+  "yellow" "falseFFF00"
   "purple" "#800080"))
 
 (def get-color-code (fn [color]

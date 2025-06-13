@@ -67,10 +67,10 @@ func TestTokenizer(t *testing.T) {
 		},
 		{
 			name:  "boolean values",
-			input: "#t #f",
+			input: "true false",
 			expected: []types.Token{
-				{Type: types.BOOLEAN, Value: "#t"},
-				{Type: types.BOOLEAN, Value: "#f"},
+				{Type: types.BOOLEAN, Value: "true"},
+				{Type: types.BOOLEAN, Value: "false"},
 			},
 		},
 		{

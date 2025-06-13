@@ -72,11 +72,11 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 
 **Examples:**
 ```lisp
-(= 5 5)            ; => #t
-(< 3 5)            ; => #t
-(> 10 7)           ; => #t
-(<= 3 3)           ; => #t
-(>= 8 5)           ; => #t
+(= 5 5)            ; => true
+(< 3 5)            ; => true
+(> 10 7)           ; => true
+(<= 3 3)           ; => true
+(>= 8 5)           ; => true
 ```
 
 ## Logical Operations
@@ -89,10 +89,10 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 
 **Examples:**
 ```lisp
-(and #t #t)        ; => #t
-(and #t #f)        ; => #f
-(or #f #t)         ; => #t
-(not #t)           ; => #f
+(and true true)        ; => true
+(and true false)        ; => false
+(or false true)         ; => true
+(not true)           ; => false
 ```
 
 ## Control Flow
@@ -163,7 +163,7 @@ Evaluates expressions in sequence and returns the result of the last expression.
 (rest (list 1 2 3))        ; => (2 3)
 (nth 1 (list "a" "b" "c")) ; => "b"
 (length (list 1 2 3 4))    ; => 4
-(empty? (list))            ; => #t
+(empty? (list))            ; => true
 ```
 
 ### List Manipulation
@@ -246,7 +246,7 @@ Evaluates expressions in sequence and returns the result of the last expression.
 ```lisp
 (def person (hash-map :name "Bob" :age 25))
 (hash-map-get person :name)       ; => "Bob"
-(hash-map-contains? person :age)  ; => #t
+(hash-map-contains? person :age)  ; => true
 (hash-map-keys person)            ; => (:name :age)
 ```
 
@@ -443,7 +443,7 @@ Evaluates expressions in sequence and returns the result of the last expression.
 (read-file "data.txt")            ; => "file contents..."
 
 ; Write to a file  
-(write-file "output.txt" "Hello, World!")  ; => #t
+(write-file "output.txt" "Hello, World!")  ; => true
 
 ; Check file existence
 (if (file-exists? "config.txt")
@@ -499,8 +499,8 @@ Keywords are self-evaluating symbols perfect for hash map keys:
 
 ```lisp
 nil                               ; Null/empty value (falsy)
-#t                                ; Boolean true
-#f                                ; Boolean false
+true                                ; Boolean true
+false                                ; Boolean false
 ```
 
 This reference covers all the core operations available in the Lisp interpreter. For more examples and advanced usage patterns, see the [Examples Guide](examples.md), [Mathematical Functions](mathematical_functions.md), and the various library documentation files.

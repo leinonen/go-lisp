@@ -51,7 +51,7 @@ func TestAtomCreation(t *testing.T) {
 		},
 		{
 			name:        "create atom with boolean",
-			input:       "(atom #t)",
+			input:       "(atom true)",
 			expectValue: types.BooleanValue(true),
 			expectError: false,
 		},
@@ -133,7 +133,7 @@ func TestDeref(t *testing.T) {
 		},
 		{
 			name:        "deref boolean atom",
-			setup:       "(def a (atom #f))",
+			setup:       "(def a (atom false))",
 			input:       "(deref a)",
 			expectValue: types.BooleanValue(false),
 			expectError: false,
@@ -316,8 +316,8 @@ func TestReset(t *testing.T) {
 		},
 		{
 			name:        "reset boolean atom",
-			setup:       "(def a (atom #t))",
-			input:       "(reset! a #f)",
+			setup:       "(def a (atom true))",
+			input:       "(reset! a false)",
 			expectValue: types.BooleanValue(false),
 			expectError: false,
 		},

@@ -102,18 +102,18 @@ Returns the square of the length of a list (useful for complexity analysis).
 Tests if all elements in a list satisfy a predicate.
 
 ```lisp
-(all (fn [x] (> x 0)) (list 1 2 3))     ; Returns #t
-(all (fn [x] (> x 0)) (list 1 -2 3))    ; Returns #f
-(all (fn [x] (> x 0)) (list))           ; Returns #t (vacuous truth)
+(all (fn [x] (> x 0)) (list 1 2 3))     ; Returns true
+(all (fn [x] (> x 0)) (list 1 -2 3))    ; Returns false
+(all (fn [x] (> x 0)) (list))           ; Returns true (vacuous truth)
 ```
 
 ### any(predicate, lst)
 Tests if any element in a list satisfies a predicate.
 
 ```lisp
-(any (fn [x] (> x 0)) (list -1 2 -3))   ; Returns #t
-(any (fn [x] (> x 0)) (list -1 -2 -3))  ; Returns #f
-(any (fn [x] (> x 0)) (list))           ; Returns #f
+(any (fn [x] (> x 0)) (list -1 2 -3))   ; Returns true
+(any (fn [x] (> x 0)) (list -1 -2 -3))  ; Returns false
+(any (fn [x] (> x 0)) (list))           ; Returns false
 ```
 
 ### take(n, lst)
@@ -211,10 +211,10 @@ Helper functions are not exported and remain internal:
 (def numbers (list 1 2 3 4 5 6 7 8 9 10))
 
 ; Check if all are positive
-(all (fn [x] (> x 0)) numbers)     ; #t
+(all (fn [x] (> x 0)) numbers)     ; true
 
 ; Check if any are even
-(any (fn [x] (= (% x 2) 0)) numbers) ; #t
+(any (fn [x] (= (% x 2) 0)) numbers) ; true
 
 ; Take first 5, drop first 3
 (take 5 numbers)        ; (1 2 3 4 5)

@@ -133,7 +133,7 @@ func TestInterpreterDefine(t *testing.T) {
 		},
 		{
 			name:     "define boolean variable",
-			input:    "(def flag #t)",
+			input:    "(def flag true)",
 			expected: types.BooleanValue(true),
 		},
 	}
@@ -521,7 +521,7 @@ func TestInterpreterListOperations(t *testing.T) {
 		},
 		{
 			name:     "mixed type list",
-			input:    `(list 42 "hello" #t)`,
+			input:    `(list 42 "hello" true)`,
 			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(42), types.StringValue("hello"), types.BooleanValue(true)}},
 		},
 		{
@@ -612,7 +612,7 @@ func TestInterpreterListOperationsComplex(t *testing.T) {
 		{"(rest (rest extended-list))", &types.ListValue{Elements: []types.Value{types.NumberValue(2), types.NumberValue(3)}}},
 
 		// List with expressions
-		{"(list (+ 1 2) (* 3 4) (if #t 5 6))", &types.ListValue{Elements: []types.Value{types.NumberValue(3), types.NumberValue(12), types.NumberValue(5)}}},
+		{"(list (+ 1 2) (* 3 4) (if true 5 6))", &types.ListValue{Elements: []types.Value{types.NumberValue(3), types.NumberValue(12), types.NumberValue(5)}}},
 	}
 
 	for i, expr := range expressions {
@@ -876,7 +876,7 @@ func TestAppendFunction(t *testing.T) {
 		},
 		{
 			name:     "append lists with different types",
-			input:    "(append (list 1 \"hello\") (list #t 3.14))",
+			input:    "(append (list 1 \"hello\") (list true 3.14))",
 			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.StringValue("hello"), types.BooleanValue(true), types.NumberValue(3.14)}},
 		},
 		{
@@ -925,7 +925,7 @@ func TestReverseFunction(t *testing.T) {
 		},
 		{
 			name:     "reverse list with mixed types",
-			input:    "(reverse (list \"hello\" 123 #t))",
+			input:    "(reverse (list \"hello\" 123 true))",
 			expected: &types.ListValue{Elements: []types.Value{types.BooleanValue(true), types.NumberValue(123), types.StringValue("hello")}},
 		},
 		{
@@ -995,7 +995,7 @@ func TestNthFunction(t *testing.T) {
 		},
 		{
 			name:     "nth with mixed types",
-			input:    "(nth 1 (list #t \"hello\" 3.14))",
+			input:    "(nth 1 (list true \"hello\" 3.14))",
 			expected: types.StringValue("hello"),
 		},
 	}

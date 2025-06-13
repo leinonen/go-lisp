@@ -68,7 +68,7 @@
   (if condition true-branch false-branch))
 
 (print! "\n=== Compile-time Conditional ===")
-(def debug-mode #t)
+(def debug-mode true)
 (compile-time-if debug-mode
   (print! "Debug mode is enabled")
   (print! "Debug mode is disabled"))

@@ -111,7 +111,15 @@ func (p *Parser) parseString() (types.Expr, error) {
 }
 
 func (p *Parser) parseBoolean() (types.Expr, error) {
-	value := p.current.Value == "#t"
+	var value bool
+	switch p.current.Value {
+	case "true":
+		value = true
+	case "false":
+		value = false
+	default:
+		return nil, fmt.Errorf("invalid boolean value: %s", p.current.Value)
+	}
 	expr := &types.BooleanExpr{Value: value}
 	p.readToken()
 	return expr, nil

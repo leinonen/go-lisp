@@ -50,7 +50,7 @@ minimal-person
 
 ;; Keywords are great for configuration
 (def config (hash-map
-  :debug #t
+  :debug true
   :port 8080
   :host "localhost"
   :database-url "localhost:5432"
@@ -65,7 +65,7 @@ config
     :email email
     :age age
     :created-at "2024-01-15"
-    :active #t)))
+    :active true)))
 
 (def user1 (create-user "Charlie" "charlie@example.com" 28))
 (def user2 (create-user "Diana" "diana@example.com" 32))
@@ -85,13 +85,13 @@ user2
 ;; Example: Application state with keywords
 (def app-state (hash-map
   :current-user nil
-  :logged-in #f
+  :logged-in false
   :theme :dark
   :language :en
   :notifications (hash-map
-    :email #t
-    :push #f
-    :desktop #t)))
+    :email true
+    :push false
+    :desktop true)))
 
 app-state
 

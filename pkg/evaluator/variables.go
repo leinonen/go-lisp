@@ -155,16 +155,16 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"/": "(/ num1 num2)\nDivision of two numbers.\nExample: (/ 15 3) => 5",
 
 		// Comparison operations
-		"=":  "(= val1 val2)\nEquality comparison.\nExample: (= 5 5) => #t",
-		"<":  "(< num1 num2)\nLess than comparison.\nExample: (< 3 5) => #t",
-		">":  "(> num1 num2)\nGreater than comparison.\nExample: (> 7 3) => #t",
-		"<=": "(<= num1 num2)\nLess than or equal comparison.\nExample: (<= 3 5) => #t, (<= 5 5) => #t",
-		">=": "(>= num1 num2)\nGreater than or equal comparison.\nExample: (>= 7 3) => #t, (>= 5 5) => #t",
+		"=":  "(= val1 val2)\nEquality comparison.\nExample: (= 5 5) => true",
+		"<":  "(< num1 num2)\nLess than comparison.\nExample: (< 3 5) => true",
+		">":  "(> num1 num2)\nGreater than comparison.\nExample: (> 7 3) => true",
+		"<=": "(<= num1 num2)\nLess than or equal comparison.\nExample: (<= 3 5) => true, (<= 5 5) => true",
+		">=": "(>= num1 num2)\nGreater than or equal comparison.\nExample: (>= 7 3) => true, (>= 5 5) => true",
 
 		// Logical operations
-		"and": "(and expr1 expr2 ...)\nLogical AND - returns #t if all expressions are true.\nExample: (and #t #t) => #t, (and #t #f) => #f",
-		"or":  "(or expr1 expr2 ...)\nLogical OR - returns #t if any expression is true.\nExample: (or #f #t) => #t, (or #f #f) => #f",
-		"not": "(not expr)\nLogical NOT - returns the opposite of the expression.\nExample: (not #t) => #f, (not #f) => #t",
+		"and": "(and expr1 expr2 ...)\nLogical AND - returns true if all expressions are true.\nExample: (and true true) => true, (and true false) => false",
+		"or":  "(or expr1 expr2 ...)\nLogical OR - returns true if any expression is true.\nExample: (or false true) => true, (or false false) => false",
+		"not": "(not expr)\nLogical NOT - returns the opposite of the expression.\nExample: (not true) => false, (not false) => true",
 
 		// Control flow
 		"if": "(if condition then-expr else-expr)\nConditional expression.\nExample: (if (< 3 5) \"yes\" \"no\") => \"yes\"",
@@ -184,7 +184,7 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"rest":   "(rest lst)\nGet all elements except the first.\nExample: (rest (list 1 2 3)) => (2 3)",
 		"cons":   "(cons elem lst)\nPrepend an element to a list.\nExample: (cons 0 (list 1 2)) => (0 1 2)",
 		"length": "(length lst)\nGet the number of elements in a list.\nExample: (length (list 1 2 3)) => 3",
-		"empty?": "(empty? lst)\nCheck if a list is empty.\nExample: (empty? (list)) => #t",
+		"empty?": "(empty? lst)\nCheck if a list is empty.\nExample: (empty? (list)) => true",
 
 		// Higher-order functions
 		"map":    "(map func lst)\nApply a function to each element of a list.\nExample: (map (fn [x] (* x x)) (list 1 2 3)) => (1 4 9)",
@@ -207,11 +207,11 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"hash-map-get":       "(hash-map-get hashmap key)\nGet a value from a hash map by key.\nExample: (hash-map-get {\"x\" 42} \"x\") => 42",
 		"hash-map-put":       "(hash-map-put hashmap key value)\nAdd or update a key-value pair (returns new hash map).\nExample: (hash-map-put {} \"x\" 42) => {\"x\" 42}",
 		"hash-map-remove":    "(hash-map-remove hashmap key)\nRemove a key-value pair (returns new hash map).\nExample: (hash-map-remove {\"x\" 42 \"y\" 99} \"x\") => {\"y\" 99}",
-		"hash-map-contains?": "(hash-map-contains? hashmap key)\nCheck if a hash map contains a key.\nExample: (hash-map-contains? {\"x\" 42} \"x\") => #t",
+		"hash-map-contains?": "(hash-map-contains? hashmap key)\nCheck if a hash map contains a key.\nExample: (hash-map-contains? {\"x\" 42} \"x\") => true",
 		"hash-map-keys":      "(hash-map-keys hashmap)\nGet all keys from a hash map as a list.\nExample: (hash-map-keys {\"a\" 1 \"b\" 2}) => (\"a\" \"b\")",
 		"hash-map-values":    "(hash-map-values hashmap)\nGet all values from a hash map as a list.\nExample: (hash-map-values {\"a\" 1 \"b\" 2}) => (1 2)",
 		"hash-map-size":      "(hash-map-size hashmap)\nGet the number of key-value pairs in a hash map.\nExample: (hash-map-size {\"a\" 1 \"b\" 2}) => 2",
-		"hash-map-empty?":    "(hash-map-empty? hashmap)\nCheck if a hash map is empty.\nExample: (hash-map-empty? {}) => #t",
+		"hash-map-empty?":    "(hash-map-empty? hashmap)\nCheck if a hash map is empty.\nExample: (hash-map-empty? {}) => true",
 
 		// String operations
 		"string-concat":         "(string-concat str1 str2 ...)\nConcatenate multiple strings or values.\nExample: (string-concat \"Hello\" \" \" \"World\") => \"Hello World\"",
@@ -223,18 +223,18 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"string-trim":           "(string-trim str)\nRemove whitespace from both ends of string.\nExample: (string-trim \"  hello  \") => \"hello\"",
 		"string-split":          "(string-split str separator)\nSplit string by separator into a list.\nExample: (string-split \"a,b,c\" \",\") => (\"a\" \"b\" \"c\")",
 		"string-join":           "(string-join lst separator)\nJoin list elements into a string with separator.\nExample: (string-join (list \"a\" \"b\" \"c\") \",\") => \"a,b,c\"",
-		"string-contains?":      "(string-contains? str substring)\nCheck if string contains substring.\nExample: (string-contains? \"hello\" \"ell\") => #t",
-		"string-starts-with?":   "(string-starts-with? str prefix)\nCheck if string starts with prefix.\nExample: (string-starts-with? \"hello\" \"he\") => #t",
-		"string-ends-with?":     "(string-ends-with? str suffix)\nCheck if string ends with suffix.\nExample: (string-ends-with? \"hello\" \"lo\") => #t",
+		"string-contains?":      "(string-contains? str substring)\nCheck if string contains substring.\nExample: (string-contains? \"hello\" \"ell\") => true",
+		"string-starts-with?":   "(string-starts-with? str prefix)\nCheck if string starts with prefix.\nExample: (string-starts-with? \"hello\" \"he\") => true",
+		"string-ends-with?":     "(string-ends-with? str suffix)\nCheck if string ends with suffix.\nExample: (string-ends-with? \"hello\" \"lo\") => true",
 		"string-replace":        "(string-replace str old new)\nReplace all occurrences of old with new.\nExample: (string-replace \"hello\" \"l\" \"x\") => \"hexxo\"",
 		"string-index-of":       "(string-index-of str substring)\nFind first index of substring (-1 if not found).\nExample: (string-index-of \"hello\" \"ell\") => 1",
 		"string->number":        "(string->number str)\nConvert string to number.\nExample: (string->number \"42.5\") => 42.5",
 		"number->string":        "(number->string num)\nConvert number to string.\nExample: (number->string 42) => \"42\"",
-		"string-regex-match?":   "(string-regex-match? str pattern)\nCheck if string matches regex pattern.\nExample: (string-regex-match? \"hello123\" \"[a-z]+[0-9]+\") => #t",
+		"string-regex-match?":   "(string-regex-match? str pattern)\nCheck if string matches regex pattern.\nExample: (string-regex-match? \"hello123\" \"[a-z]+[0-9]+\") => true",
 		"string-regex-find-all": "(string-regex-find-all str pattern)\nFind all regex matches in string.\nExample: (string-regex-find-all \"abc123def456\" \"[0-9]+\") => (\"123\" \"456\")",
 		"string-repeat":         "(string-repeat str count)\nRepeat string count times.\nExample: (string-repeat \"ha\" 3) => \"hahaha\"",
-		"string?":               "(string? value)\nCheck if value is a string.\nExample: (string? \"hello\") => #t",
-		"string-empty?":         "(string-empty? str)\nCheck if string is empty.\nExample: (string-empty? \"\") => #t",
+		"string?":               "(string? value)\nCheck if value is a string.\nExample: (string? \"hello\") => true",
+		"string-empty?":         "(string-empty? str)\nCheck if string is empty.\nExample: (string-empty? \"\") => true",
 
 		// Module system
 		"load":   "(load \"filename\")\nLoad and execute a Lisp file.\nExample: (load \"library/core.lisp\") => loads the core library",
@@ -242,8 +242,8 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 
 		// File operations
 		"read-file":    "(read-file \"filename\")\nRead the contents of a file and return as a string.\nExample: (read-file \"data.txt\") => \"file contents\"",
-		"write-file":   "(write-file \"filename\" \"content\")\nWrite content to a file, creating or overwriting it.\nExample: (write-file \"output.txt\" \"Hello World\") => #t",
-		"file-exists?": "(file-exists? \"filename\")\nCheck if a file exists.\nExample: (file-exists? \"data.txt\") => #t or #f",
+		"write-file":   "(write-file \"filename\" \"content\")\nWrite content to a file, creating or overwriting it.\nExample: (write-file \"output.txt\" \"Hello World\") => true",
+		"file-exists?": "(file-exists? \"filename\")\nCheck if a file exists.\nExample: (file-exists? \"data.txt\") => true or false",
 
 		// Environment inspection
 		"env":     "(env)\nShow all variables and functions in the current environment.\nExample: (env) => ((x 42) (square #<function([x])>))",
@@ -261,17 +261,17 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 
 		// Channel operations
 		"chan":           "(chan) or (chan size)\nCreate a new channel (unbuffered or buffered with given size).\nExample: (chan) => #<channel:open:size=0> or (chan 5) => #<channel:open:size=5>",
-		"chan-send!":     "(chan-send! channel value)\nSend a value to a channel (blocking if channel is full).\nExample: (chan-send! ch \"message\") => #t",
+		"chan-send!":     "(chan-send! channel value)\nSend a value to a channel (blocking if channel is full).\nExample: (chan-send! ch \"message\") => true",
 		"chan-recv!":     "(chan-recv! channel)\nReceive a value from a channel (blocking if channel is empty).\nExample: (chan-recv! ch) => \"message\"",
 		"chan-try-recv!": "(chan-try-recv! channel)\nTry to receive a value from a channel (non-blocking, returns nil if empty).\nExample: (chan-try-recv! ch) => \"message\" or nil",
-		"chan-close!":    "(chan-close! channel)\nClose a channel (no more values can be sent).\nExample: (chan-close! ch) => #t",
-		"chan-closed?":   "(chan-closed? channel)\nCheck if a channel is closed.\nExample: (chan-closed? ch) => #f",
+		"chan-close!":    "(chan-close! channel)\nClose a channel (no more values can be sent).\nExample: (chan-close! ch) => true",
+		"chan-closed?":   "(chan-closed? channel)\nCheck if a channel is closed.\nExample: (chan-closed? ch) => false",
 
 		// Wait group operations
 		"wait-group":       "(wait-group)\nCreate a new wait group for coordinating multiple goroutines.\nExample: (wait-group) => #<wait-group>",
 		"wait-group-add!":  "(wait-group-add! wg count)\nAdd count to the wait group counter.\nExample: (wait-group-add! wg 3) => #<wait-group>",
 		"wait-group-done!": "(wait-group-done! wg)\nDecrement the wait group counter (call when a task is complete).\nExample: (wait-group-done! wg) => #<wait-group>",
-		"wait-group-wait!": "(wait-group-wait! wg)\nWait for all wait group tasks to complete (counter reaches zero).\nExample: (wait-group-wait! wg) => #t",
+		"wait-group-wait!": "(wait-group-wait! wg)\nWait for all wait group tasks to complete (counter reaches zero).\nExample: (wait-group-wait! wg) => true",
 
 		// Control flow
 		"do": "(do expr1 expr2 ...)\nEvaluate multiple expressions in sequence and return the result of the last one.\nExample: (do (def x 5) (def y 10) (+ x y)) => 15",

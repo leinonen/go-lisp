@@ -142,16 +142,7 @@ func (t *Tokenizer) TokenizeWithError() ([]types.Token, error) {
 			}
 			tokens = append(tokens, types.Token{Type: types.STRING, Value: str})
 			t.readChar() // consume closing quote
-		case '#':
-			// Boolean literals
-			if t.peekChar() == 't' || t.peekChar() == 'f' {
-				t.readChar()
-				value := "#" + string(t.current)
-				tokens = append(tokens, types.Token{Type: types.BOOLEAN, Value: value})
-				t.readChar()
-			} else {
-				return nil, fmt.Errorf("invalid character: %c", t.current)
-			}
+
 		case ':':
 			// Keywords
 			t.readChar() // consume ':'
@@ -169,7 +160,12 @@ func (t *Tokenizer) TokenizeWithError() ([]types.Token, error) {
 				tokens = append(tokens, types.Token{Type: types.NUMBER, Value: number})
 			} else if isSymbolChar(t.current) {
 				symbol := t.readSymbol()
-				tokens = append(tokens, types.Token{Type: types.SYMBOL, Value: symbol})
+				// Check for boolean literals
+				if symbol == "true" || symbol == "false" {
+					tokens = append(tokens, types.Token{Type: types.BOOLEAN, Value: symbol})
+				} else {
+					tokens = append(tokens, types.Token{Type: types.SYMBOL, Value: symbol})
+				}
 			} else {
 				return nil, fmt.Errorf("invalid character: %c", t.current)
 			}

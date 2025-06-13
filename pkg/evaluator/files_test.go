@@ -44,9 +44,9 @@ func TestFileOperations(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		// write-file should return #t on success
-		if result.String() != "#t" {
-			t.Errorf("expected #t, got %s", result.String())
+		// write-file should return true on success
+		if result.String() != "true" {
+			t.Errorf("expected true, got %s", result.String())
 		}
 
 		// Verify file was actually written
@@ -98,8 +98,8 @@ func TestFileOperations(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		if result.String() != "#t" {
-			t.Errorf("expected #t for existing file, got %s", result.String())
+		if result.String() != "true" {
+			t.Errorf("expected true for existing file, got %s", result.String())
 		}
 
 		// Test non-existing file
@@ -108,8 +108,8 @@ func TestFileOperations(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		if result.String() != "#f" {
-			t.Errorf("expected #f for non-existing file, got %s", result.String())
+		if result.String() != "false" {
+			t.Errorf("expected false for non-existing file, got %s", result.String())
 		}
 	})
 
@@ -184,7 +184,7 @@ func TestFileOperations(t *testing.T) {
 			t.Error("expected error for write-file with non-string content")
 		}
 
-		_, err = evalExpr(`(file-exists? #t)`)
+		_, err = evalExpr(`(file-exists? true)`)
 		if err == nil {
 			t.Error("expected error for file-exists? with non-string filename")
 		}
@@ -217,7 +217,7 @@ func TestFileOperations(t *testing.T) {
 			t.Fatalf("failed to check file existence: %v", err)
 		}
 
-		if exists.String() != "#t" {
+		if exists.String() != "true" {
 			t.Error("file should exist after writing")
 		}
 	})
@@ -247,7 +247,7 @@ func TestFileOperations(t *testing.T) {
 			t.Fatalf("failed to check empty file existence: %v", err)
 		}
 
-		if exists.String() != "#t" {
+		if exists.String() != "true" {
 			t.Error("empty file should exist after writing")
 		}
 	})

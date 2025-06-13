@@ -55,7 +55,7 @@ Higher-level utilities that combine the primitives for common tasks and provide 
 (str-capitalize "hello world")       ; => "Hello world"
 (str-title-case "hello world")       ; => "Hello World"
 (str-reverse "hello")                ; => "olleh"
-(str-numeric? "123")                 ; => #t
+(str-numeric? "123")                 ; => true
 ```
 
 ## Usage Examples
@@ -73,8 +73,8 @@ Higher-level utilities that combine the primitives for common tasks and provide 
 (lcm 12 8)                          ; => 24
 
 ; Higher-order list processing
-(all (fn (x) (> x 0)) '(1 2 3)) ; => #t
-(any (fn (x) (< x 0)) '(1 -2 3)) ; => #t
+(all (fn (x) (> x 0)) '(1 2 3)) ; => true
+(any (fn (x) (< x 0)) '(1 -2 3)) ; => true
 (take 3 '(1 2 3 4 5))               ; => (1 2 3)
 (drop 2 '(1 2 3 4 5))               ; => (3 4 5)
 ```
@@ -94,7 +94,7 @@ Higher-level utilities that combine the primitives for common tasks and provide 
 (str-capitalize "hello world")       ; => "Hello world"
 (str-title-case "hello world")       ; => "Hello World"
 (str-reverse "hello")                ; => "olleh"
-(str-numeric? "123")                 ; => #t
+(str-numeric? "123")                 ; => true
 (str-words "hello world test")       ; => ("hello" "world" "test")
 ```
 

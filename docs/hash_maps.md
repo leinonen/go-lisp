@@ -155,13 +155,13 @@ lisp> (def my-map (hash-map "name" "Alice" "age" nil))
 => {name: Alice, age: nil}
 
 lisp> (hash-map-contains? my-map "name")
-=> #t
+=> true
 
 lisp> (hash-map-contains? my-map "age")    ; Returns true even for nil values
-=> #t
+=> true
 
 lisp> (hash-map-contains? my-map "missing")
-=> #f
+=> false
 ```
 
 ### `hash-map-keys`
@@ -226,10 +226,10 @@ Tests whether a hash map is empty.
 **Examples:**
 ```lisp
 lisp> (hash-map-empty? (hash-map))
-=> #t
+=> true
 
 lisp> (hash-map-empty? (hash-map "key" "value"))
-=> #f
+=> false
 ```
 
 ## Practical Examples
@@ -248,13 +248,13 @@ lisp> (hash-map-get updated-person "phone")
 
 ### Configuration Management
 ```lisp
-lisp> (def config (hash-map "debug" #t "port" 8080 "host" "localhost"))
-=> {debug: #t, port: 8080, host: localhost}
+lisp> (def config (hash-map "debug" true "port" 8080 "host" "localhost"))
+=> {debug: true, port: 8080, host: localhost}
 
 lisp> (if (hash-map-get config "debug")
         (hash-map-put config "log-level" "verbose")
         config)
-=> {debug: #t, port: 8080, host: localhost, log-level: verbose}
+=> {debug: true, port: 8080, host: localhost, log-level: verbose}
 ```
 
 ### Data Processing
@@ -274,8 +274,8 @@ lisp> (hash-map-keys inventory)
 ```lisp
 lisp> (def nested (hash-map 
         "user" (hash-map "name" "Alice" "id" 123)
-        "settings" (hash-map "theme" "dark" "notifications" #t)))
-=> {user: {name: Alice, id: 123}, settings: {theme: dark, notifications: #t}}
+        "settings" (hash-map "theme" "dark" "notifications" true)))
+=> {user: {name: Alice, id: 123}, settings: {theme: dark, notifications: true}}
 
 lisp> (hash-map-get (hash-map-get nested "user") "name")
 => Alice

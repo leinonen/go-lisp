@@ -79,7 +79,7 @@ func TestListValue(t *testing.T) {
 		StringValue("hello"),
 		BooleanValue(true),
 	}}
-	expected = "(42 hello #t)"
+	expected = "(42 hello true)"
 	if mixedList.String() != expected {
 		t.Errorf("Mixed type list should be %q, got %q", expected, mixedList.String())
 	}

@@ -160,9 +160,9 @@ type BooleanValue bool
 
 func (b BooleanValue) String() string {
 	if b {
-		return "#t"
+		return "true"
 	}
-	return "#f"
+	return "false"
 }
 
 type KeywordValue string

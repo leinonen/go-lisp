@@ -12,7 +12,7 @@
 
 ; Multiple arguments
 (println! "\n--- Multiple Arguments ---")
-(println! "Multiple values:" 42 "hello" #t (list 1 2 3))
+(println! "Multiple values:" 42 "hello" true (list 1 2 3))
 (print! "Print also supports multiple args:" 1 2 3)
 (println) ; Empty println for newline
 

@@ -53,13 +53,13 @@ Writes content to a file, creating the file if it doesn't exist or overwriting i
 - `content` - String: The content to write to the file
 
 **Returns:**
-- Boolean: `#t` on successful write
+- Boolean: `true` on successful write
 
 **Examples:**
 ```lisp
 ; Write simple text
 (write-file "output.txt" "Hello, World!")
-; => #t
+; => true
 
 ; Write computed content
 (def result (+ 10 20))
@@ -99,14 +99,14 @@ Checks whether a file exists at the specified path.
 - `filename` - String: The path to check
 
 **Returns:**
-- Boolean: `#t` if file exists, `#f` if it doesn't exist or cannot be accessed
+- Boolean: `true` if file exists, `false` if it doesn't exist or cannot be accessed
 
 **Examples:**
 ```lisp
 ; Simple existence check
 (file-exists? "data.txt")
-; => #t (if file exists)
-; => #f (if file doesn't exist)
+; => true (if file exists)
+; => false (if file doesn't exist)
 
 ; Conditional file operations
 (if (file-exists? "config.txt")
@@ -131,7 +131,7 @@ Checks whether a file exists at the specified path.
 - Non-string filename: `"file-exists? filename must be a string, got <type>"`
 - Wrong number of arguments: `"file-exists? requires exactly 1 argument, got <count>"`
 
-**Note:** This function returns `#f` for permission errors or other I/O errors, not just missing files.
+**Note:** This function returns `false` for permission errors or other I/O errors, not just missing files.
 
 ## Usage Patterns
 

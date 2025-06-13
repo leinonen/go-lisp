@@ -30,8 +30,8 @@ This function never returns normally - it always raises an error with the specif
 (error 404)
 ; Raises: 404
 
-(error #t)
-; Raises: #t
+(error true)
+; Raises: true
 
 (error (list 1 2 3))
 ; Raises: (1 2 3)

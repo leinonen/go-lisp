@@ -87,9 +87,9 @@ The interpreter provides built-in file system operations for reading, writing, a
 
 ```lisp
 lisp> (write-file "hello.txt" "Hello, World!")
-=> #t
+=> true
 lisp> (file-exists? "hello.txt")
-=> #t
+=> true
 lisp> (read-file "hello.txt")
 => "Hello, World!"
 ```

@@ -106,10 +106,10 @@ lisp> (hash-map-remove person :age)
 ### Querying Hash Maps
 ```lisp
 lisp> (hash-map-contains? person :name)
-=> #t
+=> true
 
 lisp> (hash-map-contains? person :missing)
-=> #f
+=> false
 ```
 
 ## Keywords vs Strings
@@ -134,14 +134,14 @@ Keywords make configuration more readable:
 
 ```lisp
 lisp> (def config (hash-map
-        :debug #t
+        :debug true
         :port 8080
         :host "localhost"
         :max-connections 100))
-=> {:debug #t, :port 8080, :host localhost, :max-connections 100}
+=> {:debug true, :port 8080, :host localhost, :max-connections 100}
 
 lisp> (hash-map-get config :debug)
-=> #t
+=> true
 ```
 
 ### Record Creation
@@ -153,10 +153,10 @@ lisp> (def create-user (fn [name email]
           :name name
           :email email
           :created-at "2024-01-15"
-          :active #t)))
+          :active true)))
 
 lisp> (create-user "Alice" "alice@example.com")
-=> {:name Alice, :email alice@example.com, :created-at 2024-01-15, :active #t}
+=> {:name Alice, :email alice@example.com, :created-at 2024-01-15, :active true}
 ```
 
 ### Nested Structures

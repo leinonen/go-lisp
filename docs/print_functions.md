@@ -32,7 +32,7 @@ The Lisp interpreter includes built-in `print!` and `println!` functions that en
 ```lisp
 (print! "Hello")                    ; Output: Hello
 (print! "Count:" 42)               ; Output: Count: 42
-(print! 1 2 3 #t #f)               ; Output: 1 2 3 #t #f
+(print! 1 2 3 true false)               ; Output: 1 2 3 true false
 ```
 
 ### `println!`
@@ -62,7 +62,7 @@ Both functions support all Lisp data types:
 ```lisp
 (println! "String:" "Hello")        ; String: Hello
 (println! "Number:" 42)             ; Number: 42
-(println! "Boolean:" #t)            ; Boolean: #t
+(println! "Boolean:" true)            ; Boolean: true
 (println! "Nil:" nil)               ; Nil: ()
 ```
 

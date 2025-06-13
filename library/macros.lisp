@@ -34,15 +34,15 @@
 (defmacro and* (exprs)
   "Short-circuiting AND: returns first falsy value or last value"
   (if (empty? exprs)
-    '#t
+    'true
     (if (= (length exprs) 1)
       (first exprs)
-      (list 'if (first exprs) (list 'and* (rest exprs)) '#f))))
+      (list 'if (first exprs) (list 'and* (rest exprs)) 'false))))
 
 (defmacro or* (exprs)
   "Short-circuiting OR: returns first truthy value or last value"
   (if (empty? exprs)
-    '#f
+    'false
     (if (= (length exprs) 1)
       (first exprs)
       (list 'let1 'temp-or-var (first exprs)

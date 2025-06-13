@@ -613,7 +613,7 @@ func TestEvalError(t *testing.T) {
 				},
 			},
 			expectError: true,
-			errorMsg:    "#t",
+			errorMsg:    "true",
 		},
 		{
 			name: "error with string concatenation that works",

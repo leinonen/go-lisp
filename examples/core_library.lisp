@@ -19,8 +19,8 @@
 (drop 2 test-list)                      ; => (3 4 5 6)
 
 ; Predicate functions
-(all (fn [x] (> x 0)) test-list)    ; => #t (all positive)
-(any (fn [x] (> x 5)) test-list)    ; => #t (some > 5)
+(all (fn [x] (> x 0)) test-list)    ; => true (all positive)
+(any (fn [x] (> x 5)) test-list)    ; => true (some > 5)
 
 ; Higher-order function utilities
 (def double (fn [x] (* x 2)))

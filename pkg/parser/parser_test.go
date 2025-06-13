@@ -25,12 +25,12 @@ func TestParser(t *testing.T) {
 		},
 		{
 			name:     "boolean true",
-			tokens:   []types.Token{{Type: types.BOOLEAN, Value: "#t"}},
+			tokens:   []types.Token{{Type: types.BOOLEAN, Value: "true"}},
 			expected: &types.BooleanExpr{Value: true},
 		},
 		{
 			name:     "boolean false",
-			tokens:   []types.Token{{Type: types.BOOLEAN, Value: "#f"}},
+			tokens:   []types.Token{{Type: types.BOOLEAN, Value: "false"}},
 			expected: &types.BooleanExpr{Value: false},
 		},
 		{

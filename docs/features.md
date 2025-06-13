@@ -47,7 +47,7 @@ Square brackets make parameters visually distinct and reduce confusion.
 See `examples/` directory for comprehensive demonstrations.
 - **Big Numbers**: Arbitrary precision integers (e.g., `1000000000000000000000000000000`)
 - **Strings**: `"hello world"` with full Unicode support
-- **Booleans**: `#t`, `#f` (true/false)
+- **Booleans**: `true`, `false` (true/false)
 - **Nil**: `nil` (represents empty/null values, falsy in conditionals)
 - **Keywords**: `:name`, `:status`, `:id` (self-evaluating symbols, perfect for hash map keys)
 - **Lists**: `(1 2 3)`, `("a" "b" "c")`, `()` (immutable linked lists)
@@ -221,7 +221,7 @@ The interpreter provides comprehensive support for arbitrary precision arithmeti
 
 ; Comparisons work seamlessly
 (> 1000000000000000000000 999999999999999999999)
-=> #t
+=> true
 ```
 
 ## Macro System
