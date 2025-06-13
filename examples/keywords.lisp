@@ -59,7 +59,7 @@ minimal-person
 config
 
 ;; Using keywords for function parameters (more readable)
-(def create-user (lambda [name email age]
+(def create-user (fn [name email age]
   (hash-map
     :name name
     :email email
@@ -74,7 +74,7 @@ user1
 user2
 
 ;; Helper function for safe access with defaults
-(def get-with-default (lambda [map key default]
+(def get-with-default (fn [map key default]
   (if (hash-map-contains? map key)
       (hash-map-get map key)
       default)))

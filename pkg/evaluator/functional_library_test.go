@@ -108,7 +108,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 		// Test complement function
 		t.Run("complement", func(t *testing.T) {
 			// Define a positive predicate and its complement
-			_, err := evalExpr("(def positive? (lambda [x] (> x 0)))")
+			_, err := evalExpr("(def positive? (fn [x] (> x 0)))")
 			if err != nil {
 				t.Fatalf("failed to define positive?: %v", err)
 			}
@@ -178,7 +178,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 		// Test partial2 function
 		t.Run("partial2", func(t *testing.T) {
 			// Define a 3-argument function for testing
-			_, err := evalExpr("(def add3 (lambda [a b c] (+ a b c)))")
+			_, err := evalExpr("(def add3 (fn [a b c] (+ a b c)))")
 			if err != nil {
 				t.Fatalf("failed to define add3: %v", err)
 			}
@@ -200,7 +200,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 		// Test partial3 function
 		t.Run("partial3", func(t *testing.T) {
 			// Define a 4-argument function for testing
-			_, err := evalExpr("(def add4 (lambda [a b c d] (+ a b c d)))")
+			_, err := evalExpr("(def add4 (fn [a b c d] (+ a b c d)))")
 			if err != nil {
 				t.Fatalf("failed to define add4: %v", err)
 			}
@@ -242,7 +242,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 		// Test curry3 function
 		t.Run("curry3", func(t *testing.T) {
 			// Define a 3-argument function and curry it
-			_, err := evalExpr("(def add3 (lambda [a b c] (+ a b c)))")
+			_, err := evalExpr("(def add3 (fn [a b c] (+ a b c)))")
 			if err != nil {
 				t.Fatalf("failed to define add3: %v", err)
 			}
@@ -282,15 +282,15 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 
 	t.Run("function composition", func(t *testing.T) {
 		// Define helper functions for testing
-		_, err := evalExpr("(def square (lambda [x] (* x x)))")
+		_, err := evalExpr("(def square (fn [x] (* x x)))")
 		if err != nil {
 			t.Fatalf("failed to define square: %v", err)
 		}
-		_, err = evalExpr("(def increment (lambda [x] (+ x 1)))")
+		_, err = evalExpr("(def increment (fn [x] (+ x 1)))")
 		if err != nil {
 			t.Fatalf("failed to define increment: %v", err)
 		}
-		_, err = evalExpr("(def double (lambda [x] (* x 2)))")
+		_, err = evalExpr("(def double (fn [x] (* x 2)))")
 		if err != nil {
 			t.Fatalf("failed to define double: %v", err)
 		}
@@ -334,11 +334,11 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 
 	t.Run("pipeline operations", func(t *testing.T) {
 		// Define helper functions for testing
-		_, err := evalExpr("(def square (lambda [x] (* x x)))")
+		_, err := evalExpr("(def square (fn [x] (* x x)))")
 		if err != nil {
 			t.Fatalf("failed to define square: %v", err)
 		}
-		_, err = evalExpr("(def increment (lambda [x] (+ x 1)))")
+		_, err = evalExpr("(def increment (fn [x] (+ x 1)))")
 		if err != nil {
 			t.Fatalf("failed to define increment: %v", err)
 		}
@@ -370,7 +370,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 
 		// Test pipe3 function
 		t.Run("pipe3", func(t *testing.T) {
-			_, err := evalExpr("(def double (lambda [x] (* x 2)))")
+			_, err := evalExpr("(def double (fn [x] (* x 2)))")
 			if err != nil {
 				t.Fatalf("failed to define double: %v", err)
 			}
@@ -389,15 +389,15 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 
 	t.Run("juxtaposition", func(t *testing.T) {
 		// Define helper functions for testing
-		_, err := evalExpr("(def square (lambda [x] (* x x)))")
+		_, err := evalExpr("(def square (fn [x] (* x x)))")
 		if err != nil {
 			t.Fatalf("failed to define square: %v", err)
 		}
-		_, err = evalExpr("(def double (lambda [x] (* x 2)))")
+		_, err = evalExpr("(def double (fn [x] (* x 2)))")
 		if err != nil {
 			t.Fatalf("failed to define double: %v", err)
 		}
-		_, err = evalExpr("(def increment (lambda [x] (+ x 1)))")
+		_, err = evalExpr("(def increment (fn [x] (+ x 1)))")
 		if err != nil {
 			t.Fatalf("failed to define increment: %v", err)
 		}
@@ -441,15 +441,15 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 
 	t.Run("conditional functions", func(t *testing.T) {
 		// Define helper functions for testing
-		_, err := evalExpr("(def positive? (lambda [x] (> x 0)))")
+		_, err := evalExpr("(def positive? (fn [x] (> x 0)))")
 		if err != nil {
 			t.Fatalf("failed to define positive?: %v", err)
 		}
-		_, err = evalExpr("(def negate (lambda [x] (- x)))")
+		_, err = evalExpr("(def negate (fn [x] (- x)))")
 		if err != nil {
 			t.Fatalf("failed to define negate: %v", err)
 		}
-		_, err = evalExpr("(def abs-fn (lambda [x] (if (< x 0) (- x) x)))")
+		_, err = evalExpr("(def abs-fn (fn [x] (if (< x 0) (- x) x)))")
 		if err != nil {
 			t.Fatalf("failed to define abs-fn: %v", err)
 		}
@@ -549,15 +549,15 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 
 	t.Run("predicate combinators", func(t *testing.T) {
 		// Define helper predicates for testing
-		_, err := evalExpr("(def positive? (lambda [x] (> x 0)))")
+		_, err := evalExpr("(def positive? (fn [x] (> x 0)))")
 		if err != nil {
 			t.Fatalf("failed to define positive?: %v", err)
 		}
-		_, err = evalExpr("(def even? (lambda [x] (= (% x 2) 0)))")
+		_, err = evalExpr("(def even? (fn [x] (= (% x 2) 0)))")
 		if err != nil {
 			t.Fatalf("failed to define even?: %v", err)
 		}
-		_, err = evalExpr("(def less-than-10? (lambda [x] (< x 10)))")
+		_, err = evalExpr("(def less-than-10? (fn [x] (< x 10)))")
 		if err != nil {
 			t.Fatalf("failed to define less-than-10?: %v", err)
 		}
@@ -660,7 +660,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 
 	t.Run("threading and application utilities", func(t *testing.T) {
 		// Define helper functions for testing
-		_, err := evalExpr("(def square (lambda [x] (* x x)))")
+		_, err := evalExpr("(def square (fn [x] (* x x)))")
 		if err != nil {
 			t.Fatalf("failed to define square: %v", err)
 		}
@@ -705,7 +705,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 	t.Run("higher-order utilities", func(t *testing.T) {
 		// Test fnil function
 		t.Run("fnil", func(t *testing.T) {
-			_, err := evalExpr("(def safe-add-5 (fnil (lambda [x] (+ x 5)) 0))")
+			_, err := evalExpr("(def safe-add-5 (fnil (fn [x] (+ x 5)) 0))")
 			if err != nil {
 				t.Fatalf("failed to define safe-add-5: %v", err)
 			}
@@ -736,7 +736,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 		// Test map-indexed function
 		t.Run("map-indexed", func(t *testing.T) {
 			// Create a function that adds index to element
-			_, err := evalExpr("(def add-index (lambda [index element] (+ index element)))")
+			_, err := evalExpr("(def add-index (fn [index element] (+ index element)))")
 			if err != nil {
 				t.Fatalf("failed to define add-index: %v", err)
 			}
@@ -755,7 +755,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 		// Test keep function
 		t.Run("keep", func(t *testing.T) {
 			// Define a function that returns nil for even numbers, otherwise returns the number
-			_, err := evalExpr("(def odd-or-nil (lambda [x] (if (= (% x 2) 0) nil x)))")
+			_, err := evalExpr("(def odd-or-nil (fn [x] (if (= (% x 2) 0) nil x)))")
 			if err != nil {
 				t.Fatalf("failed to define odd-or-nil: %v", err)
 			}
@@ -773,7 +773,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 
 		// Test memoize function (simplified implementation)
 		t.Run("memoize", func(t *testing.T) {
-			_, err := evalExpr("(def square (lambda [x] (* x x)))")
+			_, err := evalExpr("(def square (fn [x] (* x x)))")
 			if err != nil {
 				t.Fatalf("failed to define square: %v", err)
 			}
@@ -794,7 +794,7 @@ func TestFunctionalLibraryFunctions(t *testing.T) {
 
 		// Test arity function (placeholder implementation)
 		t.Run("arity", func(t *testing.T) {
-			_, err := evalExpr("(def square (lambda [x] (* x x)))")
+			_, err := evalExpr("(def square (fn [x] (* x x)))")
 			if err != nil {
 				t.Fatalf("failed to define square: %v", err)
 			}
@@ -854,11 +854,11 @@ func TestFunctionalLibraryModuleSystem(t *testing.T) {
 		}
 
 		// Test another function with qualified access
-		_, err = evalExpr("(def square (lambda [x] (* x x)))")
+		_, err = evalExpr("(def square (fn [x] (* x x)))")
 		if err != nil {
 			t.Fatalf("failed to define square: %v", err)
 		}
-		_, err = evalExpr("(def increment (lambda [x] (+ x 1)))")
+		_, err = evalExpr("(def increment (fn [x] (+ x 1)))")
 		if err != nil {
 			t.Fatalf("failed to define increment: %v", err)
 		}
@@ -897,7 +897,7 @@ func TestFunctionalLibraryModuleSystem(t *testing.T) {
 					t.Errorf("Function %s should be available after import, got error: %v", funcName, err)
 				}
 			case "complement":
-				_, err := evalExpr("(def pos? (lambda [x] (> x 0)))")
+				_, err := evalExpr("(def pos? (fn [x] (> x 0)))")
 				if err != nil {
 					continue
 				}
@@ -916,11 +916,11 @@ func TestFunctionalLibraryModuleSystem(t *testing.T) {
 					t.Errorf("Function %s should be available after import, got error: %v", funcName, err)
 				}
 			case "comp":
-				_, err := evalExpr("(def sq (lambda [x] (* x x)))")
+				_, err := evalExpr("(def sq (fn [x] (* x x)))")
 				if err != nil {
 					continue
 				}
-				_, err = evalExpr("(def inc (lambda [x] (+ x 1)))")
+				_, err = evalExpr("(def inc (fn [x] (+ x 1)))")
 				if err != nil {
 					continue
 				}
@@ -929,7 +929,7 @@ func TestFunctionalLibraryModuleSystem(t *testing.T) {
 					t.Errorf("Function %s should be available after import, got error: %v", funcName, err)
 				}
 			case "pipe":
-				_, err := evalExpr("(def sq (lambda [x] (* x x)))")
+				_, err := evalExpr("(def sq (fn [x] (* x x)))")
 				if err != nil {
 					continue
 				}
@@ -938,11 +938,11 @@ func TestFunctionalLibraryModuleSystem(t *testing.T) {
 					t.Errorf("Function %s should be available after import, got error: %v", funcName, err)
 				}
 			case "juxt":
-				_, err := evalExpr("(def sq (lambda [x] (* x x)))")
+				_, err := evalExpr("(def sq (fn [x] (* x x)))")
 				if err != nil {
 					continue
 				}
-				_, err = evalExpr("(def dbl (lambda [x] (* x 2)))")
+				_, err = evalExpr("(def dbl (fn [x] (* x 2)))")
 				if err != nil {
 					continue
 				}
@@ -951,7 +951,7 @@ func TestFunctionalLibraryModuleSystem(t *testing.T) {
 					t.Errorf("Function %s should be available after import, got error: %v", funcName, err)
 				}
 			case "memoize":
-				_, err := evalExpr("(def sq (lambda [x] (* x x)))")
+				_, err := evalExpr("(def sq (fn [x] (* x x)))")
 				if err != nil {
 					continue
 				}
@@ -960,7 +960,7 @@ func TestFunctionalLibraryModuleSystem(t *testing.T) {
 					t.Errorf("Function %s should be available after import, got error: %v", funcName, err)
 				}
 			case "arity":
-				_, err := evalExpr("(def sq (lambda [x] (* x x)))")
+				_, err := evalExpr("(def sq (fn [x] (* x x)))")
 				if err != nil {
 					continue
 				}
@@ -969,7 +969,7 @@ func TestFunctionalLibraryModuleSystem(t *testing.T) {
 					t.Errorf("Function %s should be available after import, got error: %v", funcName, err)
 				}
 			case "map-indexed":
-				_, err := evalExpr("(def add-idx (lambda [i x] (+ i x)))")
+				_, err := evalExpr("(def add-idx (fn [i x] (+ i x)))")
 				if err != nil {
 					continue
 				}

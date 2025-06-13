@@ -6,14 +6,14 @@ import (
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
 
-func TestEvaluatorLambda(t *testing.T) {
+func TestEvaluatorFn(t *testing.T) {
 	env := NewEnvironment()
 	evaluator := NewEvaluator(env)
 
-	// Test lambda creation
-	lambdaExpr := &types.ListExpr{
+	// Test fn creation
+	fnExpr := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "lambda"},
+			&types.SymbolExpr{Name: "fn"},
 			&types.BracketExpr{
 				Elements: []types.Expr{
 					&types.SymbolExpr{Name: "x"},
@@ -30,7 +30,7 @@ func TestEvaluatorLambda(t *testing.T) {
 		},
 	}
 
-	result, err := evaluator.Eval(lambdaExpr)
+	result, err := evaluator.Eval(fnExpr)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -480,50 +480,7 @@ func TestEvaluatorDefunSquareBracketsMultipleParams(t *testing.T) {
 	}
 }
 
-func TestEvaluatorLambdaSquareBrackets(t *testing.T) {
-	env := NewEnvironment()
-	evaluator := NewEvaluator(env)
-
-	// Test lambda with square bracket parameters
-	lambdaExpr := &types.ListExpr{
-		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "lambda"},
-			&types.BracketExpr{
-				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "x"},
-					&types.SymbolExpr{Name: "y"},
-				},
-			},
-			&types.ListExpr{
-				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "+"},
-					&types.SymbolExpr{Name: "x"},
-					&types.SymbolExpr{Name: "y"},
-				},
-			},
-		},
-	}
-
-	result, err := evaluator.Eval(lambdaExpr)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	function, ok := result.(types.FunctionValue)
-	if !ok {
-		t.Fatalf("expected FunctionValue, got %T", result)
-	}
-
-	if len(function.Params) != 2 {
-		t.Errorf("expected 2 parameters, got %d", len(function.Params))
-	}
-
-	if function.Params[0] != "x" || function.Params[1] != "y" {
-		t.Errorf("unexpected parameters: %v", function.Params)
-	}
-}
-
-func TestEvaluatorLambdaErrors(t *testing.T) {
+func TestEvaluatorFnErrors(t *testing.T) {
 	env := NewEnvironment()
 	evaluator := NewEvaluator(env)
 
@@ -532,10 +489,10 @@ func TestEvaluatorLambdaErrors(t *testing.T) {
 		expr types.Expr
 	}{
 		{
-			name: "lambda with parentheses for parameters (should fail)",
+			name: "fn with parentheses for parameters (should fail)",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "lambda"},
+					&types.SymbolExpr{Name: "fn"},
 					&types.ListExpr{ // should be BracketExpr now
 						Elements: []types.Expr{
 							&types.SymbolExpr{Name: "x"},
@@ -546,20 +503,20 @@ func TestEvaluatorLambdaErrors(t *testing.T) {
 			},
 		},
 		{
-			name: "lambda with non-bracket parameters",
+			name: "fn with non-bracket parameters",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "lambda"},
+					&types.SymbolExpr{Name: "fn"},
 					&types.SymbolExpr{Name: "x"}, // should be BracketExpr
 					&types.NumberExpr{Value: 42},
 				},
 			},
 		},
 		{
-			name: "lambda with non-symbol parameter",
+			name: "fn with non-symbol parameter",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "lambda"},
+					&types.SymbolExpr{Name: "fn"},
 					&types.BracketExpr{
 						Elements: []types.Expr{
 							&types.NumberExpr{Value: 42}, // should be symbol

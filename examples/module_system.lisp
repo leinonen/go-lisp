@@ -18,8 +18,8 @@
 (module list-utils
   (export double-all sum-list reverse-and-double)
   
-  (defn double-all [lst] (map (lambda [x] [* x 2]) lst))
-  (defn sum-list [lst] (reduce (lambda [acc x] [+ acc x]) 0 lst))
+  (defn double-all [lst] (map (fn [x] [* x 2]) lst))
+  (defn sum-list [lst] (reduce (fn [acc x] [+ acc x]) 0 lst))
   (defn reverse-and-double [lst] (double-all [reverse lst])))
 
 ; Demonstrate qualified access (without importing)

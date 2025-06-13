@@ -47,7 +47,7 @@ The Lisp interpreter supports multiple modes of operation through command line p
 
 # Modern square bracket function syntax
 ./lisp -e "(defn square [x] (* x x))"
-./lisp -e "((lambda [x y] (+ x y)) 10 20)"  # => 30
+./lisp -e "((fn [x y] (+ x y)) 10 20)"  # => 30
 
 # Perfect for quick calculations and one-liners
 ./lisp -e "(% 1000000000000000001 7)"  # => 0

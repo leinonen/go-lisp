@@ -96,7 +96,7 @@
   
   ; Function composition - (compose f g) returns a function that applies g then f
   (defn compose [f g]
-    (lambda [x] (f (g x))))
+    (fn [x] (f (g x))))
     
   ; Apply a function n times - (apply-n f n x) = f(f(...f(x)...))
   (defn apply-n [f n x]

@@ -57,21 +57,21 @@
 ; These show how to build higher-level functions from the primitive built-ins
 
 (def str-reverse 
-  (lambda [str]
+  (fn [str]
     "Reverse a string by converting to list and back"
-    (let ((chars (map (lambda [i] (string-char-at str i))
+    (let ((chars (map (fn [i] (string-char-at str i))
                       (range 0 (string-length str)))))
       (string-join (reverse chars) ""))))
 
 (def range
-  (lambda [start end]
+  (fn [start end]
     "Create a list of numbers from start to end-1"
     (if (>= start end)
         (list)
         (cons start (range (+ start 1) end)))))
 
 (def str-capitalize
-  (lambda [str]
+  (fn [str]
     "Capitalize first character of string - built from primitives"
     (if (string-empty? str)
         str
@@ -79,18 +79,18 @@
                       (string-lower (string-substring str 1 (string-length str)))))))
 
 (def str-title-case
-  (lambda [str]
+  (fn [str]
     "Convert to title case - capitalize each word"
     (let ((words (string-split (string-trim str) " ")))
       (string-join (map str-capitalize words) " "))))
 
 (def str-blank?
-  (lambda [str]
+  (fn [str]
     "Check if string is empty or only whitespace"
     (string-empty? (string-trim str))))
 
 (def str-numeric?
-  (lambda [str]
+  (fn [str]
     "Check if string contains only numeric characters"
     (string-regex-match? str "^[0-9]+$")))
 
@@ -126,7 +126,7 @@
 
 ; Example 1: Text formatting
 (def format-name 
-  (lambda [first last]
+  (fn [first last]
     (string-concat (str-capitalize first) " " (str-capitalize last))))
 
 (println "Formatted name:" (format-name "john" "doe"))
@@ -140,7 +140,7 @@
 
 ; Print each fruit with formatting
 (def print-fruit-list
-  (lambda [fruits]
+  (fn [fruits]
     (if (null? fruits)
         "Done!"
         (begin
@@ -168,7 +168,7 @@
 ; For this demo, we'll define some of the functions inline to test them
 (defn str-words [str]
   "Split string into words (by whitespace)"
-  (filter (lambda [word] (not (string-empty? word)))
+  (filter (fn [word] (not (string-empty? word)))
           (string-split (string-trim str) " ")))
 
 (defn str-capitalize [str]

@@ -73,8 +73,8 @@ Higher-level utilities that combine the primitives for common tasks and provide 
 (lcm 12 8)                          ; => 24
 
 ; Higher-order list processing
-(all (lambda (x) (> x 0)) '(1 2 3)) ; => #t
-(any (lambda (x) (< x 0)) '(1 -2 3)) ; => #t
+(all (fn (x) (> x 0)) '(1 2 3)) ; => #t
+(any (fn (x) (< x 0)) '(1 -2 3)) ; => #t
 (take 3 '(1 2 3 4 5))               ; => (1 2 3)
 (drop 2 '(1 2 3 4 5))               ; => (3 4 5)
 ```
@@ -139,7 +139,7 @@ Higher-level utilities that combine the primitives for common tasks and provide 
 
 ; Now you can use functions and macros from all libraries
 (let* ((numbers '(1 2 3 4 5))
-       (doubled (map (lambda (x) (* x 2)) numbers))
+       (doubled (map (fn (x) (* x 2)) numbers))
        (result-str (str-join doubled ", ")))
   (debug result-str))                ; DEBUG: result-str => "2, 4, 6, 8, 10"
 ```

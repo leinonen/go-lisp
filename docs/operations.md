@@ -18,14 +18,14 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 
 ### Lambda Functions
 ```lisp
-(lambda [param1 param2 ...] body)
+(fn [param1 param2 ...] body)
 ```
 
 **Examples:**
 ```lisp
-(lambda [x] (* x x))
-(lambda [x y] (+ x y))
-(map (lambda [x] (* x 2)) (list 1 2 3 4))  ; => (2 4 6 8)
+(fn [x] (* x x))
+(fn [x y] (+ x y))
+(map (fn [x] (* x 2)) (list 1 2 3 4))  ; => (2 4 6 8)
 ```
 
 ## Arithmetic Operations
@@ -117,7 +117,7 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 ```lisp
 (def x 42)
 (def my-list (list 1 2 3))
-(def square-fn (lambda [x] (* x x)))
+(def square-fn (fn [x] (* x x)))
 ```
 
 ## List Operations
@@ -177,13 +177,13 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 
 **Examples:**
 ```lisp
-(map (lambda [x] (* x x)) (list 1 2 3 4))
+(map (fn [x] (* x x)) (list 1 2 3 4))
 ; => (1 4 9 16)
 
-(filter (lambda [x] (> x 0)) (list -1 2 -3 4))
+(filter (fn [x] (> x 0)) (list -1 2 -3 4))
 ; => (2 4)
 
-(reduce (lambda [acc x] (+ acc x)) 0 (list 1 2 3 4))
+(reduce (fn [acc x] (+ acc x)) 0 (list 1 2 3 4))
 ; => 10
 ```
 

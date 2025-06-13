@@ -13,14 +13,14 @@ Hash maps in this Lisp interpreter:
 
 ```lisp
 ;; Clear function parameter syntax
-(def get-with-default (lambda [map key default]
+(def get-with-default (fn [map key default]
   (if (hash-map-contains? map key)
       (hash-map-get map key)
       default)))
 
 ;; Nested functions are easier to distinguish
-(def transform-values (lambda [map transformer]
-  (reduce (lambda [acc key]
+(def transform-values (fn [map transformer]
+  (reduce (fn [acc key]
     (hash-map-put acc key (transformer (hash-map-get map key))))
     (hash-map) (hash-map-keys map))))
 ```
@@ -285,7 +285,7 @@ lisp> (hash-map-get (hash-map-get nested "user") "name")
 
 ### Safe Access with Default Values
 ```lisp
-lisp> (def get-with-default (lambda [map key default]
+lisp> (def get-with-default (fn [map key default]
         (if (hash-map-contains? map key)
             (hash-map-get map key)
             default)))
@@ -296,7 +296,7 @@ lisp> (get-with-default my-map "missing" "not found")
 
 ### Bulk Updates
 ```lisp
-lisp> (def bulk-put (lambda [map pairs]
+lisp> (def bulk-put (fn [map pairs]
         (if (empty? pairs)
             map
             (bulk-put 
@@ -309,16 +309,16 @@ lisp> (bulk-put (hash-map) (list "a" 1 "b" 2 "c" 3))
 
 ### Filtering Hash Maps
 ```lisp
-lisp> (def filter-map (lambda [predicate map]
+lisp> (def filter-map (fn [predicate map]
         (def filtered-pairs 
-          (filter (lambda [key] (predicate (hash-map-get map key)))
+          (filter (fn [key] (predicate (hash-map-get map key)))
                   (hash-map-keys map)))
         (bulk-put (hash-map) 
           (reduce append () 
-            (map (lambda [key] (list key (hash-map-get map key))) 
+            (map (fn [key] (list key (hash-map-get map key))) 
                  filtered-pairs)))))
 
-lisp> (filter-map (lambda [val] (> val 5)) 
+lisp> (filter-map (fn [val] (> val 5)) 
                   (hash-map "a" 3 "b" 7 "c" 10))
 => {b: 7, c: 10}
 ```

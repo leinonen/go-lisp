@@ -13,7 +13,7 @@ Keywords in this Lisp interpreter:
 
 ```lisp
 ;; Clear distinction between function parameters and function calls
-(def create-user (lambda [name email] ...))  ; Function definition
+(def create-user (fn [name email] ...))  ; Function definition
 (create-user "Alice" "alice@example.com")       ; Function call
 ```
 
@@ -148,7 +148,7 @@ lisp> (hash-map-get config :debug)
 Use keywords for creating structured data:
 
 ```lisp
-lisp> (def create-user (lambda [name email]
+lisp> (def create-user (fn [name email]
         (hash-map
           :name name
           :email email

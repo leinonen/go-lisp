@@ -76,7 +76,7 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			// Control flow
 			"if",
 			// Variable and function definition
-			"def", "lambda", "defn",
+			"def", "fn", "defn",
 			// Macro system
 			"defmacro", "quote",
 			// List operations
@@ -158,9 +158,9 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"if": "(if condition then-expr else-expr)\nConditional expression.\nExample: (if (< 3 5) \"yes\" \"no\") => \"yes\"",
 
 		// Variable and function definition
-		"def":    "(def name value)\nDefine a variable with a name and value.\nExample: (def x 42)",
-		"lambda": "(lambda [params] body)\nCreate an anonymous function.\nExample: (lambda [x] (+ x 1))",
-		"defn":   "(defn name [params] body)\nDefine a named function.\nExample: (defn square [x] (* x x))",
+		"def":  "(def name value)\nDefine a variable with a name and value.\nExample: (def x 42)",
+		"fn":   "(fn [params] body)\nCreate an anonymous function.\nExample: (fn [x] (+ x 1))",
+		"defn": "(defn name [params] body)\nDefine a named function.\nExample: (defn square [x] (* x x))",
 
 		// Macro system
 		"defmacro": "(defmacro name [params] body)\nDefine a macro that transforms code at evaluation time.\nExample: (defmacro when [condition body] (list 'if condition body 'nil))",
@@ -175,9 +175,9 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"empty?": "(empty? lst)\nCheck if a list is empty.\nExample: (empty? (list)) => #t",
 
 		// Higher-order functions
-		"map":    "(map func lst)\nApply a function to each element of a list.\nExample: (map (lambda [x] (* x x)) (list 1 2 3)) => (1 4 9)",
-		"filter": "(filter predicate lst)\nKeep only elements that satisfy a predicate.\nExample: (filter (lambda [x] (> x 0)) (list -1 2 -3 4)) => (2 4)",
-		"reduce": "(reduce func init lst)\nReduce a list to a single value using a function.\nExample: (reduce (lambda [acc x] (+ acc x)) 0 (list 1 2 3)) => 6",
+		"map":    "(map func lst)\nApply a function to each element of a list.\nExample: (map (fn [x] (* x x)) (list 1 2 3)) => (1 4 9)",
+		"filter": "(filter predicate lst)\nKeep only elements that satisfy a predicate.\nExample: (filter (fn [x] (> x 0)) (list -1 2 -3 4)) => (2 4)",
+		"reduce": "(reduce func init lst)\nReduce a list to a single value using a function.\nExample: (reduce (fn [acc x] (+ acc x)) 0 (list 1 2 3)) => 6",
 
 		// List manipulation
 		"append":  "(append lst1 lst2)\nCombine two lists into one.\nExample: (append (list 1 2) (list 3 4)) => (1 2 3 4)",

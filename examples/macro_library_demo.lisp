@@ -154,6 +154,6 @@
 (print "✓ Debugging: debug, trace, assert, time")
 (print "✓ Iteration: dotimes, while, for-each")
 (print "✓ Utilities: progn, comment, match, with-values")
-(print "✓ Advanced: defn-memo, lambda*, todo, ignore-errors")
+(print "✓ Advanced: defn-memo, fn*, todo, ignore-errors")
 (print "\nThe macro library provides powerful language extensions!")
 (print "Load with: (load \"library/macros.lisp\")")

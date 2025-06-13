@@ -25,7 +25,7 @@
 (println "Boolean false:" #f)
 (println "List:" (list 1 2 3 4 5))
 (println "Hash map:" (hash-map "name" "Alice" "age" 30))
-(println "Function:" (lambda [x] (* x x)))
+(println "Function:" (fn [x] (* x x)))
 (println "Nil value:" (list))  ; Empty list evaluates to nil in display
 
 ; Mathematical expressions
@@ -38,7 +38,7 @@
 
 ; Define our own simple factorial for demo
 (def factorial 
-  (lambda [n]
+  (fn [n]
     (if (= n 0)
         1
         (* n (factorial (- n 1))))))
@@ -58,20 +58,20 @@
 (println "\n--- List Operations ---")
 (def numbers (list 1 2 3 4 5))
 (println "Numbers:" numbers)
-(println "Squared:" (map (lambda [x] (* x x)) numbers))
-(println "Even only:" (filter (lambda [x] (= (% x 2) 0)) numbers))
+(println "Squared:" (map (fn [x] (* x x)) numbers))
+(println "Even only:" (filter (fn [x] (= (% x 2) 0)) numbers))
 (println "Manual sum: 1+2+3+4+5 =" (+ 1 2 3 4 5))
 
 ; Formatting examples
 (println "\n--- Formatting Examples ---")
 (def format-currency
-  (lambda [amount]
+  (fn [amount]
     (string-concat "$" (number->string amount))))
 
 (println "Price:" (format-currency 19.99))
 
 (def create-greeting
-  (lambda [name time]
+  (fn [name time]
     (string-concat "Good " time ", " name "!")))
 
 (println (create-greeting "Alice" "morning"))
@@ -88,7 +88,7 @@
 ; Progress indication simulation
 (println "\n--- Progress Simulation ---")
 (def show-progress
-  (lambda [current total]
+  (fn [current total]
     (let ((percent (* (/ current total) 100)))
       (println "Progress:" current "/" total "(" percent "%)"))))
 
@@ -113,11 +113,11 @@
 ; Function composition with output
 (println "\n--- Function Composition ---")
 (def compose
-  (lambda [f g]
-    (lambda [x] (f (g x)))))
+  (fn [f g]
+    (fn [x] (f (g x)))))
 
-(def add-one (lambda [x] (+ x 1)))
-(def double (lambda [x] (* x 2)))
+(def add-one (fn [x] (+ x 1)))
+(def double (fn [x] (* x 2)))
 (def add-one-then-double (compose double add-one))
 
 (println "Compose example: (double (add-one 5)) =" (add-one-then-double 5))
@@ -125,7 +125,7 @@
 ; Recursive function output
 (println "\n--- Simple Recursion ---")
 (def simple-countdown
-  (lambda [n]
+  (fn [n]
     (if (= n 0)
         (println "Done!")
         (begin

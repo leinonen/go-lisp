@@ -19,12 +19,12 @@
 (drop 2 test-list)                      ; => (3 4 5 6)
 
 ; Predicate functions
-(all (lambda [x] (> x 0)) test-list)    ; => #t (all positive)
-(any (lambda [x] (> x 5)) test-list)    ; => #t (some > 5)
+(all (fn [x] (> x 0)) test-list)    ; => #t (all positive)
+(any (fn [x] (> x 5)) test-list)    ; => #t (some > 5)
 
 ; Higher-order function utilities
-(def double (lambda [x] (* x 2)))
-(def add-one (lambda [x] (+ x 1)))
+(def double (fn [x] (* x 2)))
+(def add-one (fn [x] (+ x 1)))
 
 ; Function composition: apply add-one then double
 (def double-then-add-one (compose add-one double))

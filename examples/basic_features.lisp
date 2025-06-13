@@ -19,11 +19,11 @@
 
 ; Higher-order functions
 (map square my-list)                    ; => (1 4 9 16 25)
-(filter (lambda [x] (> x 3)) my-list)  ; => (4 5)
-(reduce (lambda [acc x] (+ acc x)) 0 my-list)  ; => 15
+(filter (fn [x] (> x 3)) my-list)  ; => (4 5)
+(reduce (fn [acc x] (+ acc x)) 0 my-list)  ; => 15
 
 ; Closures and function composition
-(def make-adder (lambda [n] (lambda [x] (+ x n))))
+(def make-adder (fn [n] (fn [x] (+ x n))))
 (def add-five (make-adder 5))
 (add-five 10)                           ; => 15
 

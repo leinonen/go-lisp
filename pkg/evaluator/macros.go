@@ -199,7 +199,7 @@ func (e *Evaluator) valueToExpr(val types.Value) (types.Expr, error) {
 			elements[i] = expr
 		}
 
-		// Special case: if this is a list that will be used as lambda parameters,
+		// Special case: if this is a list that will be used as fn parameters,
 		// convert it to BracketExpr. We detect this by checking if all elements
 		// are symbols (typical for parameter lists)
 		allSymbols := true
@@ -211,7 +211,7 @@ func (e *Evaluator) valueToExpr(val types.Value) (types.Expr, error) {
 		}
 
 		// If all elements are symbols and we're in a potential parameter context,
-		// create BracketExpr for lambda parameter compatibility
+		// create BracketExpr for fn parameter compatibility
 		if allSymbols && len(elements) > 0 {
 			return &types.BracketExpr{Elements: elements}, nil
 		}

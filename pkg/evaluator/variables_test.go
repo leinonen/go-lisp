@@ -451,7 +451,7 @@ func TestEnvironmentInspection(t *testing.T) {
 			}
 		}
 
-		essentialBuiltins := []string{"+", "-", "*", "/", "if", "def", "lambda", "defn", "list", "env", "modules"}
+		essentialBuiltins := []string{"+", "-", "*", "/", "if", "def", "fn", "defn", "list", "env", "modules"}
 		for _, builtin := range essentialBuiltins {
 			if !builtinMap[builtin] {
 				t.Errorf("essential built-in function '%s' not found in help listing", builtin)

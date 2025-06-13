@@ -33,49 +33,49 @@
 
   (defn constantly [value]
     "Return a function that always returns the given value"
-    (lambda [x] value))
+    (fn [x] value))
 
   (defn complement [predicate]
     "Return a function that returns the logical complement of predicate"
-    (lambda [x] (not (predicate x))))
+    (fn [x] (not (predicate x))))
 
   ;; ============================================================================
   ;; Partial Application
   ;; ============================================================================
 
-  (defn partial [fn arg1]
+  (defn partial [f arg1]
     "Partial application: fix the first argument of a function"
-    (lambda [arg2] (fn arg1 arg2)))
+    (fn [arg2] (f arg1 arg2)))
 
-  (defn partial2 [fn arg1 arg2]
+  (defn partial2 [f arg1 arg2]
     "Partial application: fix the first two arguments of a function"
-    (lambda [arg3] (fn arg1 arg2 arg3)))
+    (fn [arg3] (f arg1 arg2 arg3)))
 
-  (defn partial3 [fn arg1 arg2 arg3]
+  (defn partial3 [f arg1 arg2 arg3]
     "Partial application: fix the first three arguments of a function"
-    (lambda [arg4] (fn arg1 arg2 arg3 arg4)))
+    (fn [arg4] (f arg1 arg2 arg3 arg4)))
 
   ;; ============================================================================
   ;; Currying (Transform multi-argument function into chain of single-argument functions)
   ;; ============================================================================
 
-  (defn curry2 [fn]
+  (defn curry2 [f]
     "Curry a 2-argument function"
-    (lambda [arg1]
-      (lambda [arg2]
-        (fn arg1 arg2))))
+    (fn [arg1]
+      (fn [arg2]
+        (f arg1 arg2))))
 
-  (defn curry3 [fn]
+  (defn curry3 [f]
     "Curry a 3-argument function"
-    (lambda [arg1]
-      (lambda [arg2]
-        (lambda [arg3]
-          (fn arg1 arg2 arg3)))))
+    (fn [arg1]
+      (fn [arg2]
+        (fn [arg3]
+          (f arg1 arg2 arg3)))))
 
   ;; Generic curry for common case (2-argument functions)
-  (defn curry [fn]
+  (defn curry [f]
     "Curry a function (assumes 2 arguments)"
-    (curry2 fn))
+    (curry2 f))
 
   ;; ============================================================================
   ;; Function Composition
@@ -83,15 +83,15 @@
 
   (defn comp [f g]
     "Compose two functions: (comp f g)(x) = f(g(x))"
-    (lambda [x] (f (g x))))
+    (fn [x] (f (g x))))
 
   (defn comp3 [f g h]
     "Compose three functions: (comp3 f g h)(x) = f(g(h(x)))"
-    (lambda [x] (f (g (h x)))))
+    (fn [x] (f (g (h x)))))
 
   (defn comp4 [f g h i]
     "Compose four functions: (comp4 f g h i)(x) = f(g(h(i(x))))"
-    (lambda [x] (f (g (h (i x))))))
+    (fn [x] (f (g (h (i x))))))
 
   ;; ============================================================================
   ;; Pipeline Operations  
@@ -119,15 +119,15 @@
 
   (defn juxt [f g]
     "Apply multiple functions to same input: juxt(f, g)(x) = [f(x), g(x)]"
-    (lambda [x] (list (f x) (g x))))
+    (fn [x] (list (f x) (g x))))
 
   (defn juxt3 [f g h]
     "Apply three functions to same input"
-    (lambda [x] (list (f x) (g x) (h x))))
+    (fn [x] (list (f x) (g x) (h x))))
 
   (defn juxt4 [f g h i]
     "Apply four functions to same input"
-    (lambda [x] (list (f x) (g x) (h x) (i x))))
+    (fn [x] (list (f x) (g x) (h x) (i x))))
 
   ;; ============================================================================
   ;; Conditional Functions
@@ -135,21 +135,21 @@
 
   (defn if-fn [predicate then-fn else-fn]
     "Return a function that conditionally applies then-fn or else-fn"
-    (lambda [x]
+    (fn [x]
       (if (predicate x)
           (then-fn x)
           (else-fn x))))
 
   (defn when-fn [predicate then-fn]
     "Return a function that applies then-fn when predicate is true, else identity"
-    (lambda [x]
+    (fn [x]
       (if (predicate x)
           (then-fn x)
           x)))
 
   (defn unless-fn [predicate else-fn]
     "Return a function that applies else-fn when predicate is false, else identity"
-    (lambda [x]
+    (fn [x]
       (if (predicate x)
           x
           (else-fn x))))
@@ -160,19 +160,19 @@
 
   (defn every-pred [pred1 pred2]
     "Return a predicate that is true when both predicates are true"
-    (lambda [x] (and (pred1 x) (pred2 x))))
+    (fn [x] (and (pred1 x) (pred2 x))))
 
   (defn every-pred3 [pred1 pred2 pred3]
     "Return a predicate that is true when all three predicates are true"
-    (lambda [x] (and (pred1 x) (pred2 x) (pred3 x))))
+    (fn [x] (and (pred1 x) (pred2 x) (pred3 x))))
 
   (defn some-pred [pred1 pred2]
     "Return a predicate that is true when either predicate is true"
-    (lambda [x] (or (pred1 x) (pred2 x))))
+    (fn [x] (or (pred1 x) (pred2 x))))
 
   (defn some-pred3 [pred1 pred2 pred3]
     "Return a predicate that is true when any predicate is true"
-    (lambda [x] (or (pred1 x) (pred2 x) (pred3 x))))
+    (fn [x] (or (pred1 x) (pred2 x) (pred3 x))))
 
   ;; ============================================================================
   ;; Threading/Pipeline Macros (using functions)
@@ -190,26 +190,26 @@
   ;; Function Application Utilities
   ;; ============================================================================
 
-  (defn apply-to [value fn]
+  (defn apply-to [value f]
     "Apply function to value (reverse of normal application)"
-    (fn value))
+    (f value))
 
   ;; ============================================================================
   ;; Memoization
   ;; ============================================================================
 
-  (defn memoize [fn]
-    "Return a memoized version of function fn (simplified implementation)"
+  (defn memoize [f]
+    "Return a memoized version of function f (simplified implementation)"
     ;; Note: This is a simplified memoization without actual caching
     ;; In a full implementation, we'd maintain a cache hash-map
     ;; For now, we just return the original function
-    fn)
+    f)
 
   ;; ============================================================================
   ;; Function Introspection
   ;; ============================================================================
 
-  (defn arity [fn]
+  (defn arity [f]
     "Return the arity (number of parameters) of a function (placeholder)"
     ;; This would require runtime function introspection
     ;; For now, return a placeholder value
@@ -219,39 +219,39 @@
   ;; Higher-Order Utilities
   ;; ============================================================================
 
-  (defn fnil [fn default-val]
-    "Return a function that replaces nil arguments with default-val before calling fn"
-    (lambda [x]
+  (defn fnil [f default-val]
+    "Return a function that replaces nil arguments with default-val before calling f"
+    (fn [x]
       (if (= x nil)  ; Direct nil comparison
-          (fn default-val)
-          (fn x))))
+          (f default-val)
+          (f x))))
 
-  (defn fnth [n fn]
-    "Return a function that applies fn to the nth element of a list"
-    (lambda [lst]
-      (fn (nth n lst))))
+  (defn fnth [n f]
+    "Return a function that applies f to the nth element of a list"
+    (fn [lst]
+      (f (nth n lst))))
 
   ;; ============================================================================
   ;; Function Combinators for Lists
   ;; ============================================================================
 
-  (defn map-indexed [fn lst]
+  (defn map-indexed [f lst]
     "Map function over list with index as second argument"
-    (map-indexed-helper fn lst 0))
+    (map-indexed-helper f lst 0))
 
   ;; Helper for map-indexed
-  (defn map-indexed-helper [fn lst index]
+  (defn map-indexed-helper [f lst index]
     (if (empty? lst)
         (list)
-        (cons (fn index (first lst))
-              (map-indexed-helper fn (rest lst) (+ index 1)))))
+        (cons (f index (first lst))
+              (map-indexed-helper f (rest lst) (+ index 1)))))
 
-  (defn keep [fn lst]
-    "Apply fn to each element, keep non-nil results"
-    (filter (lambda [x] (not (= x nil))) (map fn lst)))
+  (defn keep [f lst]
+    "Apply f to each element, keep non-nil results"
+    (filter (fn [x] (not (= x nil))) (map f lst)))
 
-  (defn keep-indexed [fn lst]
-    "Apply fn to index and element, keep non-nil results"
-    (keep identity (map-indexed fn lst)))
+  (defn keep-indexed [f lst]
+    "Apply f to index and element, keep non-nil results"
+    (keep identity (map-indexed f lst)))
 
 )

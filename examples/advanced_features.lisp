@@ -36,9 +36,9 @@
 (def numbers (list 1 2 3 4 5 6 7 8 9 10))
 
 ; Chain operations together
-(def evens (filter (lambda [x] (= (% x 2) 0)) numbers))
-(def doubled-evens (map (lambda [x] (* x 2)) evens))
-(def sum-doubled-evens (reduce (lambda [acc x] (+ acc x)) 0 doubled-evens))
+(def evens (filter (fn [x] (= (% x 2) 0)) numbers))
+(def doubled-evens (map (fn [x] (* x 2)) evens))
+(def sum-doubled-evens (reduce (fn [acc x] (+ acc x)) 0 doubled-evens))
 
 evens                                   ; => (2 4 6 8 10)
 doubled-evens                           ; => (4 8 12 16 20)

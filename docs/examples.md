@@ -11,7 +11,7 @@ For comprehensive, runnable examples, see the `examples/` directory. This docume
 
 ; Lists and higher-order functions
 (map square (list 1 2 3 4)) ; => (1 4 9 16)
-(filter (lambda [x] (> x 5)) (list 1 8 3 10)) ; => (8 10)
+(filter (fn [x] (> x 5)) (list 1 8 3 10)) ; => (8 10)
 
 ; Data structures
 (def user (hash-map :name "Alice" :age 30))

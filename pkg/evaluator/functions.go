@@ -29,9 +29,9 @@ func extractParameters(paramsExpr types.Expr) ([]string, error) {
 	return params, nil
 }
 
-func (e *Evaluator) evalLambda(args []types.Expr) (types.Value, error) {
+func (e *Evaluator) evalFn(args []types.Expr) (types.Value, error) {
 	if len(args) != 2 {
-		return nil, fmt.Errorf("lambda requires exactly 2 arguments: parameters and body")
+		return nil, fmt.Errorf("fn requires exactly 2 arguments: parameters and body")
 	}
 
 	// Extract parameter names from square brackets

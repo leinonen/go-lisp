@@ -251,9 +251,9 @@ func TestCoreLibraryFunctions(t *testing.T) {
 				input    string
 				expected string
 			}{
-				{"all positive", "(all (lambda [x] (> x 0)) (list 1 2 3))", "#t"},
-				{"not all positive", "(all (lambda [x] (> x 0)) (list 1 -2 3))", "#f"},
-				{"all on empty list", "(all (lambda [x] (> x 0)) (list))", "#t"},
+				{"all positive", "(all (fn [x] (> x 0)) (list 1 2 3))", "#t"},
+				{"not all positive", "(all (fn [x] (> x 0)) (list 1 -2 3))", "#f"},
+				{"all on empty list", "(all (fn [x] (> x 0)) (list))", "#t"},
 			}
 
 			for _, tt := range tests {
@@ -277,9 +277,9 @@ func TestCoreLibraryFunctions(t *testing.T) {
 				input    string
 				expected string
 			}{
-				{"any positive", "(any (lambda [x] (> x 0)) (list -1 2 -3))", "#t"},
-				{"no positive", "(any (lambda [x] (> x 0)) (list -1 -2 -3))", "#f"},
-				{"any on empty list", "(any (lambda [x] (> x 0)) (list))", "#f"},
+				{"any positive", "(any (fn [x] (> x 0)) (list -1 2 -3))", "#t"},
+				{"no positive", "(any (fn [x] (> x 0)) (list -1 -2 -3))", "#f"},
+				{"any on empty list", "(any (fn [x] (> x 0)) (list))", "#f"},
 			}
 
 			for _, tt := range tests {
@@ -353,11 +353,11 @@ func TestCoreLibraryFunctions(t *testing.T) {
 		// Test compose function
 		t.Run("compose function", func(t *testing.T) {
 			// Define helper functions for testing
-			_, err := evalExpr("(def square (lambda [x] (* x x)))")
+			_, err := evalExpr("(def square (fn [x] (* x x)))")
 			if err != nil {
 				t.Fatalf("failed to define square: %v", err)
 			}
-			_, err = evalExpr("(def increment (lambda [x] (+ x 1)))")
+			_, err = evalExpr("(def increment (fn [x] (+ x 1)))")
 			if err != nil {
 				t.Fatalf("failed to define increment: %v", err)
 			}
@@ -377,7 +377,7 @@ func TestCoreLibraryFunctions(t *testing.T) {
 		// Test apply-n function
 		t.Run("apply-n function", func(t *testing.T) {
 			// Define increment function if not already defined
-			_, err := evalExpr("(def increment (lambda [x] (+ x 1)))")
+			_, err := evalExpr("(def increment (fn [x] (+ x 1)))")
 			if err != nil {
 				t.Fatalf("failed to define increment: %v", err)
 			}

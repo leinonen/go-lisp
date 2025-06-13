@@ -31,7 +31,7 @@ Automatic big number support for arbitrary precision.
 `(hash-map :key "value")` `(hash-map-get hm :key)` `(hash-map-put hm :key val)`
 
 ### Functions (Modern Square Bracket Syntax)
-`(defn name [params] body)` `(lambda [x] (* x x))`  
+`(defn name [params] body)` `(fn [x] (* x x))`  
 `(apply fn args)` `(compose f g)` `(partial fn arg1)`  
 Square brackets make parameters visually distinct and reduce confusion.
 
@@ -141,11 +141,11 @@ The `require` function combines loading and importing in a single operation:
 ; Traditional approach
 (load "library/functional.lisp")
 (import functional)
-(map (lambda (x) (* x 2)) (list 1 2 3))
+(map (fn (x) (* x 2)) (list 1 2 3))
 
 ; Simplified with require  
 (require "library/functional.lisp")
-(map (lambda (x) (* x 2)) (list 1 2 3))
+(map (fn (x) (* x 2)) (list 1 2 3))
 ```
 
 **Current Implementation:**
@@ -259,7 +259,7 @@ The interpreter includes a powerful macro system that enables code transformatio
   (list (list 'lambda (list var) body) value))
 
 (let1 x 10 (+ x 5))  ; => 15
-; Expands to: ((lambda [x] (+ x 5)) 10)
+; Expands to: ((fn [x] (+ x 5)) 10)
 ```
 
 ### Macro Benefits

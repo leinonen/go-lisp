@@ -7,15 +7,15 @@ A comprehensive functional programming library that provides essential functiona
 ### Syntax Examples
 ```lisp
 ;; Function composition with clear parameter boundaries
-(defn comp [f g] (lambda [x] (f (g x))))
+(defn comp [f g] (fn [x] (f (g x))))
 
 ;; Higher-order functions with readable parameter lists
-(defn map-indexed [fn lst] 
-  (map-indexed-helper fn lst 0))
+(defn map-indexed [f lst] 
+  (map-indexed-helper f lst 0))
 
 ;; Complex functional pipelines remain readable
 (defn create-processor [transform filter reducer]
-  (lambda [data]
+  (fn [data]
     (reducer (filter (map transform data)))))
 ```
 
@@ -133,9 +133,9 @@ Function composition chain: 121
 ;; Create a data processing pipeline
 (def process-numbers 
   (comp3 
-    (partial map (lambda [x] (* x 2)))     ; Double all numbers
-    (partial filter (lambda [x] (> x 5)))  ; Keep > 5
-    (partial reduce (lambda [acc x] (+ acc x)) 0))) ; Sum them
+    (partial map (fn [x] (* x 2)))     ; Double all numbers
+    (partial filter (fn [x] (> x 5)))  ; Keep > 5
+    (partial reduce (fn [acc x] (+ acc x)) 0))) ; Sum them
 
 (process-numbers (list 1 2 3 4 5 6))  ; => 36
 
@@ -153,9 +153,9 @@ Function composition chain: 121
 (def times-three (multiply-by 3))
 
 ;; Higher-order utilities with readable syntax
-(def safe-divide (fnil (lambda [x] (/ 100 x)) 1))
+(def safe-divide (fnil (fn [x] (/ 100 x)) 1))
 (def indexed-processor 
-  (map-indexed (lambda [index element] 
+  (map-indexed (fn [index element] 
                  (+ index element))))
 ```
 

@@ -22,7 +22,7 @@ func NewEnvironment() *Environment {
 	env.bindings["nil"] = &types.NilValue{}
 
 	// Register arithmetic operations as callable functions
-	// These wrapper functions allow arithmetic operations to be used in lambda expressions
+	// These wrapper functions allow arithmetic operations to be used in fn expressions
 	env.bindings["+"] = &types.ArithmeticFunctionValue{Operation: "+"}
 	env.bindings["-"] = &types.ArithmeticFunctionValue{Operation: "-"}
 	env.bindings["*"] = &types.ArithmeticFunctionValue{Operation: "*"}

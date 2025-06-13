@@ -34,7 +34,7 @@
   ; String analysis functions
   (defn str-words [str]
     "Split string into words (by whitespace)"
-    (filter (lambda [word] (not (string-empty? word)))
+    (filter (fn [word] (not (string-empty? word)))
             (string-split (string-trim str) " ")))
 
   (defn str-lines [str]
@@ -48,7 +48,7 @@
   ; String transformation functions
   (defn str-reverse [str]
     "Reverse a string"
-    (string-join (reverse (map (lambda [i] (string-char-at str i))
+    (string-join (reverse (map (fn [i] (string-char-at str i))
                               (range 0 (string-length str)))) ""))
 
   ; Helper function to create a range of numbers
@@ -115,9 +115,9 @@
   (defn let [bindings body]
     "Simple let implementation for local bindings"
     ; This is a simplified let - in a full implementation this would be a special form
-    ; For now, we'll implement it as a lambda application
-    ((lambda [names vals]
-       (apply (lambda names body) vals))
+    ; For now, we'll implement it as a fn application
+    ((fn [names vals]
+       (apply (fn names body) vals))
      (map first bindings)
-     (map (lambda [binding] (first (rest binding))) bindings)))
+     (map (fn [binding] (first (rest binding))) bindings)))
 )

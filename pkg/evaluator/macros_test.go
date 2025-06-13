@@ -101,7 +101,7 @@ func TestMacroExpansionComplex(t *testing.T) {
 
 	// Define a more complex macro that creates a let-like binding
 	macroDefExpr := parseString(t, `(defmacro let1 [var value body] 
-		(list (list 'lambda (list var) body) value))`)
+		(list (list 'fn (list var) body) value))`)
 	_, err := evaluator.Eval(macroDefExpr)
 	if err != nil {
 		t.Fatalf("failed to define macro: %v", err)

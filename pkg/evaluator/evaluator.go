@@ -111,8 +111,8 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalIf(list.Elements[1:])
 		case "def":
 			return e.evalDef(list.Elements[1:])
-		case "lambda":
-			return e.evalLambda(list.Elements[1:])
+		case "fn":
+			return e.evalFn(list.Elements[1:])
 		case "defn":
 			return e.evalDefun(list.Elements[1:])
 		case "defmacro":
@@ -232,7 +232,7 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 		}
 	}
 
-	// If first element is not a symbol, evaluate it (could be a lambda expression)
+	// If first element is not a symbol, evaluate it (could be a fn expression)
 	funcValue, err := e.Eval(firstExpr)
 	if err != nil {
 		return nil, err
