@@ -259,6 +259,72 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 		// Control flow
 		case "do":
 			return e.evalDo(list.Elements[1:])
+		// Mathematical functions
+		case "sqrt":
+			return e.evalSqrt(list.Elements[1:])
+		case "pow":
+			return e.evalPow(list.Elements[1:])
+		case "sin":
+			return e.evalSin(list.Elements[1:])
+		case "cos":
+			return e.evalCos(list.Elements[1:])
+		case "tan":
+			return e.evalTan(list.Elements[1:])
+		case "log":
+			return e.evalLog(list.Elements[1:])
+		case "exp":
+			return e.evalExp(list.Elements[1:])
+		case "floor":
+			return e.evalFloor(list.Elements[1:])
+		case "ceil":
+			return e.evalCeil(list.Elements[1:])
+		case "round":
+			return e.evalRound(list.Elements[1:])
+		case "abs":
+			return e.evalAbs(list.Elements[1:])
+		case "min":
+			return e.evalMin(list.Elements[1:])
+		case "max":
+			return e.evalMax(list.Elements[1:])
+		case "random":
+			return e.evalRandom(list.Elements[1:])
+		case "pi":
+			return e.evalPi(list.Elements[1:])
+		case "e":
+			return e.evalE(list.Elements[1:])
+		// Additional trigonometric functions
+		case "asin":
+			return e.evalAsin(list.Elements[1:])
+		case "acos":
+			return e.evalAcos(list.Elements[1:])
+		case "atan":
+			return e.evalAtan(list.Elements[1:])
+		case "atan2":
+			return e.evalAtan2(list.Elements[1:])
+		// Hyperbolic functions
+		case "sinh":
+			return e.evalSinh(list.Elements[1:])
+		case "cosh":
+			return e.evalCosh(list.Elements[1:])
+		case "tanh":
+			return e.evalTanh(list.Elements[1:])
+		// Angle conversion functions
+		case "degrees":
+			return e.evalDegrees(list.Elements[1:])
+		case "radians":
+			return e.evalRadians(list.Elements[1:])
+		// Additional logarithm functions
+		case "log10":
+			return e.evalLog10(list.Elements[1:])
+		case "log2":
+			return e.evalLog2(list.Elements[1:])
+		// Additional utility functions
+		case "trunc":
+			return e.evalTrunc(list.Elements[1:])
+		case "sign":
+			return e.evalSign(list.Elements[1:])
+		case "mod":
+			return e.evalMod(list.Elements[1:])
 		default:
 			// Check if it's a macro call first
 			if macro, isMacro := e.isMacroCall(symbolExpr.Name); isMacro {

@@ -461,4 +461,4 @@ nil                               ; Null/empty value (falsy)
 #f                                ; Boolean false
 ```
 
-This reference covers all the core operations available in the Lisp interpreter. For more examples and advanced usage patterns, see the [Examples Guide](examples.md) and the various library documentation files.
+This reference covers all the core operations available in the Lisp interpreter. For more examples and advanced usage patterns, see the [Examples Guide](examples.md), [Mathematical Functions](mathematical_functions.md), and the various library documentation files.

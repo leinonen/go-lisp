@@ -103,6 +103,7 @@ This Lisp interpreter is **feature-complete** and **production-ready** with:
 - **🎯 Error Handling**: Built-in `error` function and clear diagnostic messages
 - **🛠️ Development Tools**: Environment inspection, debugging helpers, and extensive examples
 - **📚 Core Library**: Rich mathematical and utility functions (factorial, gcd, map, filter, reduce)
+- **🔢 Mathematical Functions**: 30+ built-in math functions (trigonometry, logarithms, statistics, constants)
 - **⚡ Functional Programming**: Complete functional library with currying, composition, and higher-order utilities
 - **🎨 Output Functions**: Built-in `print` and `println` for program output
 - **🔍 Keywords Support**: Self-evaluating symbols perfect for hash map keys
@@ -135,6 +136,7 @@ Control flow and utility macros for enhanced syntax.
 ### Core Documentation
 - **[Features](docs/features.md)** - Complete feature overview and data types
 - **[Operations Reference](docs/operations.md)** - Guide to all supported operations
+- **[Mathematical Functions](docs/mathematical_functions.md)** - Complete mathematical function reference
 - **[Examples](docs/examples.md)** - Code examples and tutorials
 - **[Usage Guide](docs/usage.md)** - Running and building the interpreter
 
@@ -173,6 +175,7 @@ make test     # Run comprehensive test suite (100% coverage)
 
 # Feature demonstrations
 ./lisp examples/basic_features.lisp      # Core language features  
+./lisp examples/math_functions_demo.lisp # Mathematical functions showcase
 ./lisp examples/functional_library_demo.lisp # Functional programming
 ./lisp examples/keywords.lisp            # Keyword data type examples
 ./lisp examples/hash_maps.lisp           # Hash map operations

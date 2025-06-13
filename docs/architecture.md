@@ -33,6 +33,7 @@ lisp-interpreter/
 │   ├── keywords.md             # Keyword data type guide
 │   ├── hash_maps.md           # Hash map operations guide
 │   ├── core_library.md        # Mathematical and utility functions
+│   ├── mathematical_functions.md # Complete mathematical function reference
 │   ├── functional_library.md  # Functional programming utilities
 │   ├── print_functions.md     # Output function reference
 │   ├── modulo_operator.md     # Modulo operator documentation
@@ -46,6 +47,7 @@ lisp-interpreter/
 │   ├── functional_library_demo.lisp # Functional programming utilities ⭐ NEW
 │   ├── module_system.lisp     # Module system demonstration
 │   ├── core_library.lisp      # Core library functions
+│   ├── math_functions_demo.lisp # Mathematical functions showcase
 │   ├── keywords.lisp          # Keyword data type examples
 │   ├── hash_maps.lisp         # Hash map operations showcase
 │   ├── string_library_demo.lisp # String processing examples

@@ -241,6 +241,7 @@ Helper functions are not exported and remain internal:
 - The module system provides optimal access patterns
 
 ## See Also
+- [Mathematical Functions](mathematical_functions.md) - Complete built-in math function reference
 - [Module System](modules.md)
 - [Mathematical Operations](operations.md)
 - [List Operations](lists.md)
