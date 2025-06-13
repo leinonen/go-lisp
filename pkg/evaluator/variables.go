@@ -100,7 +100,7 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			// Environment inspection
 			"env", "modules", "help",
 			// Print functions
-			"print", "println",
+			"print!", "println!",
 			// Constants
 			"nil",
 			// Error handling
@@ -228,8 +228,8 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		"help":    "(help) or (help func-name)\nShow all built-in functions or help for a specific function.\nExample: (help) => (+ - * / ...) or (help reduce) => help for reduce",
 
 		// Print functions
-		"print":   "(print value1 value2 ...)\nOutput values to stdout without newline.\nExample: (print \"Hello\" \" \" \"World\") outputs: Hello World",
-		"println": "(println value1 value2 ...)\nOutput values to stdout with newline.\nExample: (println \"Hello World\") outputs: Hello World\\n",
+		"print!":   "(print! value1 value2 ...)\nOutput values to stdout without newline.\nExample: (print! \"Hello\" \" \" \"World\") outputs: Hello World",
+		"println!": "(println! value1 value2 ...)\nOutput values to stdout with newline.\nExample: (println! \"Hello World\") outputs: Hello World\\n",
 
 		// Constants
 		"nil": "nil\nBuilt-in constant representing empty/null values.\nExample: (hash-map-get {} \"missing\") => nil",

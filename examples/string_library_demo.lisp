@@ -3,52 +3,52 @@
 ; Built-in functions are primitives implemented in Go for performance
 ; Library functions are Lisp compositions built on top of the primitives
 
-(println "=== String Library Demo ===")
+(println! "=== String Library Demo ===")
 
 ; Test built-in string functions (implemented as Go primitives)
-(println "\n--- Built-in String Functions (Go Primitives) ---")
-(println "String concatenation:" (string-concat "Hello" " " "World"))
-(println "String length:" (string-length "Hello World"))
-(println "Substring:" (string-substring "Hello World" 0 5))
-(println "Character at index 6:" (string-char-at "Hello World" 6))
-(println "Uppercase:" (string-upper "hello world"))
-(println "Lowercase:" (string-lower "HELLO WORLD"))
-(println "Trimmed:" (string-trim "  Hello World  "))
+(println! "\n--- Built-in String Functions (Go Primitives) ---")
+(println! "String concatenation:" (string-concat "Hello" " " "World"))
+(println! "String length:" (string-length "Hello World"))
+(println! "Substring:" (string-substring "Hello World" 0 5))
+(println! "Character at index 6:" (string-char-at "Hello World" 6))
+(println! "Uppercase:" (string-upper "hello world"))
+(println! "Lowercase:" (string-lower "HELLO WORLD"))
+(println! "Trimmed:" (string-trim "  Hello World  "))
 
 ; Test string search and manipulation
-(println "\n--- String Search & Manipulation ---")
-(println "Contains 'World':" (string-contains? "Hello World" "World"))
-(println "Starts with 'Hello':" (string-starts-with? "Hello World" "Hello"))
-(println "Ends with 'World':" (string-ends-with? "Hello World" "World"))
-(println "Replace 'World' with 'Universe':" (string-replace "Hello World" "World" "Universe"))
-(println "Index of 'World':" (string-index-of "Hello World" "World"))
-(println "Repeat 'Hi' 3 times:" (string-repeat "Hi" 3))
+(println! "\n--- String Search & Manipulation ---")
+(println! "Contains 'World':" (string-contains? "Hello World" "World"))
+(println! "Starts with 'Hello':" (string-starts-with? "Hello World" "Hello"))
+(println! "Ends with 'World':" (string-ends-with? "Hello World" "World"))
+(println! "Replace 'World' with 'Universe':" (string-replace "Hello World" "World" "Universe"))
+(println! "Index of 'World':" (string-index-of "Hello World" "World"))
+(println! "Repeat 'Hi' 3 times:" (string-repeat "Hi" 3))
 
 ; Test string splitting and joining
-(println "\n--- String Splitting & Joining ---")
+(println! "\n--- String Splitting & Joining ---")
 (def words (string-split "apple,banana,cherry" ","))
-(println "Split by comma:" words)
-(println "Join with ' | ':" (string-join words " | "))
+(println! "Split by comma:" words)
+(println! "Join with ' | ':" (string-join words " | "))
 
 ; Test string validation
-(println "\n--- String Validation ---")
-(println "Is '123' a string?:" (string? "123"))
-(println "Is '123' empty?:" (string-empty? "123"))
-(println "Is '' empty?:" (string-empty? ""))
+(println! "\n--- String Validation ---")
+(println! "Is '123' a string?:" (string? "123"))
+(println! "Is '123' empty?:" (string-empty? "123"))
+(println! "Is '' empty?:" (string-empty? ""))
 
 ; Test type conversion
-(println "\n--- Type Conversion ---")
-(println "String to number '42.5':" (string->number "42.5"))
-(println "Number to string 42.5:" (number->string 42.5))
+(println! "\n--- Type Conversion ---")
+(println! "String to number '42.5':" (string->number "42.5"))
+(println! "Number to string 42.5:" (number->string 42.5))
 
 ; Test regex functions
-(println "\n--- Regular Expressions ---")
-(println "Regex match 'H.*d' in 'Hello World':" (string-regex-match? "Hello World" "H.*d"))
-(println "Find all digits in 'abc123def456':" (string-regex-find-all "abc123def456" "[0-9]+"))
+(println! "\n--- Regular Expressions ---")
+(println! "Regex match 'H.*d' in 'Hello World':" (string-regex-match? "Hello World" "H.*d"))
+(println! "Find all digits in 'abc123def456':" (string-regex-find-all "abc123def456" "[0-9]+"))
 
 ; Load and test the high-level string library
-(println "\n--- High-Level String Library (Lisp Compositions) ---")
-(println "These functions are built on top of the primitives for convenience and readability")
+(println! "\n--- High-Level String Library (Lisp Compositions) ---")
+(println! "These functions are built on top of the primitives for convenience and readability")
 
 ; Note: In a real implementation, we would load the module like this:
 ; (load "library/strings.lisp")
@@ -95,48 +95,48 @@
     (string-regex-match? str "^[0-9]+$")))
 
 ; Test our higher-level utility functions
-(println "String reverse 'Hello':" (str-reverse "Hello"))
-(println "Capitalize 'hello world':" (str-capitalize "hello world"))
-(println "Title case 'hello world example':" (str-title-case "hello world example"))
-(println "Is '  ' blank?:" (str-blank? "  "))
-(println "Is '123' numeric?:" (str-numeric? "123"))
-(println "Is 'abc' numeric?:" (str-numeric? "abc"))
+(println! "String reverse 'Hello':" (str-reverse "Hello"))
+(println! "Capitalize 'hello world':" (str-capitalize "hello world"))
+(println! "Title case 'hello world example':" (str-title-case "hello world example"))
+(println! "Is '  ' blank?:" (str-blank? "  "))
+(println! "Is '123' numeric?:" (str-numeric? "123"))
+(println! "Is 'abc' numeric?:" (str-numeric? "abc"))
 
 ; Demonstrate interactive string processing
-(println "\n--- Interactive String Processing ---")
+(println! "\n--- Interactive String Processing ---")
 (def sample-text "  The Quick Brown Fox Jumps Over The Lazy Dog  ")
-(println "Original text:" sample-text)
-(println "Trimmed:" (string-trim sample-text))
-(println "Uppercase:" (string-upper (string-trim sample-text)))
-(println "Lowercase:" (string-lower (string-trim sample-text)))
-(println "Capitalized:" (str-capitalize (string-lower (string-trim sample-text))))
+(println! "Original text:" sample-text)
+(println! "Trimmed:" (string-trim sample-text))
+(println! "Uppercase:" (string-upper (string-trim sample-text)))
+(println! "Lowercase:" (string-lower (string-trim sample-text)))
+(println! "Capitalized:" (str-capitalize (string-lower (string-trim sample-text))))
 
 ; Demonstrate string analysis with output
-(println "\n--- String Analysis ---")
+(println! "\n--- String Analysis ---")
 (def analysis-text "Hello World 123!")
-(println "Analyzing text:" analysis-text)
-(println "Length:" (string-length analysis-text))
-(println "Contains digits:" (string-regex-match? analysis-text "[0-9]"))
-(println "Contains letters:" (string-regex-match? analysis-text "[a-zA-Z]"))
-(println "First 5 characters:" (string-substring analysis-text 0 5))
-(println "Last 4 characters:" (string-substring analysis-text (- (string-length analysis-text) 4) (string-length analysis-text)))
+(println! "Analyzing text:" analysis-text)
+(println! "Length:" (string-length analysis-text))
+(println! "Contains digits:" (string-regex-match? analysis-text "[0-9]"))
+(println! "Contains letters:" (string-regex-match? analysis-text "[a-zA-Z]"))
+(println! "First 5 characters:" (string-substring analysis-text 0 5))
+(println! "Last 4 characters:" (string-substring analysis-text (- (string-length analysis-text) 4) (string-length analysis-text)))
 
 ; Demonstrate practical use cases
-(println "\n--- Practical Examples ---")
+(println! "\n--- Practical Examples ---")
 
 ; Example 1: Text formatting
 (def format-name 
   (fn [first last]
     (string-concat (str-capitalize first) " " (str-capitalize last))))
 
-(println "Formatted name:" (format-name "john" "doe"))
+(println! "Formatted name:" (format-name "john" "doe"))
 
 ; Example 2: Data processing with output
 (def csv-line "apple,banana,cherry,date")
-(println "CSV data:" csv-line)
+(println! "CSV data:" csv-line)
 (def fruits (string-split csv-line ","))
-(println "Parsed fruits:" fruits)
-(println "Fruit count:" (length fruits))
+(println! "Parsed fruits:" fruits)
+(println! "Fruit count:" (length fruits))
 
 ; Print each fruit with formatting
 (def print-fruit-list
@@ -144,24 +144,24 @@
     (if (null? fruits)
         "Done!"
         (begin
-          (println "- " (str-capitalize (first fruits)))
+          (println! "- " (str-capitalize (first fruits)))
           (print-fruit-list (rest fruits))))))
 
-(println "Formatted fruit list:")
+(println! "Formatted fruit list:")
 (print-fruit-list fruits)
 
-(println "\n=== Demo Complete ===")
+(println! "\n=== Demo Complete ===")
 
 ; Example usage showing print vs println difference
-(println "\n--- Print vs Println Demonstration ---")
-(print "This is print: no newline")
-(print " - continues on same line")
-(println " - println ends the line")
-(println "New line after println")
+(println! "\n--- Print vs Println Demonstration ---")
+(print! "This is print: no newline")
+(print! " - continues on same line")
+(println! " - println ends the line")
+(println! "New line after println")
 
 ; Multiple arguments
-(println "Multiple arguments:" "arg1" "arg2" "arg3")
-(print "Print multiple:" "arg1" "arg2" "arg3")
+(println! "Multiple arguments:" "arg1" "arg2" "arg3")
+(print! "Print multiple:" "arg1" "arg2" "arg3")
 (println)  ; Empty println for newline
 ; (use strings)
 
@@ -195,25 +195,25 @@
         (string-concat (string-repeat pad-char needed) str))))
 
 ; Test the high-level functions
-(println "\n--- Testing High-Level Functions ---")
-(println "Words in 'hello world from lisp':" (str-words "  hello   world   from   lisp  "))
-(println "Capitalize 'hello':" (str-capitalize "hello"))
-(println "Title case 'hello world':" (str-title-case "hello world"))
-(println "Is '   ' blank?:" (str-blank? "   "))
-(println "Is 'text' blank?:" (str-blank? "text"))
-(println "Pad left 'Hi' to width 10 with '*':" (str-pad-left "Hi" 10 "*"))
+(println! "\n--- Testing High-Level Functions ---")
+(println! "Words in 'hello world from lisp':" (str-words "  hello   world   from   lisp  "))
+(println! "Capitalize 'hello':" (str-capitalize "hello"))
+(println! "Title case 'hello world':" (str-title-case "hello world"))
+(println! "Is '   ' blank?:" (str-blank? "   "))
+(println! "Is 'text' blank?:" (str-blank? "text"))
+(println! "Pad left 'Hi' to width 10 with '*':" (str-pad-left "Hi" 10 "*"))
 
 ; Test string processing pipeline
-(println "\n--- String Processing Pipeline ---")
+(println! "\n--- String Processing Pipeline ---")
 (def text "  HELLO world from LISP interpreter  ")
-(println "Original:" text)
-(println "Trimmed & title case:" (str-title-case (string-trim text)))
+(println! "Original:" text)
+(println! "Trimmed & title case:" (str-title-case (string-trim text)))
 
 ; Test with different data types
-(println "\n--- Edge Cases & Error Handling ---")
-(println "Empty string operations:")
-(println "  Length of '':" (string-length ""))
-(println "  Trim '':" (string-trim ""))
-(println "  Upper '':" (string-upper ""))
+(println! "\n--- Edge Cases & Error Handling ---")
+(println! "Empty string operations:")
+(println! "  Length of '':" (string-length ""))
+(println! "  Trim '':" (string-trim ""))
+(println! "  Upper '':" (string-upper ""))
 
-(println "\nString library demonstration complete!")
+(println! "\nString library demonstration complete!")

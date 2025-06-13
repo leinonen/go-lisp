@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Lisp interpreter includes built-in `print` and `println` functions that enable programs to produce output. These functions are essential for creating interactive programs, debugging, displaying results, and creating user-friendly applications.
+The Lisp interpreter includes built-in `print!` and `println!` functions that enable programs to produce output. These functions are essential for creating interactive programs, debugging, displaying results, and creating user-friendly applications. The exclamation mark indicates that these functions perform side effects (output to stdout).
 
 ```lisp
 ;; Clear and modern function syntax
@@ -16,9 +16,9 @@ The Lisp interpreter includes built-in `print` and `println` functions that enab
 
 ## Functions
 
-### `print`
+### `print!`
 
-**Syntax:** `(print arg1 arg2 ... argN)`
+**Syntax:** `(print! arg1 arg2 ... argN)`
 
 **Description:** Outputs the given arguments to stdout without adding a newline at the end. Multiple arguments are separated by spaces.
 
@@ -30,14 +30,14 @@ The Lisp interpreter includes built-in `print` and `println` functions that enab
 
 **Examples:**
 ```lisp
-(print "Hello")                    ; Output: Hello
-(print "Count:" 42)               ; Output: Count: 42
-(print 1 2 3 #t #f)               ; Output: 1 2 3 #t #f
+(print! "Hello")                    ; Output: Hello
+(print! "Count:" 42)               ; Output: Count: 42
+(print! 1 2 3 #t #f)               ; Output: 1 2 3 #t #f
 ```
 
-### `println`
+### `println!`
 
-**Syntax:** `(println arg1 arg2 ... argN)`
+**Syntax:** `(println! arg1 arg2 ... argN)`
 
 **Description:** Outputs the given arguments to stdout and adds a newline at the end. Multiple arguments are separated by spaces.
 
@@ -49,9 +49,9 @@ The Lisp interpreter includes built-in `print` and `println` functions that enab
 
 **Examples:**
 ```lisp
-(println "Hello World")            ; Output: Hello World\n
-(println "Result:" (+ 2 3))        ; Output: Result: 5\n
-(println)                          ; Output: \n (empty line)
+(println! "Hello World")            ; Output: Hello World\n
+(println! "Result:" (+ 2 3))        ; Output: Result: 5\n
+(println!)                          ; Output: \n (empty line)
 ```
 
 ## Data Type Support
@@ -60,67 +60,67 @@ Both functions support all Lisp data types:
 
 ### Basic Types
 ```lisp
-(println "String:" "Hello")        ; String: Hello
-(println "Number:" 42)             ; Number: 42
-(println "Boolean:" #t)            ; Boolean: #t
-(println "Nil:" nil)               ; Nil: ()
+(println! "String:" "Hello")        ; String: Hello
+(println! "Number:" 42)             ; Number: 42
+(println! "Boolean:" #t)            ; Boolean: #t
+(println! "Nil:" nil)               ; Nil: ()
 ```
 
 ### Big Numbers
 ```lisp
-(println "Big number:" 123456789012345678901234567890)
+(println! "Big number:" 123456789012345678901234567890)
 ; Output: Big number: 123456789012345678901234567890
 ```
 
 ### Collections
 ```lisp
-(println "List:" (list 1 2 3))     ; List: (1 2 3)
-(println "Hash:" (hash-map "a" 1)) ; Hash: {a: 1}
+(println! "List:" (list 1 2 3))     ; List: (1 2 3)
+(println! "Hash:" (hash-map "a" 1)) ; Hash: {a: 1}
 ```
 
 ### Functions
 ```lisp
 (def square (fn [x] (* x x)))
-(println "Function:" square)       ; Function: #<function([x])>
+(println! "Function:" square)       ; Function: #<function([x])>
 ```
 
 ## Usage Patterns
 
 ### Basic Output
 ```lisp
-(println "Program started")
-(println "Processing data...")
-(println "Program completed")
+(println! "Program started")
+(println! "Processing data...")
+(println! "Program completed")
 ```
 
 ### Variable Display
 ```lisp
 (def name "Alice")
 (def age 25)
-(println "Name:" name "Age:" age)  ; Name: Alice Age: 25
+(println! "Name:" name "Age:" age)  ; Name: Alice Age: 25
 ```
 
 ### Mathematical Results
 ```lisp
 (def a 10)
 (def b 5)
-(println a "+" b "=" (+ a b))      ; 10 + 5 = 15
-(println a "*" b "=" (* a b))      ; 10 * 5 = 50
+(println! a "+" b "=" (+ a b))      ; 10 + 5 = 15
+(println! a "*" b "=" (* a b))      ; 10 * 5 = 50
 ```
 
 ### List Processing
 ```lisp
 (def numbers (list 1 2 3 4 5))
-(println "Original:" numbers)
-(println "Squared:" (map (fn [x] (* x x)) numbers))
+(println! "Original:" numbers)
+(println! "Squared:" (map (fn [x] (* x x)) numbers))
 ```
 
 ### String Operations Integration
 ```lisp
 (def text "Hello World")
-(println "Text:" text)
-(println "Length:" (string-length text))
-(println "Upper:" (string-upper text))
+(println! "Text:" text)
+(println! "Length:" (string-length text))
+(println! "Upper:" (string-upper text))
 ```
 
 ### Formatted Output
@@ -129,14 +129,14 @@ Both functions support all Lisp data types:
   (fn [name]
     (string-concat "Welcome, " name "!")))
 
-(println (format-greeting "Bob"))  ; Welcome, Bob!
+(println! (format-greeting "Bob"))  ; Welcome, Bob!
 ```
 
 ### Progress Indication
 ```lisp
 (def show-progress
   (fn [current total]
-    (println "Progress:" current "/" total)))
+    (println! "Progress:" current "/" total)))
 
 (show-progress 3 10)               ; Progress: 3 / 10
 ```
@@ -146,35 +146,35 @@ Both functions support all Lisp data types:
 (def show-menu
   (fn []
     (begin
-      (println "===== MENU =====")
-      (println "1. Option A")
-      (println "2. Option B")
-      (println "================"))));
+      (println! "===== MENU =====")
+      (println! "1. Option A")
+      (println! "2. Option B")
+      (println! "================"))));
 ```
 
-## Difference Between `print` and `println`
+## Difference Between `print!` and `println!`
 
 The key difference is the automatic newline:
 
 ```lisp
-(print "Hello")
-(print " ")
-(print "World")
+(print! "Hello")
+(print! " ")
+(print! "World")
 ; Output: Hello World
 
-(println "Hello")
-(println "World")  
+(println! "Hello")
+(println! "World")  
 ; Output: Hello
 ;         World
 ```
 
 Combined usage:
 ```lisp
-(print "Processing")
-(print ".")
-(print ".")
-(print ".")
-(println " Done!")
+(print! "Processing")
+(print! ".")
+(print! ".")
+(print! ".")
+(println! " Done!")
 ; Output: Processing... Done!
 ```
 

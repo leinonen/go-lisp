@@ -90,8 +90,8 @@
   "Print expression and its result"
   (list 'let1 'result expr
         (list 'list
-              (list 'print (list 'string-concat "DEBUG: " (list 'quote expr) " => "))
-              (list 'print 'result)
+              (list 'print! (list 'string-concat "DEBUG: " (list 'quote expr) " => "))
+              (list 'print! 'result)
               'result)))
 
 ;; Time - Measure execution time (simplified)
@@ -189,9 +189,9 @@
 ;; Usage Examples (commented out)
 ;; ============================================================================
 
-;; (when (> x 5) (print "x is big"))
-;; (unless (< x 0) (print "x is not negative"))
+;; (when (> x 5) (print! "x is big"))
+;; (unless (< x 0) (print! "x is not negative"))
 ;; (let* ((x 1) (y (+ x 1))) (+ x y))
 ;; (debug (+ 1 2 3))
-;; (dotimes i 5 (print i))
+;; (dotimes i 5 (print! i))
 ;; (match day (list (list 1 "Monday") (list 2 "Tuesday") (list '_ "Other")))

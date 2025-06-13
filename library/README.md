@@ -34,7 +34,7 @@ Core operations implemented directly in Go for performance:
 - **String Operations**: 20+ string functions for manipulation and analysis
 - **List Operations**: `list`, `cons`, `first`, `rest`, `length`, `empty?`
 - **Hash Maps**: `hash-map`, `hash-map-get`, `hash-map-put`, etc.
-- **I/O**: `print`, `load`, module system operations
+- **I/O**: `print!`, `load`, module system operations
 
 ### Library Functions (Lisp Compositions)
 Higher-level utilities that combine the primitives for common tasks and provide more convenient interfaces.
@@ -104,8 +104,8 @@ Higher-level utilities that combine the primitives for common tasks and provide 
 (load "library/macros.lisp")
 
 ; Control flow macros
-(when (> x 5) (print "x is big"))
-(unless (< x 0) (print "x is not negative"))
+(when (> x 5) (print! "x is big"))
+(unless (< x 0) (print! "x is not negative"))
 
 ; Variable binding
 (let* ((x 1) (y (+ x 1)) (z (+ x y))) 
@@ -115,7 +115,7 @@ Higher-level utilities that combine the primitives for common tasks and provide 
 (debug (+ 1 2 3))                    ; Prints: DEBUG: (+ 1 2 3) => 6
 
 ; Iteration
-(dotimes i 5 (print i))              ; Prints: 0 1 2 3 4
+(dotimes i 5 (print! i))              ; Prints: 0 1 2 3 4
 
 ; Pattern matching
 (match day 

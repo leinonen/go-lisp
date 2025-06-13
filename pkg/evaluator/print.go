@@ -7,7 +7,7 @@ import (
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
 
-// Print function - outputs values to stdout without newline
+// Print! function - outputs values to stdout without newline (side effect)
 func (e *Evaluator) evalPrint(args []types.Expr) (types.Value, error) {
 	if len(args) == 0 {
 		return &types.NilValue{}, nil
@@ -28,7 +28,7 @@ func (e *Evaluator) evalPrint(args []types.Expr) (types.Value, error) {
 	return &types.NilValue{}, nil
 }
 
-// Println function - outputs values to stdout with newline
+// Println! function - outputs values to stdout with newline (side effect)
 func (e *Evaluator) evalPrintln(args []types.Expr) (types.Value, error) {
 	if len(args) == 0 {
 		fmt.Println()

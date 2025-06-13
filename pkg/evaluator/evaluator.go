@@ -170,9 +170,9 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 		case "error":
 			return e.evalError(list.Elements[1:])
 		// Print functions
-		case "print":
+		case "print!":
 			return e.evalPrint(list.Elements[1:])
-		case "println":
+		case "println!":
 			return e.evalPrintln(list.Elements[1:])
 		// String functions
 		case "string-concat":

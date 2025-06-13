@@ -351,15 +351,15 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 
 ### Print Functions
 ```lisp
-(print value1 value2 ...)         ; Print values separated by spaces
-(println value1 value2 ...)       ; Print values with newline
+(print! value1 value2 ...)         ; Print values separated by spaces
+(println! value1 value2 ...)       ; Print values with newline
 ```
 
 **Examples:**
 ```lisp
-(print "Hello" "World")           ; Prints: Hello World
-(println "Line 1")                ; Prints: Line 1\n
-(println "Line 2")                ; Prints: Line 2\n
+(print! "Hello" "World")           ; Prints: Hello World
+(println! "Line 1")                ; Prints: Line 1\n
+(println! "Line 2")                ; Prints: Line 2\n
 ```
 
 ### Error Handling

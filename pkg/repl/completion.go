@@ -146,7 +146,7 @@ func (cp *CompletionProvider) getBuiltinFunctions() []string {
 		// Environment inspection
 		"env", "modules", "help",
 		// Print functions
-		"print", "println",
+		"print!", "println!",
 		// Constants
 		"nil",
 		// Error handling

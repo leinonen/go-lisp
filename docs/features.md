@@ -239,8 +239,8 @@ The interpreter includes a powerful macro system that enables code transformatio
   (list 'if condition body 'nil))
 
 ; Use the when macro
-(when (> x 5) (print "x is greater than 5"))
-; Expands to: (if (> x 5) (print "x is greater than 5") nil)
+(when (> x 5) (print! "x is greater than 5"))
+; Expands to: (if (> x 5) (print! "x is greater than 5") nil)
 
 ; Define an 'unless' macro
 (defmacro unless [condition then else]
