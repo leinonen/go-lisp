@@ -143,6 +143,8 @@ func (cp *CompletionProvider) getBuiltinFunctions() []string {
 		"string-contains?", "string-starts-with?", "string-ends-with?", "string-replace",
 		"string-index-of", "string->number", "number->string", "string-regex-match?",
 		"string-regex-find-all", "string-repeat", "string?", "string-empty?",
+		// File operations
+		"read-file", "write-file", "file-exists?",
 		// Module system
 		"load", "import",
 		// Environment inspection

@@ -43,6 +43,11 @@ func NewEnvironment() *Environment {
 	env.bindings["reverse"] = &types.BuiltinFunctionValue{Name: "reverse"}
 	env.bindings["nth"] = &types.BuiltinFunctionValue{Name: "nth"}
 
+	// File operations
+	env.bindings["read-file"] = &types.BuiltinFunctionValue{Name: "read-file"}
+	env.bindings["write-file"] = &types.BuiltinFunctionValue{Name: "write-file"}
+	env.bindings["file-exists?"] = &types.BuiltinFunctionValue{Name: "file-exists?"}
+
 	return env
 }
 

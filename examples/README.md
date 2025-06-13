@@ -46,6 +46,9 @@ Comprehensive examples demonstrating all interpreter features. Each file focuses
 ### `print_functions_demo.lisp`
 **Print capabilities**: output formatting, multiple data types, debugging utilities.
 
+### `file_functions_demo.lisp`
+**File I/O operations**: reading, writing, checking file existence, data processing pipelines, configuration management.
+
 ## Quick Start
 
 ```bash

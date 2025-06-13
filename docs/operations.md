@@ -430,6 +430,32 @@ Evaluates expressions in sequence and returns the result of the last expression.
 (println! "Line 2")                ; Prints: Line 2\n
 ```
 
+### File Operations
+```lisp
+(read-file filename)              ; Read file contents as string
+(write-file filename content)     ; Write string content to file
+(file-exists? filename)           ; Check if file exists
+```
+
+**Examples:**
+```lisp
+; Read a file
+(read-file "data.txt")            ; => "file contents..."
+
+; Write to a file  
+(write-file "output.txt" "Hello, World!")  ; => #t
+
+; Check file existence
+(if (file-exists? "config.txt")
+    (read-file "config.txt")
+    "default config")
+
+; Data processing pipeline
+(def data (read-file "input.txt"))
+(def processed (string-upper data))
+(write-file "output.txt" processed)
+```
+
 ### Error Handling
 ```lisp
 (error message)                   ; Raise an error with message

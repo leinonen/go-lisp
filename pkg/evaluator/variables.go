@@ -97,6 +97,8 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			"string-contains?", "string-starts-with?", "string-ends-with?", "string-replace",
 			"string-index-of", "string->number", "number->string", "string-regex-match?",
 			"string-regex-find-all", "string-repeat", "string?", "string-empty?",
+			// File operations
+			"read-file", "write-file", "file-exists?",
 			// Module system
 			"load", "import",
 			// Environment inspection
@@ -237,6 +239,11 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		// Module system
 		"load":   "(load \"filename\")\nLoad and execute a Lisp file.\nExample: (load \"library/core.lisp\") => loads the core library",
 		"import": "(import module-name)\nImport all exported symbols from a module.\nExample: (import math) => imports all functions from math module",
+
+		// File operations
+		"read-file":    "(read-file \"filename\")\nRead the contents of a file and return as a string.\nExample: (read-file \"data.txt\") => \"file contents\"",
+		"write-file":   "(write-file \"filename\" \"content\")\nWrite content to a file, creating or overwriting it.\nExample: (write-file \"output.txt\" \"Hello World\") => #t",
+		"file-exists?": "(file-exists? \"filename\")\nCheck if a file exists.\nExample: (file-exists? \"data.txt\") => #t or #f",
 
 		// Environment inspection
 		"env":     "(env)\nShow all variables and functions in the current environment.\nExample: (env) => ((x 42) (square #<function([x])>))",

@@ -137,6 +137,7 @@ Control flow and utility macros for enhanced syntax.
 - **[Features](docs/features.md)** - Complete feature overview and data types
 - **[Operations Reference](docs/operations.md)** - Guide to all supported operations
 - **[Mathematical Functions](docs/mathematical_functions.md)** - Complete mathematical function reference
+- **[File Functions](docs/file_functions.md)** - File system operations and I/O
 - **[Examples](docs/examples.md)** - Code examples and tutorials
 - **[Usage Guide](docs/usage.md)** - Running and building the interpreter
 

@@ -243,6 +243,13 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalStringPredicate(list.Elements[1:])
 		case "string-empty?":
 			return e.evalStringEmpty(list.Elements[1:])
+		// File operations
+		case "read-file":
+			return e.evalReadFile(list.Elements[1:])
+		case "write-file":
+			return e.evalWriteFile(list.Elements[1:])
+		case "file-exists?":
+			return e.evalFileExists(list.Elements[1:])
 		// Goroutine functions
 		case "go":
 			return e.evalGo(list.Elements[1:])

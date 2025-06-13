@@ -80,3 +80,32 @@ The `require` function combines loading and importing in a single operation:
 - **Prevents** re-loading the same file multiple times
 
 This makes it easier to work with library files and reduces the number of commands needed to use external modules.
+
+## File Operations
+
+The interpreter provides built-in file system operations for reading, writing, and managing files:
+
+```lisp
+lisp> (write-file "hello.txt" "Hello, World!")
+=> #t
+lisp> (file-exists? "hello.txt")
+=> #t
+lisp> (read-file "hello.txt")
+=> "Hello, World!"
+```
+
+Common file operation patterns:
+
+```lisp
+; Configuration file management
+lisp> (if (file-exists? "config.txt")
+         (read-file "config.txt")
+         "default configuration")
+
+; Data processing pipeline
+lisp> (def data (read-file "input.txt"))
+lisp> (def processed (string-upper data))
+lisp> (write-file "output.txt" processed)
+```
+
+For comprehensive file operations documentation, see [File Functions](file_functions.md).
