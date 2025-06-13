@@ -145,11 +145,11 @@ func TestTokenizer(t *testing.T) {
 			},
 		},
 		{
-			name:  "defun with square brackets",
-			input: "(defun square [x] (* x x))",
+			name:  "defn with square brackets",
+			input: "(defn square [x] (* x x))",
 			expected: []types.Token{
 				{Type: types.LPAREN, Value: "("},
-				{Type: types.SYMBOL, Value: "defun"},
+				{Type: types.SYMBOL, Value: "defn"},
 				{Type: types.SYMBOL, Value: "square"},
 				{Type: types.LBRACKET, Value: "["},
 				{Type: types.SYMBOL, Value: "x"},

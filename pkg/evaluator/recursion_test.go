@@ -15,7 +15,7 @@ func TestTailCallOptimization(t *testing.T) {
 		// Define a tail-recursive factorial function
 		defunExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "defun"},
+				&types.SymbolExpr{Name: "defn"},
 				&types.SymbolExpr{Name: "fact-tail"},
 				&types.BracketExpr{
 					Elements: []types.Expr{
@@ -87,7 +87,7 @@ func TestTailCallOptimization(t *testing.T) {
 		// Define a tail-recursive sum function
 		defunExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "defun"},
+				&types.SymbolExpr{Name: "defn"},
 				&types.SymbolExpr{Name: "sum-tail"},
 				&types.BracketExpr{
 					Elements: []types.Expr{
@@ -166,7 +166,7 @@ func TestNonTailRecursion(t *testing.T) {
 		// Define a non-tail-recursive factorial function
 		defunExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "defun"},
+				&types.SymbolExpr{Name: "defn"},
 				&types.SymbolExpr{Name: "factorial"},
 				&types.BracketExpr{
 					Elements: []types.Expr{
@@ -241,7 +241,7 @@ func TestMutualTailRecursion(t *testing.T) {
 		// Define mutually tail-recursive even? function
 		evenDefExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "defun"},
+				&types.SymbolExpr{Name: "defn"},
 				&types.SymbolExpr{Name: "even?"},
 				&types.BracketExpr{
 					Elements: []types.Expr{
@@ -284,7 +284,7 @@ func TestMutualTailRecursion(t *testing.T) {
 		// Define mutually tail-recursive odd? function
 		oddDefExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "defun"},
+				&types.SymbolExpr{Name: "defn"},
 				&types.SymbolExpr{Name: "odd?"},
 				&types.BracketExpr{
 					Elements: []types.Expr{

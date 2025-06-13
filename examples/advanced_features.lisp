@@ -2,25 +2,25 @@
 ; This file demonstrates advanced interpreter capabilities
 
 ; Tail Call Optimization - prevents stack overflow
-(defun tail-factorial [n acc]
+(defn tail-factorial [n acc]
   "Tail-recursive factorial with accumulator"
   (if (= n 0) acc (tail-factorial (- n 1) (* n acc))))
 
-(defun factorial [n] [tail-factorial n 1])
+(defn factorial [n] [tail-factorial n 1])
 
 ; This can handle very large numbers without stack overflow
 (factorial 20)                          ; => 2432902008176640000
 
 ; Tail-recursive fibonacci
-(defun fib-tail [n a b]
+(defn fib-tail [n a b]
   (if (= n 0) a (fib-tail (- n 1) b (+ a b))))
 
-(defun fibonacci [n] [fib-tail n 0 1])
+(defn fibonacci [n] [fib-tail n 0 1])
 (fibonacci 30)                          ; => 832040
 
 ; Environment inspection and introspection
 (def my-var 42)
-(defun my-function [x] [+ x 1])
+(defn my-function [x] [+ x 1])
 
 ; Check what's in our environment
 (env)                                   ; Shows all defined variables and functions

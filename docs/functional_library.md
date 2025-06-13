@@ -7,14 +7,14 @@ A comprehensive functional programming library that provides essential functiona
 ### Syntax Examples
 ```lisp
 ;; Function composition with clear parameter boundaries
-(defun comp [f g] (lambda [x] (f (g x))))
+(defn comp [f g] (lambda [x] (f (g x))))
 
 ;; Higher-order functions with readable parameter lists
-(defun map-indexed [fn lst] 
+(defn map-indexed [fn lst] 
   (map-indexed-helper fn lst 0))
 
 ;; Complex functional pipelines remain readable
-(defun create-processor [transform filter reducer]
+(defn create-processor [transform filter reducer]
   (lambda [data]
     (reducer (filter (map transform data)))))
 ```

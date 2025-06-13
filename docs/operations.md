@@ -4,16 +4,16 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 
 ## Function Definition
 
-### Function Definition with `defun`
+### Function Definition with `defn`
 ```lisp
-(defun function-name [param1 param2 ...] body)
+(defn function-name [param1 param2 ...] body)
 ```
 
 **Examples:**
 ```lisp
-(defun square [x] (* x x))
-(defun add [a b] (+ a b))
-(defun greet [name] (string-concat "Hello, " name "!"))
+(defn square [x] (* x x))
+(defn add [a b] (+ a b))
+(defn greet [name] (string-concat "Hello, " name "!"))
 ```
 
 ### Lambda Functions
@@ -55,7 +55,7 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 ; => 1000000000000000000000000000000
 
 ; Factorial with big numbers
-(defun factorial [n]
+(defn factorial [n]
   (if (= n 0) 1 (* n (factorial (- n 1)))))
 (factorial 50)  ; Handles arbitrarily large results
 ```
@@ -305,8 +305,8 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 (module math-utils
   (export square cube)
   
-  (defun square [x] (* x x))
-  (defun cube [x] (* x x x)))
+  (defn square [x] (* x x))
+  (defn cube [x] (* x x x)))
 ```
 
 ### Module Loading and Import
@@ -369,7 +369,7 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 
 **Example:**
 ```lisp
-(defun safe-divide [a b]
+(defn safe-divide [a b]
   (if (= b 0)
       (error "Division by zero")
       (/ a b)))

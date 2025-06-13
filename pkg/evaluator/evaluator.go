@@ -113,7 +113,7 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalDef(list.Elements[1:])
 		case "lambda":
 			return e.evalLambda(list.Elements[1:])
-		case "defun":
+		case "defn":
 			return e.evalDefun(list.Elements[1:])
 		case "defmacro":
 			return e.evalDefmacro(list.Elements[1:])

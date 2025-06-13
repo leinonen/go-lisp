@@ -164,10 +164,10 @@
 ;; Function Definition Helpers
 ;; ============================================================================
 
-;; Defun-memo - Memoized function definition (simplified)
-(defmacro defun-memo (name args body)
+;; Defn-memo - Memoized function definition (simplified)
+(defmacro defn-memo (name args body)
   "Define a memoized function"
-  (list 'defun name args body))
+  (list 'defn name args body))
 
 ;; ============================================================================
 ;; Pattern Matching

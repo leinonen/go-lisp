@@ -21,8 +21,8 @@ func TestModuleSystem(t *testing.T) {
 			name: "simple module definition",
 			input: `(module math 
 				(export add multiply) 
-				(defun add [x y] (+ x y))
-				(defun multiply [x y] (* x y)))`,
+				(defn add [x y] (+ x y))
+				(defn multiply [x y] (* x y)))`,
 			expected: "#<module:math>",
 		},
 		{
@@ -45,8 +45,8 @@ func TestModuleSystem(t *testing.T) {
 	// First create the module
 	moduleInput := `(module math 
 		(export add multiply) 
-		(defun add [x y] (+ x y))
-		(defun multiply [x y] (* x y)))`
+		(defn add [x y] (+ x y))
+		(defn multiply [x y] (* x y)))`
 
 	moduleExpr := parseString(t, moduleInput)
 	_, err := evaluator.Eval(moduleExpr)
@@ -81,8 +81,8 @@ func TestModuleExports(t *testing.T) {
 	// Create a module with some private and public functions
 	moduleInput := `(module utils 
 		(export double) 
-		(defun double [x] (* x 2))
-		(defun private-helper [x] (+ x 1)))`
+		(defn double [x] (* x 2))
+		(defn private-helper [x] (+ x 1)))`
 
 	moduleExpr := parseString(t, moduleInput)
 	_, err := evaluator.Eval(moduleExpr)
@@ -123,11 +123,11 @@ func TestQualifiedAccess(t *testing.T) {
 	// Create multiple modules
 	mathModule := `(module math 
 		(export add) 
-		(defun add [x y] (+ x y)))`
+		(defn add [x y] (+ x y)))`
 
 	stringModule := `(module strings 
 		(export concat) 
-		(defun concat [x y] x))` // simplified concat for testing
+		(defn concat [x y] x))` // simplified concat for testing
 
 	// Create both modules
 	mathExpr := parseString(t, mathModule)

@@ -6,9 +6,9 @@
 (def y 20)
 (+ x y (* 3 4))
 
-; Function definition with defun
-(defun square [n] (* n n))
-(defun add [a b] (+ a b))
+; Function definition with defn
+(defn square [n] (* n n))
+(defn add [a b] (+ a b))
 
 ; List operations
 (def my-list (list 1 2 3 4 5))
@@ -28,7 +28,7 @@
 (add-five 10)                           ; => 15
 
 ; Recursion with automatic tail call optimization
-(defun factorial [n]
+(defn factorial [n]
   (if (= n 0) 1 (* n (factorial (- n 1)))))
 (factorial 10)                          ; => 3628800
 

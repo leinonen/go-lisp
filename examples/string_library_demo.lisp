@@ -166,27 +166,27 @@
 ; (use strings)
 
 ; For this demo, we'll define some of the functions inline to test them
-(defun str-words [str]
+(defn str-words [str]
   "Split string into words (by whitespace)"
   (filter (lambda [word] (not (string-empty? word)))
           (string-split (string-trim str) " ")))
 
-(defun str-capitalize [str]
+(defn str-capitalize [str]
   "Capitalize first character of string"
   (if (string-empty? str)
       str
       (string-concat (string-upper (string-substring str 0 1))
                     (string-lower (string-substring str 1 (string-length str))))))
 
-(defun str-title-case [str]
+(defn str-title-case [str]
   "Convert string to title case (capitalize each word)"
   (string-join (map str-capitalize (str-words str)) " "))
 
-(defun str-blank? [str]
+(defn str-blank? [str]
   "Check if string is empty or contains only whitespace"
   (string-empty? (string-trim str)))
 
-(defun str-pad-left [str width pad-char]
+(defn str-pad-left [str width pad-char]
   "Pad string on the left to specified width"
   (let ((current-len (string-length str))
         (needed (- width current-len)))

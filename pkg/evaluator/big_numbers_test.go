@@ -181,7 +181,7 @@ func TestBigNumberFactorial(t *testing.T) {
 	}
 
 	// First define the factorial function
-	factorialDef := `(defun factorial [n acc]
+	factorialDef := `(defn factorial [n acc]
 		(if (= n 0)
 			acc
 			(factorial (- n 1) (* n acc))))`

@@ -2,7 +2,7 @@
 ;;; Demonstrates the hash map data structure and operations
 
 ;; Basic hash map creation
-(def empty-map (hash-map))
+(def empty-map (hash-map()))
 (def person (hash-map "name" "Alice" "age" 30 "city" "Boston"))
 
 ;; Display the hash maps

@@ -123,7 +123,7 @@ func TestEvaluatorDefun(t *testing.T) {
 	// Test defun creation - this should now fail since we only accept square brackets
 	defunExpr := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "defn"},
 			&types.SymbolExpr{Name: "square"},
 			&types.ListExpr{
 				Elements: []types.Expr{
@@ -148,7 +148,7 @@ func TestEvaluatorDefun(t *testing.T) {
 	// Now test with square brackets - this should work
 	defunExprBrackets := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "defn"},
 			&types.SymbolExpr{Name: "square"},
 			&types.BracketExpr{
 				Elements: []types.Expr{
@@ -219,7 +219,7 @@ func TestEvaluatorDefunMultipleParams(t *testing.T) {
 	// Test defun with multiple parameters using parentheses - should fail
 	defunExpr := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "defn"},
 			&types.SymbolExpr{Name: "add"},
 			&types.ListExpr{
 				Elements: []types.Expr{
@@ -245,7 +245,7 @@ func TestEvaluatorDefunMultipleParams(t *testing.T) {
 	// Now test with square brackets - should work
 	defunExprBrackets := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "defn"},
 			&types.SymbolExpr{Name: "add"},
 			&types.BracketExpr{
 				Elements: []types.Expr{
@@ -299,7 +299,7 @@ func TestEvaluatorDefunErrors(t *testing.T) {
 			name: "defun with too few arguments",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "defun"},
+					&types.SymbolExpr{Name: "defn"},
 					&types.SymbolExpr{Name: "foo"},
 					// missing parameters and body
 				},
@@ -309,7 +309,7 @@ func TestEvaluatorDefunErrors(t *testing.T) {
 			name: "defun with non-symbol function name",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "defun"},
+					&types.SymbolExpr{Name: "defn"},
 					&types.NumberExpr{Value: 42}, // should be symbol
 					&types.ListExpr{Elements: []types.Expr{}},
 					&types.NumberExpr{Value: 1},
@@ -320,7 +320,7 @@ func TestEvaluatorDefunErrors(t *testing.T) {
 			name: "defun with parentheses for parameters (should now fail)",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "defun"},
+					&types.SymbolExpr{Name: "defn"},
 					&types.SymbolExpr{Name: "foo"},
 					&types.ListExpr{ // should be BracketExpr now
 						Elements: []types.Expr{
@@ -335,7 +335,7 @@ func TestEvaluatorDefunErrors(t *testing.T) {
 			name: "defun with non-bracket parameters",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "defun"},
+					&types.SymbolExpr{Name: "defn"},
 					&types.SymbolExpr{Name: "foo"},
 					&types.SymbolExpr{Name: "x"}, // should be BracketExpr
 					&types.NumberExpr{Value: 42},
@@ -346,7 +346,7 @@ func TestEvaluatorDefunErrors(t *testing.T) {
 			name: "defun with non-symbol parameter",
 			expr: &types.ListExpr{
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "defun"},
+					&types.SymbolExpr{Name: "defn"},
 					&types.SymbolExpr{Name: "foo"},
 					&types.BracketExpr{
 						Elements: []types.Expr{
@@ -377,7 +377,7 @@ func TestEvaluatorDefunSquareBrackets(t *testing.T) {
 	// Test defun with square bracket parameters - single parameter
 	defunExpr := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "defn"},
 			&types.SymbolExpr{Name: "square"},
 			&types.BracketExpr{
 				Elements: []types.Expr{
@@ -438,7 +438,7 @@ func TestEvaluatorDefunSquareBracketsMultipleParams(t *testing.T) {
 	// Test defun with square bracket parameters - multiple parameters
 	defunExpr := &types.ListExpr{
 		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "defun"},
+			&types.SymbolExpr{Name: "defn"},
 			&types.SymbolExpr{Name: "add"},
 			&types.BracketExpr{
 				Elements: []types.Expr{

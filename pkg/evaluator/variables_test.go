@@ -355,10 +355,10 @@ func TestEnvironmentInspection(t *testing.T) {
 		env := NewEnvironment()
 		evaluator := NewEvaluator(env)
 
-		// Define a function using defun
-		defunExpr := &types.ListExpr{
+		// Define a function using defn
+		defnExpr := &types.ListExpr{
 			Elements: []types.Expr{
-				&types.SymbolExpr{Name: "defun"},
+				&types.SymbolExpr{Name: "defn"},
 				&types.SymbolExpr{Name: "square"},
 				&types.BracketExpr{
 					Elements: []types.Expr{
@@ -375,7 +375,7 @@ func TestEnvironmentInspection(t *testing.T) {
 			},
 		}
 
-		_, err := evaluator.Eval(defunExpr)
+		_, err := evaluator.Eval(defnExpr)
 		if err != nil {
 			t.Fatalf("unexpected error defining function: %v", err)
 		}
@@ -451,7 +451,7 @@ func TestEnvironmentInspection(t *testing.T) {
 			}
 		}
 
-		essentialBuiltins := []string{"+", "-", "*", "/", "if", "def", "lambda", "defun", "list", "env", "modules"}
+		essentialBuiltins := []string{"+", "-", "*", "/", "if", "def", "lambda", "defn", "list", "env", "modules"}
 		for _, builtin := range essentialBuiltins {
 			if !builtinMap[builtin] {
 				t.Errorf("essential built-in function '%s' not found in help listing", builtin)

@@ -18,7 +18,7 @@ Files can contain multiple expressions that are executed sequentially:
 (def x 10)
 (def y 20)
 (+ x y)
-(defun greet [name] (list "Hello" name))
+(defn greet [name] (list "Hello" name))
 (greet "World")
 ```
 
@@ -41,9 +41,9 @@ Files can define and export modules:
 (module math-utils
   (export square cube)
   
-  (defun square [x] (* x x))
-  (defun cube [x] (* x x x))
-  (defun helper [x] (+ x 1))  ; private function
+  (defn square [x] (* x x))
+  (defn cube [x] (* x x x))
+  (defn helper [x] (+ x 1))  ; private function
 )
 ```
 
@@ -75,7 +75,7 @@ For executable scripts:
 ; file: calculator.lisp
 ; Simple calculator script
 
-(defun calculate [op a b]
+(defn calculate [op a b]
   (if (= op "+") (+ a b)
       (if (= op "-") (- a b)
           (if (= op "*") (* a b)
@@ -94,15 +94,15 @@ For reusable libraries:
 (module string-utils
   (export string-length string-empty? string-reverse)
   
-  (defun string-length [s]
+  (defn string-length [s]
     ; Implementation...
     )
     
-  (defun string-empty? [s]
+  (defn string-empty? [s]
     ; Implementation...
     )
     
-  (defun string-reverse [s]
+  (defn string-reverse [s]
     ; Implementation...
     )
 )

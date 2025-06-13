@@ -31,7 +31,7 @@ Automatic big number support for arbitrary precision.
 `(hash-map :key "value")` `(hash-map-get hm :key)` `(hash-map-put hm :key val)`
 
 ### Functions (Modern Square Bracket Syntax)
-`(defun name [params] body)` `(lambda [x] (* x x))`  
+`(defn name [params] body)` `(lambda [x] (* x x))`  
 `(apply fn args)` `(compose f g)` `(partial fn arg1)`  
 Square brackets make parameters visually distinct and reduce confusion.
 
@@ -92,12 +92,12 @@ The interpreter provides a comprehensive module system for organizing code into 
 (module math-utils
   (export square cube add-squares)
   
-  (defun square [x] (* x x))
-  (defun cube [x] (* x x x))
-  (defun add-squares [x y] (+ (square x) (square y)))
+  (defn square [x] (* x x))
+  (defn cube [x] (* x x x))
+  (defn add-squares [x y] (+ (square x) (square y)))
   
   ; Private helper function (not exported)
-  (defun helper [x] (+ x 1)))
+  (defn helper [x] (+ x 1)))
 ```
 
 ### Loading and Importing
@@ -207,7 +207,7 @@ The interpreter provides comprehensive support for arbitrary precision arithmeti
 => 1000000000000000000000000000000
 
 ; Factorial of large numbers
-(defun factorial [n acc]
+(defn factorial [n acc]
   (if (= n 0) acc (factorial (- n 1) (* n acc))))
 
 (factorial 50 1)

@@ -145,7 +145,7 @@ func TestExtractCurrentWord(t *testing.T) {
 		expected string
 	}{
 		{"(+ 1 ma", 7, "ma"},
-		{"(defun test-fun", 15, "test-fun"},
+		{"(defn test-fun", 15, "test-fun"},
 		{"(map filt", 9, "filt"},
 		{"hello world", 5, "hello"},
 		{"hello world", 11, "world"},

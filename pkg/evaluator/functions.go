@@ -50,13 +50,13 @@ func (e *Evaluator) evalLambda(args []types.Expr) (types.Value, error) {
 
 func (e *Evaluator) evalDefun(args []types.Expr) (types.Value, error) {
 	if len(args) < 3 {
-		return nil, fmt.Errorf("defun requires at least 3 arguments: name, parameters, and body")
+		return nil, fmt.Errorf("defn requires at least 3 arguments: name, parameters, and body")
 	}
 
 	// First argument must be a symbol (function name)
 	nameExpr, ok := args[0].(*types.SymbolExpr)
 	if !ok {
-		return nil, fmt.Errorf("defun first argument must be a symbol")
+		return nil, fmt.Errorf("defn first argument must be a symbol")
 	}
 
 	// Second argument must be a list of parameter names in square brackets

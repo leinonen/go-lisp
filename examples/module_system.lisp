@@ -5,22 +5,22 @@
 (module math-utils
   (export square cube add-squares power)
   
-  (defun square [x] [* x x])
-  (defun cube [x] [* x x x])
-  (defun add-squares [x y] (+ (square x) [square y]))
-  (defun power [base exp]
+  (defn square [x] [* x x])
+  (defn cube [x] [* x x x])
+  (defn add-squares [x y] (+ (square x) [square y]))
+  (defn power [base exp]
     (if (= exp 0) 1 (* base (power base (- exp 1)))))
     
   ; Private helper function (not exported)
-  (defun helper [x] [+ x 1]))
+  (defn helper [x] [+ x 1]))
 
 ; Create a list utilities module  
 (module list-utils
   (export double-all sum-list reverse-and-double)
   
-  (defun double-all [lst] (map (lambda [x] [* x 2]) lst))
-  (defun sum-list [lst] (reduce (lambda [acc x] [+ acc x]) 0 lst))
-  (defun reverse-and-double [lst] (double-all [reverse lst])))
+  (defn double-all [lst] (map (lambda [x] [* x 2]) lst))
+  (defn sum-list [lst] (reduce (lambda [acc x] [+ acc x]) 0 lst))
+  (defn reverse-and-double [lst] (double-all [reverse lst])))
 
 ; Demonstrate qualified access (without importing)
 (math-utils.square 5)                   ; => 25

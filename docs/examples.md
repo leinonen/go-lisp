@@ -6,7 +6,7 @@ For comprehensive, runnable examples, see the `examples/` directory. This docume
 
 ```lisp
 ; Functions
-(defun square [x] (* x x))
+(defn square [x] (* x x))
 (square 5) ; => 25
 
 ; Lists and higher-order functions
@@ -23,7 +23,7 @@ For comprehensive, runnable examples, see the `examples/` directory. This docume
 ```lisp
 ; Modules
 (module math (export factorial))
-(defun factorial [n] (if (<= n 1) 1 (* n (factorial (- n 1)))))
+(defn factorial [n] (if (<= n 1) 1 (* n (factorial (- n 1)))))
 
 ; Functional programming (load "library/functional.lisp")
 (def add-then-double (comp (partial * 2) (partial + 1)))
