@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"strconv"
 	"sync"
+	"sync/atomic"
 )
 
 // TokenType represents the type of a token
@@ -216,7 +217,11 @@ func (l *ListValue) String() string {
 	}
 	var elements []string
 	for _, elem := range l.Elements {
-		elements = append(elements, elem.String())
+		if elem == nil {
+			elements = append(elements, "nil")
+		} else {
+			elements = append(elements, elem.String())
+		}
 	}
 	result := "("
 	for i, elem := range elements {
@@ -382,4 +387,169 @@ func (a *AtomValue) String() string {
 		return "#<atom:nil>"
 	}
 	return fmt.Sprintf("#<atom:%s>", currentValue.String())
+}
+
+// FutureValue represents a future result from a goroutine
+type FutureValue struct {
+	result chan Value
+	err    chan error
+	done   atomic.Bool
+}
+
+// NewFuture creates a new future
+func NewFuture() *FutureValue {
+	return &FutureValue{
+		result: make(chan Value, 1),
+		err:    make(chan error, 1),
+	}
+}
+
+// SetResult sets the result of the future
+func (f *FutureValue) SetResult(value Value) {
+	if f.done.CompareAndSwap(false, true) {
+		f.result <- value
+		// Don't close the channels immediately, let Wait() handle it
+	}
+}
+
+// SetError sets the error of the future
+func (f *FutureValue) SetError(err error) {
+	if f.done.CompareAndSwap(false, true) {
+		f.err <- err
+		// Don't close the channels immediately, let Wait() handle it
+	}
+}
+
+// Wait waits for the future to complete and returns the result or error
+func (f *FutureValue) Wait() (Value, error) {
+	select {
+	case result, ok := <-f.result:
+		if !ok {
+			// Channel was closed without a value, should not happen
+			return nil, fmt.Errorf("future result channel closed unexpectedly")
+		}
+		return result, nil
+	case err, ok := <-f.err:
+		if !ok {
+			// Channel was closed without an error, should not happen
+			return nil, fmt.Errorf("future error channel closed unexpectedly")
+		}
+		return nil, err
+	}
+}
+
+// IsDone returns true if the future is complete
+func (f *FutureValue) IsDone() bool {
+	return f.done.Load()
+}
+
+func (f *FutureValue) String() string {
+	if f.IsDone() {
+		return "#<future:done>"
+	}
+	return "#<future:pending>"
+}
+
+// ChannelValue represents a channel for goroutine communication
+type ChannelValue struct {
+	ch     chan Value
+	mutex  sync.RWMutex
+	size   int
+	closed bool
+}
+
+// NewChannel creates a new channel with the given buffer size
+func NewChannel(size int) *ChannelValue {
+	return &ChannelValue{
+		ch:   make(chan Value, size),
+		size: size,
+	}
+}
+
+// Send sends a value to the channel (blocking)
+func (c *ChannelValue) Send(value Value) error {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+
+	if c.closed {
+		return fmt.Errorf("cannot send to closed channel")
+	}
+
+	c.ch <- value
+	return nil
+}
+
+// Receive receives a value from the channel (blocking)
+func (c *ChannelValue) Receive() (Value, bool) {
+	value, ok := <-c.ch
+	return value, ok
+}
+
+// TryReceive tries to receive a value from the channel (non-blocking)
+func (c *ChannelValue) TryReceive() (Value, bool) {
+	select {
+	case value, ok := <-c.ch:
+		return value, ok
+	default:
+		return nil, false
+	}
+}
+
+// Close closes the channel
+func (c *ChannelValue) Close() {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if !c.closed {
+		close(c.ch)
+		c.closed = true
+	}
+}
+
+// IsClosed returns true if the channel is closed
+func (c *ChannelValue) IsClosed() bool {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+	return c.closed
+}
+
+func (c *ChannelValue) String() string {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+
+	if c.closed {
+		return fmt.Sprintf("#<channel:closed:size=%d>", c.size)
+	}
+	return fmt.Sprintf("#<channel:open:size=%d>", c.size)
+}
+
+// WaitGroupValue represents a wait group for coordinating goroutines
+type WaitGroupValue struct {
+	wg *sync.WaitGroup
+}
+
+// NewWaitGroup creates a new wait group
+func NewWaitGroup() *WaitGroupValue {
+	return &WaitGroupValue{
+		wg: &sync.WaitGroup{},
+	}
+}
+
+// Add adds delta to the wait group counter
+func (w *WaitGroupValue) Add(delta int) {
+	w.wg.Add(delta)
+}
+
+// Done decrements the wait group counter
+func (w *WaitGroupValue) Done() {
+	w.wg.Done()
+}
+
+// Wait waits for the wait group counter to go to zero
+func (w *WaitGroupValue) Wait() {
+	w.wg.Wait()
+}
+
+func (w *WaitGroupValue) String() string {
+	return "#<wait-group>"
 }

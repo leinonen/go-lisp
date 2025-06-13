@@ -103,6 +103,14 @@ func (e *Evaluator) evalBuiltins(args []types.Expr) (types.Value, error) {
 			"env", "modules", "help",
 			// Print functions
 			"print!", "println!",
+			// Goroutine operations
+			"go", "go-wait", "go-wait-all",
+			// Channel operations
+			"chan", "chan-send!", "chan-recv!", "chan-try-recv!", "chan-close!", "chan-closed?",
+			// Wait group operations
+			"wait-group", "wait-group-add!", "wait-group-done!", "wait-group-wait!",
+			// Control flow
+			"do",
 			// Constants
 			"nil",
 			// Error handling
@@ -238,6 +246,28 @@ func (e *Evaluator) getBuiltinHelp(funcName string) string {
 		// Print functions
 		"print!":   "(print! value1 value2 ...)\nOutput values to stdout without newline.\nExample: (print! \"Hello\" \" \" \"World\") outputs: Hello World",
 		"println!": "(println! value1 value2 ...)\nOutput values to stdout with newline.\nExample: (println! \"Hello World\") outputs: Hello World\\n",
+
+		// Goroutine operations
+		"go":          "(go expression)\nStart a new goroutine to evaluate the expression and return a future.\nExample: (go (+ 1 2 3)) => #<future:pending>",
+		"go-wait":     "(go-wait future)\nWait for a goroutine (future) to complete and return its result.\nExample: (go-wait (go (* 5 5))) => 25",
+		"go-wait-all": "(go-wait-all futures...)\nWait for multiple goroutines to complete and return a list of their results.\nExample: (go-wait-all (list future1 future2)) => (result1 result2)",
+
+		// Channel operations
+		"chan":           "(chan) or (chan size)\nCreate a new channel (unbuffered or buffered with given size).\nExample: (chan) => #<channel:open:size=0> or (chan 5) => #<channel:open:size=5>",
+		"chan-send!":     "(chan-send! channel value)\nSend a value to a channel (blocking if channel is full).\nExample: (chan-send! ch \"message\") => #t",
+		"chan-recv!":     "(chan-recv! channel)\nReceive a value from a channel (blocking if channel is empty).\nExample: (chan-recv! ch) => \"message\"",
+		"chan-try-recv!": "(chan-try-recv! channel)\nTry to receive a value from a channel (non-blocking, returns nil if empty).\nExample: (chan-try-recv! ch) => \"message\" or nil",
+		"chan-close!":    "(chan-close! channel)\nClose a channel (no more values can be sent).\nExample: (chan-close! ch) => #t",
+		"chan-closed?":   "(chan-closed? channel)\nCheck if a channel is closed.\nExample: (chan-closed? ch) => #f",
+
+		// Wait group operations
+		"wait-group":       "(wait-group)\nCreate a new wait group for coordinating multiple goroutines.\nExample: (wait-group) => #<wait-group>",
+		"wait-group-add!":  "(wait-group-add! wg count)\nAdd count to the wait group counter.\nExample: (wait-group-add! wg 3) => #<wait-group>",
+		"wait-group-done!": "(wait-group-done! wg)\nDecrement the wait group counter (call when a task is complete).\nExample: (wait-group-done! wg) => #<wait-group>",
+		"wait-group-wait!": "(wait-group-wait! wg)\nWait for all wait group tasks to complete (counter reaches zero).\nExample: (wait-group-wait! wg) => #t",
+
+		// Control flow
+		"do": "(do expr1 expr2 ...)\nEvaluate multiple expressions in sequence and return the result of the last one.\nExample: (do (def x 5) (def y 10) (+ x y)) => 15",
 
 		// Constants
 		"nil": "nil\nBuilt-in constant representing empty/null values.\nExample: (hash-map-get {} \"missing\") => nil",

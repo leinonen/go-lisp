@@ -46,6 +46,30 @@ func NewEnvironment() *Environment {
 	return env
 }
 
+// NewEnvironmentWithParent creates a new environment with a parent environment
+func NewEnvironmentWithParent(parent *Environment) *Environment {
+	env := &Environment{
+		bindings:    make(map[string]types.Value),
+		parent:      parent,
+		modules:     make(map[string]*types.ModuleValue),
+		loadedFiles: make(map[string]bool),
+	}
+
+	// Copy modules and loaded files from parent to child
+	if parent != nil {
+		// Copy modules
+		for name, module := range parent.modules {
+			env.modules[name] = module
+		}
+		// Copy loaded files
+		for filename, loaded := range parent.loadedFiles {
+			env.loadedFiles[filename] = loaded
+		}
+	}
+
+	return env
+}
+
 func (e *Environment) Set(name string, value types.Value) {
 	e.bindings[name] = value
 }

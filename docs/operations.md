@@ -108,6 +108,20 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 (if (empty? my-list) "empty" "has elements")
 ```
 
+### Sequential Evaluation
+```lisp
+(do expr1 expr2 ... exprN)
+```
+
+Evaluates expressions in sequence and returns the result of the last expression.
+
+**Examples:**
+```lisp
+(do (def x 5) (def y 10) (+ x y))  ; => 15
+(do (println! "Step 1") (println! "Step 2") "done")  ; => "done"
+(do)  ; => nil
+```
+
 ### Variable Definition
 ```lisp
 (def name value)
@@ -345,6 +359,44 @@ Complete guide to all operations and built-in functions in the Lisp interpreter.
 (env)                             ; List all variables and functions
 (modules)                         ; Show available modules
 (help +)                          ; Get help for + function
+```
+
+## Concurrency Operations
+
+### Goroutines (Parallel Execution)
+```lisp
+(go expression)                   ; Start goroutine, returns future
+(go-wait future)                  ; Wait for single goroutine completion
+(go-wait-all futures)             ; Wait for multiple goroutines
+```
+
+**Examples:**
+```lisp
+; Basic goroutine
+(def result (go (* 5 5)))
+(go-wait result)                  ; => 25
+
+; Multiple goroutines
+(def futures (list (go (+ 1 2)) (go (* 3 4))))
+(go-wait-all futures)             ; => (3 12)
+```
+
+### Channels (Communication)
+```lisp
+(chan)                            ; Create unbuffered channel
+(chan size)                       ; Create buffered channel
+(chan-send! channel value)        ; Send value to channel
+(chan-recv! channel)              ; Receive value from channel
+(chan-close! channel)             ; Close channel
+```
+
+**Examples:**
+```lisp
+(def ch (chan 2))                 ; Buffered channel
+(chan-send! ch "hello")
+(chan-send! ch "world")
+(chan-recv! ch)                   ; => "hello"
+(chan-recv! ch)                   ; => "world"
 ```
 
 ## I/O Operations

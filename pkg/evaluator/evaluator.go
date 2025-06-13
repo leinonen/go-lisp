@@ -227,6 +227,38 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalStringPredicate(list.Elements[1:])
 		case "string-empty?":
 			return e.evalStringEmpty(list.Elements[1:])
+		// Goroutine functions
+		case "go":
+			return e.evalGo(list.Elements[1:])
+		case "go-wait":
+			return e.evalGoWait(list.Elements[1:])
+		case "go-wait-all":
+			return e.evalGoWaitAll(list.Elements[1:])
+		// Wait group functions
+		case "wait-group":
+			return e.evalWaitGroup(list.Elements[1:])
+		case "wait-group-add!":
+			return e.evalWaitGroupAdd(list.Elements[1:])
+		case "wait-group-done!":
+			return e.evalWaitGroupDone(list.Elements[1:])
+		case "wait-group-wait!":
+			return e.evalWaitGroupWait(list.Elements[1:])
+		// Channel functions
+		case "chan":
+			return e.evalChan(list.Elements[1:])
+		case "chan-send!":
+			return e.evalChanSend(list.Elements[1:])
+		case "chan-recv!":
+			return e.evalChanRecv(list.Elements[1:])
+		case "chan-try-recv!":
+			return e.evalChanTryRecv(list.Elements[1:])
+		case "chan-close!":
+			return e.evalChanClose(list.Elements[1:])
+		case "chan-closed?":
+			return e.evalChanClosed(list.Elements[1:])
+		// Control flow
+		case "do":
+			return e.evalDo(list.Elements[1:])
 		default:
 			// Check if it's a macro call first
 			if macro, isMacro := e.isMacroCall(symbolExpr.Name); isMacro {

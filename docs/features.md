@@ -14,6 +14,7 @@ A modern, production-ready Lisp interpreter with comprehensive language support 
 **Functional Programming**: Higher-order functions, currying, composition, partial application  
 **Module System**: Namespaces, exports/imports, qualified access  
 **Macro System**: Code transformation with `defmacro`, `quote`, and templating  
+**Concurrency**: Goroutines for parallel execution, channels for communication  
 **Thread-safe State**: Clojure-style atoms for mutable references with atomic operations  
 **String Processing**: 20+ functions including regex support  
 **Development Tools**: Interactive REPL, environment inspection, built-in help  
@@ -40,7 +41,7 @@ Automatic big number support for arbitrary precision.
 Square brackets make parameters visually distinct and reduce confusion.
 
 ### Control Flow
-`(if condition then else)` `(cond ...)` `(when pred body)`  
+`(if condition then else)` `(cond ...)` `(when pred body)` `(do expr1 expr2 ...)`  
 `(defmacro name [params] template)`
 
 See `examples/` directory for comprehensive demonstrations.
@@ -348,3 +349,142 @@ Atoms use Go mutexes internally to ensure thread-safe access:
 - Minimize the scope of data protected by atoms
 - Consider using multiple atoms instead of one large atom for better concurrency
 - Use `swap!` for transformations, `reset!` for complete replacement
+
+## Do Construct (Sequential Evaluation)
+
+The `do` construct allows evaluating multiple expressions in sequence and returns the result of the last expression. This is essential for executing side effects and performing multiple operations in order.
+
+### Syntax
+- `(do expr1 expr2 ... exprN)` - Evaluate expressions in order, return the last result
+- If no expressions are provided, returns `nil`
+- Each expression is evaluated in the current environment
+
+### Examples
+
+```lisp
+; Simple sequential operations
+(do 
+  (def x 5)
+  (def y 10)
+  (+ x y))                         ; => 15
+
+; With side effects
+(do
+  (println! "Starting computation...")
+  (def result (* 6 7))
+  (println! "Computation complete!")
+  result)                          ; => 42
+
+; Empty do returns nil
+(do)                               ; => nil
+
+; Single expression (equivalent to direct evaluation)
+(do (+ 2 3))                       ; => 5
+```
+
+### Use Cases
+
+- **Initialization**: Setting up multiple variables in sequence
+- **Side Effects**: Performing print statements, file operations, etc.
+- **Function Bodies**: Multiple statements in lambda functions
+- **State Changes**: Sequential atom updates or other mutations
+- **Control Flow**: Building blocks for complex control structures
+
+## Concurrency with Goroutines
+
+The interpreter provides comprehensive concurrency support through goroutines and channels, enabling parallel execution and communication between concurrent tasks.
+
+### Goroutines (Async Execution)
+
+#### Basic Goroutine Operations
+- `(go expression)` - Start a new goroutine to evaluate an expression asynchronously
+- `(go-wait future)` - Wait for a single goroutine to complete and return its result
+- `(go-wait-all futures)` - Wait for multiple goroutines to complete and return all results
+
+#### Future Objects
+- Goroutines return future objects that represent pending computations
+- Futures are thread-safe and can be waited on multiple times
+- Error handling is built-in - panics in goroutines are captured as errors
+
+### Examples
+
+```lisp
+; Simple goroutine
+(def square-future (go (* 5 5)))
+(println! "Goroutine started...")
+(println! "Result:" (go-wait square-future))  ; => Result: 25
+
+; Multiple goroutines
+(def futures (list
+  (go (+ 1 2 3))
+  (go (* 4 5))
+  (go (- 10 3))))
+
+(def results (go-wait-all futures))
+(println! "Results:" results)                 ; => Results: (6 20 7)
+
+; Goroutines with shared state (atoms)
+(def counter (atom 0))
+
+(def increment-futures (list
+  (go (swap! counter (fn [x] (+ x 1))))
+  (go (swap! counter (fn [x] (+ x 1))))
+  (go (swap! counter (fn [x] (+ x 1))))))
+
+(go-wait-all increment-futures)
+(println! "Counter:" (deref counter))         ; => Counter: 3
+```
+
+### Channels (Communication)
+
+#### Channel Operations  
+- `(chan)` - Create an unbuffered channel
+- `(chan size)` - Create a buffered channel with specified capacity
+- `(chan-send! channel value)` - Send a value to a channel (blocks if full)
+- `(chan-recv! channel)` - Receive a value from a channel (blocks if empty)
+- `(chan-close! channel)` - Close a channel
+
+#### Producer-Consumer Pattern
+```lisp
+; Create a buffered channel
+(def data-chan (chan 5))
+
+; Producer goroutine
+(def producer (go 
+  (do
+    (chan-send! data-chan "Hello")
+    (chan-send! data-chan "World")
+    (chan-close! data-chan))))
+
+; Consumer
+(println! "Received:" (chan-recv! data-chan))  ; => Received: Hello
+(println! "Received:" (chan-recv! data-chan))  ; => Received: World
+
+(go-wait producer)  ; Wait for producer to finish
+```
+
+### Thread Safety and Environment Isolation
+
+- **Isolated Environments**: Each goroutine gets its own environment that inherits from the parent
+- **Variable Access**: Goroutines can read parent variables but cannot modify them directly  
+- **Shared State**: Use atoms for thread-safe shared mutable state
+- **Error Handling**: Panics in goroutines are captured and converted to errors
+- **Resource Management**: Proper cleanup and resource management across goroutines
+
+### Use Cases
+
+- **Parallel Computation**: CPU-intensive tasks that can be parallelized
+- **I/O Operations**: Non-blocking file operations, network requests
+- **Producer-Consumer**: Data processing pipelines with channels
+- **Background Tasks**: Long-running operations that don't block the main thread
+- **Event Processing**: Concurrent event handling and processing
+- **Load Distribution**: Distributing work across multiple goroutines
+
+### Best Practices
+
+- Use goroutines for truly parallel or asynchronous work
+- Communicate through channels rather than shared memory when possible
+- Use atoms for simple shared state that needs atomic updates
+- Always wait for goroutines to complete before program termination
+- Handle errors properly by checking future results
+- Keep goroutine lifetimes manageable to avoid resource leaks

@@ -16,6 +16,12 @@ For comprehensive, runnable examples, see the `examples/` directory. This docume
 ; Data structures
 (def user (hash-map :name "Alice" :age 30))
 (hash-map-get user :name) ; => "Alice"
+
+; Sequential evaluation
+(do 
+  (def x 10)
+  (def y 20)
+  (+ x y)) ; => 30
 ```
 
 ## Advanced Features
@@ -38,4 +44,6 @@ For complete, working examples with detailed explanations, run:
 ```bash
 ./lisp examples/basic_features.lisp
 ./lisp examples/functional_library_demo.lisp
+./lisp examples/test_do.lisp                  # Sequential evaluation with do
+./lisp examples/goroutines_demo.lisp          # Concurrency with goroutines and channels
 ```

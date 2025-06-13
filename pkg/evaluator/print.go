@@ -95,6 +95,14 @@ func (e *Evaluator) valueToString(value types.Value) string {
 		return result
 	case *types.BigNumberValue:
 		return v.String()
+	case *types.FutureValue:
+		return v.String()
+	case *types.ChannelValue:
+		return v.String()
+	case *types.WaitGroupValue:
+		return v.String()
+	case *types.AtomValue:
+		return v.String()
 	default:
 		return fmt.Sprintf("%v", value)
 	}
