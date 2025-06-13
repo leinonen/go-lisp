@@ -171,6 +171,14 @@ Evaluates expressions in sequence and returns the result of the last expression.
 (cons elem lst)           ; Prepend element to list
 (append lst1 lst2)        ; Concatenate lists
 (reverse lst)             ; Reverse list order
+(last lst)                ; Get last element
+(butlast lst)             ; Get all but last element
+(flatten lst)             ; Flatten nested lists
+(distinct lst)            ; Remove duplicates
+(concat lst1 lst2 ...)    ; Concatenate multiple lists
+(partition n lst)         ; Split list into chunks of size n
+(zip lst1 lst2 ...)       ; Combine lists by pairing elements
+(sort lst [comparator])   ; Sort list (optionally with custom comparator)
 ```
 
 **Examples:**
@@ -178,6 +186,14 @@ Evaluates expressions in sequence and returns the result of the last expression.
 (cons 0 (list 1 2 3))     ; => (0 1 2 3)
 (append (list 1 2) (list 3 4))  ; => (1 2 3 4)
 (reverse (list 1 2 3))    ; => (3 2 1)
+(last (list 1 2 3 4))     ; => 4
+(butlast (list 1 2 3 4))  ; => (1 2 3)
+(flatten (list 1 (list 2 3) 4))  ; => (1 2 3 4)
+(distinct (list 1 2 2 3 1))      ; => (1 2 3)
+(concat (list 1 2) (list 3 4) (list 5))  ; => (1 2 3 4 5)
+(partition 2 (list 1 2 3 4 5))   ; => ((1 2) (3 4) (5))
+(zip (list 1 2 3) (list "a" "b" "c"))  ; => ((1 "a") (2 "b") (3 "c"))
+(sort (list 5 2 8 1 9 3)) ; => (1 2 3 5 8 9)
 ```
 
 ## Higher-Order Functions

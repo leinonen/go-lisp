@@ -143,6 +143,22 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalReverse(list.Elements[1:])
 		case "nth":
 			return e.evalNth(list.Elements[1:])
+		case "last":
+			return e.evalLast(list.Elements[1:])
+		case "butlast":
+			return e.evalButlast(list.Elements[1:])
+		case "flatten":
+			return e.evalFlatten(list.Elements[1:])
+		case "zip":
+			return e.evalZip(list.Elements[1:])
+		case "sort":
+			return e.evalSort(list.Elements[1:])
+		case "distinct":
+			return e.evalDistinct(list.Elements[1:])
+		case "concat":
+			return e.evalConcat(list.Elements[1:])
+		case "partition":
+			return e.evalPartition(list.Elements[1:])
 		case "env":
 			return e.evalEnv(list.Elements[1:])
 		case "modules":

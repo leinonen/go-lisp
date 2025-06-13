@@ -3,6 +3,7 @@ package evaluator
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
@@ -440,4 +441,317 @@ func isTruthy(value types.Value) bool {
 	default:
 		return true // Other values are considered truthy
 	}
+}
+
+// Additional list functions
+
+func (e *Evaluator) evalLast(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("last requires exactly 1 argument")
+	}
+
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("last requires a list, got %T", listValue)
+	}
+
+	if len(list.Elements) == 0 {
+		return nil, fmt.Errorf("last: list is empty")
+	}
+
+	return list.Elements[len(list.Elements)-1], nil
+}
+
+func (e *Evaluator) evalButlast(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("butlast requires exactly 1 argument")
+	}
+
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("butlast requires a list, got %T", listValue)
+	}
+
+	if len(list.Elements) == 0 {
+		return &types.ListValue{Elements: []types.Value{}}, nil
+	}
+
+	resultElements := make([]types.Value, len(list.Elements)-1)
+	copy(resultElements, list.Elements[:len(list.Elements)-1])
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalFlatten(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("flatten requires exactly 1 argument")
+	}
+
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("flatten requires a list, got %T", listValue)
+	}
+
+	var resultElements []types.Value
+
+	var flattenRecursive func([]types.Value) []types.Value
+	flattenRecursive = func(elements []types.Value) []types.Value {
+		var result []types.Value
+		for _, elem := range elements {
+			if subList, ok := elem.(*types.ListValue); ok {
+				result = append(result, flattenRecursive(subList.Elements)...)
+			} else {
+				result = append(result, elem)
+			}
+		}
+		return result
+	}
+
+	resultElements = flattenRecursive(list.Elements)
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalZip(args []types.Expr) (types.Value, error) {
+	if len(args) < 2 {
+		return nil, fmt.Errorf("zip requires at least 2 arguments")
+	}
+
+	// Evaluate all lists
+	var lists []*types.ListValue
+	minLength := -1
+
+	for _, arg := range args {
+		listValue, err := e.Eval(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		list, ok := listValue.(*types.ListValue)
+		if !ok {
+			return nil, fmt.Errorf("zip arguments must be lists, got %T", listValue)
+		}
+
+		lists = append(lists, list)
+		if minLength == -1 || len(list.Elements) < minLength {
+			minLength = len(list.Elements)
+		}
+	}
+
+	// Create tuples from corresponding elements
+	var resultElements []types.Value
+	for i := 0; i < minLength; i++ {
+		var tupleElements []types.Value
+		for _, list := range lists {
+			tupleElements = append(tupleElements, list.Elements[i])
+		}
+		resultElements = append(resultElements, &types.ListValue{Elements: tupleElements})
+	}
+
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalSort(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 && len(args) != 2 {
+		return nil, fmt.Errorf("sort requires 1 or 2 arguments")
+	}
+
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("sort first argument must be a list, got %T", listValue)
+	}
+
+	// Create a copy of the elements
+	resultElements := make([]types.Value, len(list.Elements))
+	copy(resultElements, list.Elements)
+
+	// If no comparator provided, use default comparison
+	if len(args) == 1 {
+		sort.Slice(resultElements, func(i, j int) bool {
+			return e.defaultCompare(resultElements[i], resultElements[j])
+		})
+	} else {
+		// Use custom comparator function
+		funcValue, err := e.Eval(args[1])
+		if err != nil {
+			return nil, err
+		}
+
+		function, ok := funcValue.(types.FunctionValue)
+		if !ok {
+			return nil, fmt.Errorf("sort second argument must be a function, got %T", funcValue)
+		}
+
+		if len(function.Params) != 2 {
+			return nil, fmt.Errorf("sort comparator function must take exactly 2 parameters, got %d", len(function.Params))
+		}
+
+		sort.Slice(resultElements, func(i, j int) bool {
+			// Create a new environment for the function call
+			var funcEnv types.Environment
+			if function.Env != nil {
+				funcEnv = function.Env.NewChildEnvironment()
+			} else {
+				funcEnv = e.env.NewChildEnvironment()
+			}
+			funcEnv.Set(function.Params[0], resultElements[i])
+			funcEnv.Set(function.Params[1], resultElements[j])
+
+			// Create evaluator with function environment
+			concreteEnv, ok := funcEnv.(*Environment)
+			if !ok {
+				return false // Error case, but we can't return error from sort func
+			}
+			funcEvaluator := NewEvaluator(concreteEnv)
+
+			// Evaluate function body
+			result, err := funcEvaluator.Eval(function.Body)
+			if err != nil {
+				return false // Error case
+			}
+
+			return isTruthy(result)
+		})
+	}
+
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalDistinct(args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("distinct requires exactly 1 argument")
+	}
+
+	listValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("distinct requires a list, got %T", listValue)
+	}
+
+	seen := make(map[string]bool)
+	var resultElements []types.Value
+
+	for _, elem := range list.Elements {
+		key := e.valueToString(elem)
+		if !seen[key] {
+			seen[key] = true
+			resultElements = append(resultElements, elem)
+		}
+	}
+
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalConcat(args []types.Expr) (types.Value, error) {
+	if len(args) == 0 {
+		return &types.ListValue{Elements: []types.Value{}}, nil
+	}
+
+	var resultElements []types.Value
+
+	for _, arg := range args {
+		listValue, err := e.Eval(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		list, ok := listValue.(*types.ListValue)
+		if !ok {
+			return nil, fmt.Errorf("concat arguments must be lists, got %T", listValue)
+		}
+
+		resultElements = append(resultElements, list.Elements...)
+	}
+
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+func (e *Evaluator) evalPartition(args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("partition requires exactly 2 arguments")
+	}
+
+	sizeValue, err := e.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	listValue, err := e.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	size, ok := sizeValue.(types.NumberValue)
+	if !ok {
+		return nil, fmt.Errorf("partition first argument must be a number, got %T", sizeValue)
+	}
+
+	list, ok := listValue.(*types.ListValue)
+	if !ok {
+		return nil, fmt.Errorf("partition second argument must be a list, got %T", listValue)
+	}
+
+	chunkSize := int(size)
+	if chunkSize <= 0 {
+		return nil, fmt.Errorf("partition size must be positive, got %d", chunkSize)
+	}
+
+	var resultElements []types.Value
+
+	for i := 0; i < len(list.Elements); i += chunkSize {
+		end := i + chunkSize
+		if end > len(list.Elements) {
+			end = len(list.Elements)
+		}
+
+		chunk := make([]types.Value, end-i)
+		copy(chunk, list.Elements[i:end])
+		resultElements = append(resultElements, &types.ListValue{Elements: chunk})
+	}
+
+	return &types.ListValue{Elements: resultElements}, nil
+}
+
+// Helper functions
+
+func (e *Evaluator) defaultCompare(a, b types.Value) bool {
+	// Default comparison for sorting
+	aNum, aIsNum := a.(types.NumberValue)
+	bNum, bIsNum := b.(types.NumberValue)
+
+	if aIsNum && bIsNum {
+		return aNum < bNum
+	}
+
+	aStr, aIsStr := a.(types.StringValue)
+	bStr, bIsStr := b.(types.StringValue)
+
+	if aIsStr && bIsStr {
+		return aStr < bStr
+	}
+
+	// For other types, convert to string for comparison
+	return e.valueToString(a) < e.valueToString(b)
 }
