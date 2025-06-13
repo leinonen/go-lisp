@@ -176,11 +176,11 @@ make test     # Run comprehensive test suite (100% coverage)
 
 # Feature demonstrations
 ./lisp examples/basic_features.lisp      # Core language features  
-./lisp examples/math_functions_demo.lisp # Mathematical functions showcase
-./lisp examples/functional_library_demo.lisp # Functional programming
+./lisp examples/math_functions.lisp # Mathematical functions showcase
+./lisp examples/functional_library.lisp # Functional programming
 ./lisp examples/keywords.lisp            # Keyword data type examples
 ./lisp examples/hash_maps.lisp           # Hash map operations
-./lisp examples/string_library_demo.lisp # String processing showcase
+./lisp examples/string_library.lisp # String processing showcase
 ./lisp examples/advanced_features.lisp   # All advanced features
 
 # Interactive exploration

@@ -113,13 +113,13 @@ For reusable libraries:
 ### Basic Execution
 ```bash
 # Execute a simple script
-./lisp examples/examples.lisp
+./lisp examples/basic_features.lisp
 
 # Run mathematical calculations
-./lisp examples/math_demo.lisp
+./lisp examples/math_functions.lisp
 
 # Execute core library demonstrations
-./lisp examples/core_usage_demo.lisp
+./lisp examples/core_library.lisp
 ```
 
 ### Integration with Shell Scripts
@@ -128,10 +128,10 @@ For reusable libraries:
 # Script to run multiple Lisp files
 
 echo "Running core library tests..."
-./lisp examples/core.lisp
+./lisp examples/core_library.lisp
 
 echo "Running mathematical computations..."
-./lisp examples/math_examples.lisp
+./lisp examples/math_functions.lisp
 
 echo "All tests completed."
 ```

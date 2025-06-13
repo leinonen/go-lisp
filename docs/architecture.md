@@ -44,16 +44,16 @@ lisp-interpreter/
 │   ├── README.md              # Example documentation and organization
 │   ├── basic_features.lisp    # Core language features demonstration
 │   ├── advanced_features.lisp # Advanced capabilities (tail-call, big numbers)
-│   ├── functional_library_demo.lisp # Functional programming utilities ⭐ NEW
+│   ├── functional_library.lisp # Functional programming utilities ⭐ NEW
 │   ├── module_system.lisp     # Module system demonstration
 │   ├── core_library.lisp      # Core library functions
-│   ├── math_functions_demo.lisp # Mathematical functions showcase
+│   ├── math_functions.lisp # Mathematical functions showcase
 │   ├── keywords.lisp          # Keyword data type examples
 │   ├── hash_maps.lisp         # Hash map operations showcase
-│   ├── string_library_demo.lisp # String processing examples
+│   ├── string_library.lisp # String processing examples
 │   ├── macro_system.lisp      # Macro programming and code transformation
-│   ├── macro_library_demo.lisp # Macro utilities demonstration
-│   └── print_functions_demo.lisp # Output capabilities and formatting
+│   ├── macro_library.lisp # Macro utilities demonstration
+│   └── print_functions.lisp # Output capabilities and formatting
 ├── library/                    # High-level Lisp libraries
 │   ├── README.md              # Library architecture guide
 │   ├── core.lisp              # Core mathematical functions

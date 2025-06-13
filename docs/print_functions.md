@@ -190,9 +190,9 @@ Combined usage:
 
 See the following example files for comprehensive demonstrations:
 
-- `examples/simple_print_demo.lisp` - Basic print function usage
-- `examples/print_and_strings_demo.lisp` - Integration with string operations
-- `examples/string_library_demo.lisp` - Advanced string processing with output
+- `examples/simple_print.lisp` - Basic print function usage
+- `examples/print_and_strings.lisp` - Integration with string operations
+- `examples/string_library.lisp` - Advanced string processing with output
 
 ## Integration with Other Features
 

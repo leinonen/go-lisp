@@ -18,13 +18,13 @@ Comprehensive examples demonstrating all interpreter features. Each file focuses
 ### `core_library.lisp`
 **Built-in functions**: mathematical operations, list utilities, higher-order functions.
 
-### `functional_library_demo.lisp`
+### `functional_library.lisp`
 **Functional programming**: currying, composition, partial application, higher-order utilities, data pipelines.
 
-### `string_library_demo.lisp`
+### `string_library.lisp`
 **String processing**: 20+ string functions, regex operations, type conversions.
 
-### `macro_library_demo.lisp`
+### `macro_library.lisp`
 **Macro utilities**: control flow macros, debugging tools, code transformation helpers.
 
 ## Data Types
@@ -35,7 +35,7 @@ Comprehensive examples demonstrating all interpreter features. Each file focuses
 ### `keywords.lisp`
 **Keyword syntax**: self-evaluating symbols, hash map keys, data structure patterns.
 
-### `atoms_demo.lisp`
+### `atoms.lisp`
 **Thread-safe state**: Clojure-style atoms, atomic operations, mutable references, concurrency safety.
 
 ### `macro_system.lisp`
@@ -43,10 +43,10 @@ Comprehensive examples demonstrating all interpreter features. Each file focuses
 
 ## Output & Formatting
 
-### `print_functions_demo.lisp`
+### `print_functions.lisp`
 **Print capabilities**: output formatting, multiple data types, debugging utilities.
 
-### `file_functions_demo.lisp`
+### `file_functions.lisp`
 **File I/O operations**: reading, writing, checking file existence, data processing pipelines, configuration management.
 
 ## Quick Start
@@ -54,7 +54,7 @@ Comprehensive examples demonstrating all interpreter features. Each file focuses
 ```bash
 # Run individual examples
 ./lisp examples/basic_features.lisp
-./lisp examples/functional_library_demo.lisp
+./lisp examples/functional_library.lisp
 ./lisp examples/macro_system.lisp
 
 # Run all examples

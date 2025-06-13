@@ -43,7 +43,7 @@ For comprehensive, runnable examples, see the `examples/` directory. This docume
 For complete, working examples with detailed explanations, run:
 ```bash
 ./lisp examples/basic_features.lisp
-./lisp examples/functional_library_demo.lisp
+./lisp examples/functional_library.lisp
 ./lisp examples/test_do.lisp                  # Sequential evaluation with do
-./lisp examples/goroutines_demo.lisp          # Concurrency with goroutines and channels
+./lisp examples/goroutines.lisp          # Concurrency with goroutines and channels
 ```
