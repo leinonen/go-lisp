@@ -35,11 +35,16 @@ func main() {
 		return
 	}
 
-	interpreter := interpreter.NewInterpreter()
+	// Create modular interpreter with all plugins
+	interp, err := interpreter.NewModularInterpreter()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating modular interpreter: %v\n", err)
+		os.Exit(1)
+	}
 
 	// Handle -e flag: evaluate code directly
 	if *eval != "" {
-		result, err := interpreter.Interpret(*eval)
+		result, err := interp.Interpret(*eval)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error evaluating code: %v\n", err)
 			os.Exit(1)
@@ -53,7 +58,7 @@ func main() {
 
 	// Handle -f flag: execute a file
 	if *filename != "" {
-		err := executor.ExecuteFile(interpreter, *filename)
+		err := executor.ExecuteFile(interp, *filename)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error executing file %s: %v\n", *filename, err)
 			os.Exit(1)
@@ -64,7 +69,7 @@ func main() {
 	// Check for legacy positional argument (backward compatibility)
 	if len(flag.Args()) > 0 {
 		legacyFilename := flag.Args()[0]
-		err := executor.ExecuteFile(interpreter, legacyFilename)
+		err := executor.ExecuteFile(interp, legacyFilename)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error executing file %s: %v\n", legacyFilename, err)
 			os.Exit(1)
@@ -73,7 +78,7 @@ func main() {
 	}
 
 	// If no arguments provided, start REPL with tab completion
-	err := repl.REPLWithCompletion(interpreter, true)
+	err = repl.REPLWithCompletion(interp, true)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error starting REPL: %v\n", err)
 		os.Exit(1)

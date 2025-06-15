@@ -21,18 +21,24 @@ func TestExecuteFileSimple(t *testing.T) {
 	}
 
 	// Execute the file
-	interpreter := interpreter.NewInterpreter()
-	err = ExecuteFile(interpreter, filename)
+	interp, err := interpreter.NewInterpreter()
+	if err != nil {
+		t.Fatalf("Failed to create interpreter: %v", err)
+	}
+	err = ExecuteFile(interp, filename)
 	if err != nil {
 		t.Fatalf("ExecuteFile failed: %v", err)
 	}
 }
 
 func TestExecuteFileError(t *testing.T) {
-	interpreter := interpreter.NewInterpreter()
+	interpreter, err := interpreter.NewInterpreter()
+	if err != nil {
+		t.Fatalf("Failed to create interpreter: %v", err)
+	}
 
 	// Test with non-existent file
-	err := ExecuteFile(interpreter, "non-existent-file.lisp")
+	err = ExecuteFile(interpreter, "non-existent-file.lisp")
 	if err == nil {
 		t.Error("Expected error for non-existent file, got nil")
 	}

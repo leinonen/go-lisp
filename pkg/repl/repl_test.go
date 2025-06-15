@@ -392,7 +392,10 @@ func TestPrintGoodbyeMessage(t *testing.T) {
 // Integration test with real interpreter
 func TestREPLIntegration(t *testing.T) {
 	// Test with actual interpreter for basic functionality
-	interp := interpreter.NewInterpreter()
+	interp, err := interpreter.NewInterpreter()
+	if err != nil {
+		t.Fatalf("Failed to create interpreter: %v", err)
+	}
 	input := "(+ 1 2)\nquit\n"
 	scanner := bufio.NewScanner(strings.NewReader(input))
 

@@ -7,6 +7,15 @@ import (
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
 
+// Helper function to create a test interpreter
+func newTestInterpreter(t *testing.T) *Interpreter {
+	interp, err := NewInterpreter()
+	if err != nil {
+		t.Fatalf("Failed to create interpreter: %v", err)
+	}
+	return interp
+}
+
 // Helper function to compare values
 func valuesEqual(a, b types.Value) bool {
 	switch va := a.(type) {
@@ -37,6 +46,43 @@ func valuesEqual(a, b types.Value) bool {
 	case types.FunctionValue:
 		if vb, ok := b.(types.FunctionValue); ok {
 			// For functions, compare parameter lists and body string representation
+			if len(va.Params) != len(vb.Params) {
+				return false
+			}
+			for i, param := range va.Params {
+				if param != vb.Params[i] {
+					return false
+				}
+			}
+			return va.Body.String() == vb.Body.String()
+		}
+		// Also handle comparison with pointer type
+		if vb, ok := b.(*types.FunctionValue); ok {
+			if len(va.Params) != len(vb.Params) {
+				return false
+			}
+			for i, param := range va.Params {
+				if param != vb.Params[i] {
+					return false
+				}
+			}
+			return va.Body.String() == vb.Body.String()
+		}
+	case *types.FunctionValue:
+		// Handle pointer function values
+		if vb, ok := b.(*types.FunctionValue); ok {
+			if len(va.Params) != len(vb.Params) {
+				return false
+			}
+			for i, param := range va.Params {
+				if param != vb.Params[i] {
+					return false
+				}
+			}
+			return va.Body.String() == vb.Body.String()
+		}
+		// Also handle comparison with struct type
+		if vb, ok := b.(types.FunctionValue); ok {
 			if len(va.Params) != len(vb.Params) {
 				return false
 			}
@@ -96,7 +142,7 @@ func TestInterpreter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -140,7 +186,7 @@ func TestInterpreterDefine(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -155,7 +201,7 @@ func TestInterpreterDefine(t *testing.T) {
 }
 
 func TestInterpreterDefineAndUse(t *testing.T) {
-	interpreter := NewInterpreter()
+	interpreter := newTestInterpreter(t)
 
 	// Define a variable
 	_, err := interpreter.Interpret("(def x 10)")
@@ -213,7 +259,7 @@ func TestInterpreterFunctions(t *testing.T) {
 		{
 			name:  "fn expression",
 			input: "(fn [x] (+ x 1))",
-			expected: types.FunctionValue{
+			expected: &types.FunctionValue{
 				Params: []string{"x"},
 				Body: &types.ListExpr{
 					Elements: []types.Expr{
@@ -227,7 +273,7 @@ func TestInterpreterFunctions(t *testing.T) {
 		{
 			name:  "fn with multiple parameters",
 			input: "(fn [x y] (* x y))",
-			expected: types.FunctionValue{
+			expected: &types.FunctionValue{
 				Params: []string{"x", "y"},
 				Body: &types.ListExpr{
 					Elements: []types.Expr{
@@ -241,7 +287,7 @@ func TestInterpreterFunctions(t *testing.T) {
 		{
 			name:  "fn with no parameters",
 			input: "(fn [] 42)",
-			expected: types.FunctionValue{
+			expected: &types.FunctionValue{
 				Params: []string{},
 				Body:   &types.NumberExpr{Value: 42},
 			},
@@ -250,7 +296,7 @@ func TestInterpreterFunctions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -327,7 +373,7 @@ func TestInterpreterFunctionCalls(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 
 			// Run setup expressions
 			for _, setupExpr := range tt.setup {
@@ -387,7 +433,7 @@ func TestInterpreterFunctionErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 
 			// Run setup expressions
 			for _, setupExpr := range tt.setup {
@@ -407,7 +453,7 @@ func TestInterpreterFunctionErrors(t *testing.T) {
 }
 
 func TestInterpreterClosure(t *testing.T) {
-	interpreter := NewInterpreter()
+	interpreter := newTestInterpreter(t)
 
 	// Define a function that returns a closure
 	_, err := interpreter.Interpret("(def make-adder (fn [n] (fn [x] (+ x n))))")
@@ -448,7 +494,7 @@ func TestInterpreterClosure(t *testing.T) {
 }
 
 func TestInterpreterComplexFunctionExample(t *testing.T) {
-	interpreter := NewInterpreter()
+	interpreter := newTestInterpreter(t)
 
 	// Test a complex example with multiple function features
 	expressions := []struct {
@@ -489,6 +535,9 @@ func TestInterpreterComplexFunctionExample(t *testing.T) {
 
 		// For function definitions, we can't easily compare the result, so we skip detailed comparison
 		if _, ok := result.(types.FunctionValue); ok {
+			continue
+		}
+		if _, ok := result.(*types.FunctionValue); ok {
 			continue
 		}
 
@@ -573,7 +622,7 @@ func TestInterpreterListOperations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -588,7 +637,7 @@ func TestInterpreterListOperations(t *testing.T) {
 }
 
 func TestInterpreterListOperationsComplex(t *testing.T) {
-	interpreter := NewInterpreter()
+	interpreter := newTestInterpreter(t)
 
 	// Test complex list operations with variables and functions
 	expressions := []struct {
@@ -628,7 +677,7 @@ func TestInterpreterListOperationsComplex(t *testing.T) {
 }
 
 func TestInterpreterListsWithFunctions(t *testing.T) {
-	interpreter := NewInterpreter()
+	interpreter := newTestInterpreter(t)
 
 	// Test lists with functions
 	expressions := []struct {
@@ -658,6 +707,9 @@ func TestInterpreterListsWithFunctions(t *testing.T) {
 
 		// Skip function value comparison
 		if _, ok := result.(types.FunctionValue); ok {
+			continue
+		}
+		if _, ok := result.(*types.FunctionValue); ok {
 			continue
 		}
 
@@ -697,7 +749,7 @@ func TestMapFunction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -746,7 +798,7 @@ func TestFilterFunction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -795,7 +847,7 @@ func TestReduceFunction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -834,7 +886,7 @@ func TestHigherOrderFunctionCombinations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -888,7 +940,7 @@ func TestAppendFunction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -937,7 +989,7 @@ func TestReverseFunction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if err != nil {
@@ -1002,7 +1054,7 @@ func TestNthFunction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := NewInterpreter()
+			interpreter := newTestInterpreter(t)
 			result, err := interpreter.Interpret(tt.input)
 
 			if tt.expectError {
