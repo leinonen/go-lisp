@@ -214,7 +214,7 @@ func TestEvaluatorListOperations(t *testing.T) {
 				types.NumberValue(42),
 			}},
 		},
-		
+
 		// last function tests
 		{
 			name: "last of non-empty list",

@@ -1,4 +1,4 @@
-// Package evaluator_basic contains basic arithmetic, comparison, and conditional operations
+// Package evaluator contains arithmetic, comparison, and logical operators
 package evaluator
 
 import (
@@ -8,37 +8,6 @@ import (
 
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
-
-// Basic arithmetic operations
-
-// Helper function to convert a value back to an expression for recursive evaluation
-func valueToExpr(val types.Value) (types.Expr, error) {
-	switch v := val.(type) {
-	case types.NumberValue:
-		return &types.NumberExpr{Value: float64(v)}, nil
-	case types.StringValue:
-		return &types.StringExpr{Value: string(v)}, nil
-	case types.BooleanValue:
-		return &types.BooleanExpr{Value: bool(v)}, nil
-	case types.KeywordValue:
-		return &types.KeywordExpr{Value: string(v)}, nil
-	case *types.BigNumberValue:
-		return &types.BigNumberExpr{Value: v.String()}, nil
-	case *types.ListValue:
-		// Convert list elements to expressions
-		var elements []types.Expr
-		for _, elem := range v.Elements {
-			expr, err := valueToExpr(elem)
-			if err != nil {
-				return nil, err
-			}
-			elements = append(elements, expr)
-		}
-		return &types.ListExpr{Elements: elements}, nil
-	default:
-		return nil, fmt.Errorf("cannot convert value of type %T to expression", val)
-	}
-}
 
 // Helper function to convert any numeric value to big.Int for computation
 func toBigInt(val types.Value) (*big.Int, error) {
