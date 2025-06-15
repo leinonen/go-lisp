@@ -45,5 +45,7 @@ For complete, working examples with detailed explanations, run:
 ./lisp examples/basic_features.lisp
 ./lisp examples/functional_library.lisp
 ./lisp examples/test_do.lisp                  # Sequential evaluation with do
-./lisp examples/goroutines.lisp          # Concurrency with goroutines and channels
+./lisp examples/goroutines.lisp               # Concurrency with goroutines and channels
+./lisp examples/http_requests.lisp            # HTTP client operations
+./lisp examples/json_processing.lisp          # JSON parsing and manipulation
 ```

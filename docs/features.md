@@ -17,6 +17,8 @@ A modern, production-ready Go Lisp implementation with comprehensive language su
 **Concurrency**: Goroutines for parallel execution, channels for communication  
 **Thread-safe State**: Clojure-style atoms for mutable references with atomic operations  
 **String Processing**: 20+ functions including regex support  
+**HTTP Client**: Full REST API support with GET, POST, PUT, DELETE operations  
+**JSON Processing**: Parse, stringify, and path-based data extraction  
 **Development Tools**: Interactive REPL, environment inspection, built-in help  
 
 ## Key Operations
@@ -43,6 +45,14 @@ Square brackets make parameters visually distinct and reduce confusion.
 ### Control Flow
 `(if condition then else)` `(cond ...)` `(when pred body)` `(do expr1 expr2 ...)`  
 `(defmacro name [params] template)`
+
+### HTTP Client
+`(http-get url)` `(http-post url body)` `(http-put url body)` `(http-delete url)`  
+All return response hash maps with status, headers, and body.
+
+### JSON Processing
+`(json-parse json-string)` `(json-stringify data)` `(json-stringify-pretty data)`  
+`(json-path json-string "path.to.field")` for extracting nested values.
 
 See `examples/` directory for comprehensive demonstrations.
 - **Big Numbers**: Arbitrary precision integers (e.g., `1000000000000000000000000000000`)

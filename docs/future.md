@@ -13,6 +13,8 @@ This document outlines planned improvements and potential future directions for 
 - ✅ **Tail Call Optimization**: Eliminates stack growth for tail-recursive functions
 - ✅ **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection and readable formatting
 - ✅ **Hash Maps**: Key-value associative data structures with immutable operations
+- ✅ **HTTP Client**: Complete REST API support with GET, POST, PUT, DELETE operations
+- ✅ **JSON Processing**: Parse, stringify, pretty-print, and path-based data extraction
 
 ## Planned Enhancements
 
@@ -45,8 +47,7 @@ This document outlines planned improvements and potential future directions for 
 
 ### I/O and System Integration
 
-- **File I/O**: Reading and writing files from Lisp code
-- **Network Operations**: HTTP requests and basic networking
+- **Advanced File I/O**: Binary file operations and streaming
 - **System Calls**: Process execution and system interaction
 - **Foreign Function Interface**: Call functions from other languages
 
@@ -60,10 +61,10 @@ This document outlines planned improvements and potential future directions for 
 
 ### Standard Library
 
-- **String Processing**: Regular expressions and text manipulation
-- **Math Library**: Advanced mathematical functions and constants
+- **Advanced String Processing**: Regular expressions and text manipulation
+- **Advanced Math Library**: Statistical functions and specialized mathematics
 - **Date/Time**: Date arithmetic and formatting
-- **JSON/XML**: Data interchange format support
+- **XML Processing**: XML parsing and manipulation
 - **Cryptography**: Hashing and encryption functions
 
 ### REPL Improvements

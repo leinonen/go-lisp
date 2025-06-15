@@ -348,6 +348,24 @@ func (e *Evaluator) evalList(list *types.ListExpr) (types.Value, error) {
 			return e.evalSign(list.Elements[1:])
 		case "mod":
 			return e.evalMod(list.Elements[1:])
+		// HTTP functions
+		case "http-get":
+			return e.evalHttpGet(list.Elements[1:])
+		case "http-post":
+			return e.evalHttpPost(list.Elements[1:])
+		case "http-put":
+			return e.evalHttpPut(list.Elements[1:])
+		case "http-delete":
+			return e.evalHttpDelete(list.Elements[1:])
+		// JSON functions
+		case "json-parse":
+			return e.evalJsonParse(list.Elements[1:])
+		case "json-stringify":
+			return e.evalJsonStringify(list.Elements[1:])
+		case "json-stringify-pretty":
+			return e.evalJsonStringifyPretty(list.Elements[1:])
+		case "json-path":
+			return e.evalJsonPath(list.Elements[1:])
 		default:
 			// Check if it's a macro call first
 			if macro, isMacro := e.isMacroCall(symbolExpr.Name); isMacro {

@@ -456,6 +456,87 @@ Evaluates expressions in sequence and returns the result of the last expression.
 (write-file "output.txt" processed)
 ```
 
+## HTTP Operations
+
+### HTTP Request Functions
+```lisp
+(http-get url)                    ; GET request
+(http-post url body)              ; POST request
+(http-post url body headers)      ; POST with custom headers
+(http-put url body)               ; PUT request
+(http-put url body headers)       ; PUT with custom headers
+(http-delete url)                 ; DELETE request
+(http-delete url headers)         ; DELETE with custom headers
+```
+
+**Examples:**
+```lisp
+; Simple GET request
+(def response (http-get "https://api.example.com/users"))
+(def status (:status response))
+(def body (:body response))
+
+; POST with JSON data
+(def user-data (hash-map "name" "Alice" "email" "alice@example.com"))
+(def json-body (json-stringify user-data))
+(def response (http-post "https://api.example.com/users" json-body))
+
+; POST with custom headers
+(def headers (hash-map "Authorization" "Bearer token123" "Content-Type" "application/json"))
+(def response (http-post "https://api.example.com/users" json-body headers))
+
+; DELETE with authentication
+(def auth-headers (hash-map "Authorization" "Bearer token123"))
+(def response (http-delete "https://api.example.com/users/1" auth-headers))
+```
+
+All HTTP functions return a hash map with:
+- `"status"`: HTTP status code (number)
+- `"status-text"`: HTTP status text (string)
+- `"body"`: Response body (string)
+- `"headers"`: Response headers (hash map)
+
+## JSON Operations
+
+### JSON Processing Functions
+```lisp
+(json-parse json-string)          ; Parse JSON string to Lisp data
+(json-stringify value)            ; Convert Lisp data to JSON string
+(json-stringify-pretty value)     ; Convert to pretty-printed JSON
+(json-path json-string path)      ; Extract value using path notation
+```
+
+**Examples:**
+```lisp
+; Parse JSON
+(def json-data "{\"name\": \"Alice\", \"age\": 30}")
+(def parsed (json-parse json-data))  ; => hash map
+(def name (hash-map-get parsed "name"))  ; => "Alice"
+
+; Create JSON from Lisp data
+(def data (hash-map "name" "Bob" "active" true "scores" (list 85 92 78)))
+(def json (json-stringify data))  ; => compact JSON string
+(def pretty (json-stringify-pretty data))  ; => formatted JSON
+
+; Extract nested values with json-path
+(def nested-json "{\"user\": {\"profile\": {\"name\": \"Alice\"}}, \"items\": [\"a\", \"b\"]}")
+(def name (json-path nested-json "user.profile.name"))  ; => "Alice"
+(def first-item (json-path nested-json "items.0"))  ; => "a"
+
+; REST API workflow
+(def api-response (http-get "https://api.example.com/data"))
+(def data (json-parse (:body api-response)))
+(def processed (map process-item (hash-map-get data "items")))
+```
+
+**JSON Type Conversions:**
+- JSON objects ↔ Hash maps
+- JSON arrays ↔ Lists
+- JSON strings ↔ Strings
+- JSON numbers ↔ Numbers
+- JSON booleans ↔ Booleans
+- JSON null ↔ nil
+
 ### Error Handling
 ```lisp
 (error message)                   ; Raise an error with message

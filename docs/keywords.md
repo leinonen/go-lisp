@@ -172,6 +172,62 @@ lisp> (hash-map-get (hash-map-get app-state :user) :name)
 => Alice
 ```
 
+## Keywords as Functions
+
+Keywords can be used as functions to access values from hash maps, providing a convenient shorthand syntax:
+
+### Basic Function Syntax
+```lisp
+lisp> (def person (hash-map :name "Alice" :age 30))
+=> {:name Alice, :age 30}
+
+lisp> (:name person)
+=> Alice
+
+lisp> (:age person) 
+=> 30
+
+lisp> (:missing person)
+=> nil
+```
+
+### With Default Values
+Keywords as functions can take an optional second argument for default values:
+
+```lisp
+lisp> (:name person "Unknown")
+=> Alice
+
+lisp> (:missing person "Not found")
+=> Not found
+```
+
+### Compared to hash-map-get
+These are equivalent:
+```lisp
+lisp> (:name person)
+=> Alice
+
+lisp> (hash-map-get person :name)
+=> Alice
+```
+
+The keyword function syntax is more concise and idiomatic.
+
+### HTTP Response Example
+This feature is particularly useful with HTTP responses:
+
+```lisp
+lisp> (def response (http-get "https://api.example.com/data"))
+=> {:status 200, :status-text 200 OK, :body {...}, :headers {...}}
+
+lisp> (:status response)
+=> 200
+
+lisp> (:body response)
+=> {...}
+```
+
 ## Error Cases
 
 ```lisp

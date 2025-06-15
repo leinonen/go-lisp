@@ -105,7 +105,9 @@ Go Lisp is **feature-complete** and **production-ready** with:
 - **📚 Core Library**: Rich mathematical and utility functions (factorial, gcd, map, filter, reduce)
 - **🔢 Mathematical Functions**: 30+ built-in math functions (trigonometry, logarithms, statistics, constants)
 - **⚡ Functional Programming**: Complete functional library with currying, composition, and higher-order utilities
-- **🎨 Output Functions**: Built-in `print` and `println` for program output
+- **� HTTP Client**: Full REST API support with GET, POST, PUT, DELETE operations
+- **🔄 JSON Processing**: Parse, stringify, and extract data with path notation
+- **�🎨 Output Functions**: Built-in `print` and `println` for program output
 - **🔍 Keywords Support**: Self-evaluating symbols perfect for hash map keys
 - **📖 Modern Syntax**: Square bracket function parameters for improved readability and reduced confusion
 
@@ -138,6 +140,7 @@ Control flow and utility macros for enhanced syntax.
 - **[Operations Reference](docs/operations.md)** - Guide to all supported operations
 - **[Mathematical Functions](docs/mathematical_functions.md)** - Complete mathematical function reference
 - **[File Functions](docs/file_functions.md)** - File system operations and I/O
+- **[HTTP and JSON](docs/http_json.md)** - HTTP client and JSON processing functions
 - **[Examples](docs/examples.md)** - Code examples and tutorials
 - **[Usage Guide](docs/usage.md)** - Running and building the interpreter
 
@@ -176,11 +179,13 @@ make test     # Run comprehensive test suite (100% coverage)
 
 # Feature demonstrations
 ./lisp examples/basic_features.lisp      # Core language features  
-./lisp examples/math_functions.lisp # Mathematical functions showcase
-./lisp examples/functional_library.lisp # Functional programming
+./lisp examples/math_functions.lisp      # Mathematical functions showcase
+./lisp examples/functional_library.lisp  # Functional programming
 ./lisp examples/keywords.lisp            # Keyword data type examples
 ./lisp examples/hash_maps.lisp           # Hash map operations
-./lisp examples/string_library.lisp # String processing showcase
+./lisp examples/string_library.lisp      # String processing showcase
+./lisp examples/http_requests.lisp       # HTTP client operations
+./lisp examples/json_processing.lisp     # JSON parsing and manipulation
 ./lisp examples/advanced_features.lisp   # All advanced features
 
 # Interactive exploration
