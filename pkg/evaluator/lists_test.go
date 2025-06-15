@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/leinonen/lisp-interpreter/pkg/types"
@@ -213,6 +214,206 @@ func TestEvaluatorListOperations(t *testing.T) {
 				types.NumberValue(42),
 			}},
 		},
+		
+		// last function tests
+		{
+			name: "last of non-empty list",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "last"},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.NumberExpr{Value: 2},
+							&types.NumberExpr{Value: 3},
+						},
+					},
+				},
+			},
+			expected: types.NumberValue(3),
+		},
+		{
+			name: "last of single element list",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "last"},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 42},
+						},
+					},
+				},
+			},
+			expected: types.NumberValue(42),
+		},
+
+		// butlast function tests
+		{
+			name: "butlast of non-empty list",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "butlast"},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.NumberExpr{Value: 2},
+							&types.NumberExpr{Value: 3},
+						},
+					},
+				},
+			},
+			expected: &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2)}},
+		},
+		{
+			name: "butlast of single element list",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "butlast"},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 42},
+						},
+					},
+				},
+			},
+			expected: &types.ListValue{Elements: []types.Value{}},
+		},
+		{
+			name: "butlast of empty list",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "butlast"},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+						},
+					},
+				},
+			},
+			expected: &types.ListValue{Elements: []types.Value{}},
+		},
+
+		// flatten function tests
+		{
+			name: "flatten nested list",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "flatten"},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.ListExpr{
+								Elements: []types.Expr{
+									&types.SymbolExpr{Name: "list"},
+									&types.NumberExpr{Value: 2},
+									&types.NumberExpr{Value: 3},
+								},
+							},
+							&types.NumberExpr{Value: 4},
+						},
+					},
+				},
+			},
+			expected: &types.ListValue{Elements: []types.Value{
+				types.NumberValue(1),
+				types.NumberValue(2),
+				types.NumberValue(3),
+				types.NumberValue(4),
+			}},
+		},
+
+		// distinct function tests
+		{
+			name: "distinct removes duplicates",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "distinct"},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.NumberExpr{Value: 2},
+							&types.NumberExpr{Value: 1},
+							&types.NumberExpr{Value: 3},
+							&types.NumberExpr{Value: 2},
+						},
+					},
+				},
+			},
+			expected: &types.ListValue{Elements: []types.Value{
+				types.NumberValue(1),
+				types.NumberValue(2),
+				types.NumberValue(3),
+			}},
+		},
+
+		// concat function tests
+		{
+			name: "concat multiple lists",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "concat"},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.NumberExpr{Value: 2},
+						},
+					},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 3},
+							&types.NumberExpr{Value: 4},
+						},
+					},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 5},
+						},
+					},
+				},
+			},
+			expected: &types.ListValue{Elements: []types.Value{
+				types.NumberValue(1),
+				types.NumberValue(2),
+				types.NumberValue(3),
+				types.NumberValue(4),
+				types.NumberValue(5),
+			}},
+		},
+
+		// partition function tests
+		{
+			name: "partition list into chunks",
+			expr: &types.ListExpr{
+				Elements: []types.Expr{
+					&types.SymbolExpr{Name: "partition"},
+					&types.NumberExpr{Value: 2},
+					&types.ListExpr{
+						Elements: []types.Expr{
+							&types.SymbolExpr{Name: "list"},
+							&types.NumberExpr{Value: 1},
+							&types.NumberExpr{Value: 2},
+							&types.NumberExpr{Value: 3},
+							&types.NumberExpr{Value: 4},
+							&types.NumberExpr{Value: 5},
+						},
+					},
+				},
+			},
+			expected: &types.ListValue{Elements: []types.Value{
+				&types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2)}},
+				&types.ListValue{Elements: []types.Value{types.NumberValue(3), types.NumberValue(4)}},
+				&types.ListValue{Elements: []types.Value{types.NumberValue(5)}},
+			}},
+		},
 	}
 
 	for _, tt := range tests {
@@ -225,7 +426,8 @@ func TestEvaluatorListOperations(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if !valuesEqual(result, tt.expected) {
+			// Use reflect.DeepEqual for more comprehensive comparison
+			if !reflect.DeepEqual(result, tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, result)
 			}
 		})
