@@ -186,7 +186,7 @@ func printWelcomeMessage() {
 	instructionColor := color.New(color.FgYellow)
 	commandColor := color.New(color.FgGreen)
 
-	titleColor.Println("Welcome to the Lisp Interpreter!")
+	titleColor.Println("Welcome to Go Lisp!")
 	instructionColor.Println("Type expressions to evaluate them, or 'quit' to exit.")
 	instructionColor.Println("Multi-line expressions are supported - the REPL will wait for balanced parentheses.")
 	fmt.Println()
@@ -208,7 +208,7 @@ func printGoodbyeMessage() {
 
 // printWelcomeMessageNoColor prints welcome message without colors (for testing)
 func printWelcomeMessageNoColor() {
-	fmt.Println("Welcome to the Lisp Interpreter!")
+	fmt.Println("Welcome to Go Lisp!")
 	fmt.Println("Type expressions to evaluate them, or 'quit' to exit.")
 	fmt.Println("Multi-line expressions are supported - the REPL will wait for balanced parentheses.")
 	fmt.Println()
