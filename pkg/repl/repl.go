@@ -10,6 +10,7 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
+	"github.com/leinonen/lisp-interpreter/pkg/registry"
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
 
@@ -75,16 +76,35 @@ func REPLWithOptions(interp Interpreter, scanner *bufio.Scanner, enableColors bo
 
 // REPLWithCompletion starts a REPL with tab completion support
 func REPLWithCompletion(interp Interpreter, enableColors bool) error {
-	// Get the environment for completion if the interpreter supports it
+	// Get the environment and registry for completion if the interpreter supports it
 	var env *evaluator.Environment
-	if envProvider, ok := interp.(interface{ GetEnvironment() *evaluator.Environment }); ok {
-		env = envProvider.GetEnvironment()
+	var reg registry.FunctionRegistry
+
+	// Try to get the typed environment and registry
+	if typedInterp, ok := interp.(interface {
+		GetEnvironmentTyped() *evaluator.Environment
+		GetRegistry() registry.FunctionRegistry
+	}); ok {
+		env = typedInterp.GetEnvironmentTyped()
+		reg = typedInterp.GetRegistry()
+	} else if envProvider, ok := interp.(interface{ GetEnvironment() interface{} }); ok {
+		// Fallback to the interface{} version
+		if envIface := envProvider.GetEnvironment(); envIface != nil {
+			if typedEnv, ok := envIface.(*evaluator.Environment); ok {
+				env = typedEnv
+			}
+		}
 	}
 
 	// Set up completion provider
 	var completer readline.AutoCompleter
 	if env != nil {
-		completionProvider := NewCompletionProvider(env)
+		var completionProvider *CompletionProvider
+		if reg != nil {
+			completionProvider = NewCompletionProviderWithRegistry(env, reg)
+		} else {
+			completionProvider = NewCompletionProvider(env)
+		}
 
 		// Use a more sophisticated completer that understands the cursor position
 		completer = readline.NewPrefixCompleter()

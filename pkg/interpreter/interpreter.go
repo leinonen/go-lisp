@@ -66,3 +66,16 @@ func (i *Interpreter) Interpret(input string) (types.Value, error) {
 func (i *Interpreter) GetEnvironment() interface{} {
 	return i.env
 }
+
+// GetEnvironmentTyped returns the strongly typed environment
+func (i *Interpreter) GetEnvironmentTyped() *evaluator.Environment {
+	return i.env
+}
+
+// GetRegistry returns the function registry for completion support
+func (i *Interpreter) GetRegistry() registry.FunctionRegistry {
+	if pureEval, ok := i.evaluator.(*pure.PureEvaluator); ok {
+		return pureEval.GetRegistry()
+	}
+	return nil
+}

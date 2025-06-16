@@ -4,12 +4,47 @@ import (
 	"testing"
 
 	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
+	"github.com/leinonen/lisp-interpreter/pkg/functions"
+	"github.com/leinonen/lisp-interpreter/pkg/registry"
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
+
+// createTestRegistry creates a registry with some basic functions for testing
+func createTestRegistry() registry.FunctionRegistry {
+	reg := registry.NewRegistry()
+
+	// Add some common functions for testing
+	testFunctions := []struct {
+		name     string
+		category string
+		arity    int
+		help     string
+	}{
+		{"map", "functional", 2, "Apply function to list"},
+		{"filter", "functional", 2, "Filter list with predicate"},
+		{"reduce", "functional", 3, "Reduce list with function"},
+		{"+", "arithmetic", -1, "Add numbers"},
+		{"-", "arithmetic", -1, "Subtract numbers"},
+		{"*", "arithmetic", -1, "Multiply numbers"},
+		{"help", "core", -1, "Show help"},
+		{"def", "core", 2, "Define variable"},
+		{"if", "control", 3, "Conditional expression"},
+	}
+
+	for _, tf := range testFunctions {
+		fn := functions.NewFunction(tf.name, tf.category, tf.arity, tf.help, nil)
+		reg.Register(fn)
+	}
+
+	return reg
+}
 
 func TestCompletionProvider(t *testing.T) {
 	// Create a test environment
 	env := evaluator.NewEnvironment()
+
+	// Create a test registry
+	reg := createTestRegistry()
 
 	// Add some user-defined functions
 	env.Set("my-function", types.FunctionValue{
@@ -24,8 +59,8 @@ func TestCompletionProvider(t *testing.T) {
 	})
 	env.Set("my-variable", types.NumberValue(123))
 
-	// Create completion provider
-	cp := NewCompletionProvider(env)
+	// Create completion provider with registry
+	cp := NewCompletionProviderWithRegistry(env, reg)
 	t.Run("complete builtin functions", func(t *testing.T) {
 		// Should only complete when in function position (after '(')
 		completions := cp.GetCompletions("(ma", 3)
@@ -137,7 +172,8 @@ func TestCompletionProvider(t *testing.T) {
 
 func TestExtractCurrentWord(t *testing.T) {
 	env := evaluator.NewEnvironment()
-	cp := NewCompletionProvider(env)
+	reg := createTestRegistry()
+	cp := NewCompletionProviderWithRegistry(env, reg)
 
 	tests := []struct {
 		line     string
@@ -167,7 +203,8 @@ func TestExtractCurrentWord(t *testing.T) {
 
 func TestIsSymbolChar(t *testing.T) {
 	env := evaluator.NewEnvironment()
-	cp := NewCompletionProvider(env)
+	reg := createTestRegistry()
+	cp := NewCompletionProviderWithRegistry(env, reg)
 
 	validChars := []rune{'a', 'Z', '0', '9', '-', '_', '?', '!', '+', '*', '/', '=', '<', '>', '.', '%'}
 	invalidChars := []rune{' ', '\t', '\n', '(', ')', '[', ']', '{', '}', '"', '\'', ';', ','}
@@ -198,7 +235,8 @@ func TestLispAwareCompletion(t *testing.T) {
 	env.Set("my-variable", types.NumberValue(123))
 
 	// Create completion provider
-	cp := NewCompletionProvider(env)
+	reg := createTestRegistry()
+	cp := NewCompletionProviderWithRegistry(env, reg)
 
 	t.Run("completion after open paren", func(t *testing.T) {
 		// Should complete functions when right after '('
@@ -264,7 +302,8 @@ func TestLispAwareCompletion(t *testing.T) {
 
 func TestCompletionContext(t *testing.T) {
 	env := evaluator.NewEnvironment()
-	cp := NewCompletionProvider(env)
+	reg := createTestRegistry()
+	cp := NewCompletionProviderWithRegistry(env, reg)
 
 	tests := []struct {
 		line               string
@@ -302,7 +341,8 @@ func TestCompletionContext(t *testing.T) {
 func TestHelpArgumentCompletion(t *testing.T) {
 	// Create a test environment
 	env := evaluator.NewEnvironment()
-	cp := NewCompletionProvider(env)
+	reg := createTestRegistry()
+	cp := NewCompletionProviderWithRegistry(env, reg)
 
 	t.Run("completion for help function arguments", func(t *testing.T) {
 		// Should complete function names when typing help arguments

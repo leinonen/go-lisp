@@ -6,17 +6,30 @@ import (
 	"strings"
 
 	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
+	"github.com/leinonen/lisp-interpreter/pkg/registry"
 	"github.com/leinonen/lisp-interpreter/pkg/types"
 )
 
 // CompletionProvider provides tab completion functionality for the REPL
 type CompletionProvider struct {
-	env *evaluator.Environment
+	env      *evaluator.Environment
+	registry registry.FunctionRegistry
 }
 
 // NewCompletionProvider creates a new completion provider
 func NewCompletionProvider(env *evaluator.Environment) *CompletionProvider {
-	return &CompletionProvider{env: env}
+	return &CompletionProvider{
+		env:      env,
+		registry: nil, // Will be set later when registry is available
+	}
+}
+
+// NewCompletionProviderWithRegistry creates a new completion provider with registry
+func NewCompletionProviderWithRegistry(env *evaluator.Environment, reg registry.FunctionRegistry) *CompletionProvider {
+	return &CompletionProvider{
+		env:      env,
+		registry: reg,
+	}
 }
 
 // CompletionContext represents the context where completion is happening
@@ -110,52 +123,20 @@ func (cp *CompletionProvider) isSymbolChar(ch rune) bool {
 		ch == '<' || ch == '>' || ch == '.' || ch == '%'
 }
 
-// getBuiltinFunctions returns a list of all built-in function names
+// getBuiltinFunctions returns a list of all built-in function names from the registry
 func (cp *CompletionProvider) getBuiltinFunctions() []string {
-	return []string{
-		// Arithmetic operations
-		"+", "-", "*", "/", "%",
-		// Comparison operations
-		"=", "<", ">", "<=", ">=",
-		// Logical operations
-		"and", "or", "not",
-		// Control flow
-		"if",
-		// Variable and function definition
-		"def", "lambda", "defn",
-		// Macro system
-		"defmacro", "quote",
-		// List operations
-		"list", "first", "rest", "cons", "length", "empty?",
-		// Higher-order functions
-		"map", "filter", "reduce",
-		// List manipulation
-		"append", "reverse", "nth",
-		// Atom operations
-		"atom", "deref", "swap!", "reset!",
-		// Hash map operations
-		"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
-		"hash-map-contains?", "hash-map-keys", "hash-map-values",
-		"hash-map-size", "hash-map-empty?",
-		// String operations
-		"string-concat", "string-length", "string-substring", "string-char-at",
-		"string-upper", "string-lower", "string-trim", "string-split", "string-join",
-		"string-contains?", "string-starts-with?", "string-ends-with?", "string-replace",
-		"string-index-of", "string->number", "number->string", "string-regex-match?",
-		"string-regex-find-all", "string-repeat", "string?", "string-empty?",
-		// File operations
-		"read-file", "write-file", "file-exists?",
-		// Module system
-		"load", "import",
-		// Environment inspection
-		"env", "modules", "help",
-		// Print functions
-		"print!", "println!",
-		// Constants
-		"nil",
-		// Error handling
-		"error",
+	if cp.registry == nil {
+		// Fallback to empty list if no registry available
+		return []string{}
 	}
+
+	var functions []string
+	categories := cp.registry.Categories()
+	for _, category := range categories {
+		functions = append(functions, cp.registry.ListByCategory(category)...)
+	}
+
+	return functions
 }
 
 // getUserDefinedSymbols returns all user-defined symbols from the environment

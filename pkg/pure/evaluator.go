@@ -386,3 +386,8 @@ func (pe *PureEvaluator) GetFunctionHelp(name string) (string, bool) {
 	}
 	return "", false
 }
+
+// GetRegistry returns the function registry for completion support
+func (pe *PureEvaluator) GetRegistry() registry.FunctionRegistry {
+	return pe.registry
+}
