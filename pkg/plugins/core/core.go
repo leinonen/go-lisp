@@ -3,6 +3,7 @@ package core
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
 	"github.com/leinonen/lisp-interpreter/pkg/functions"
@@ -14,7 +15,8 @@ import (
 // CorePlugin provides core language functionality
 type CorePlugin struct {
 	*plugins.BasePlugin
-	env *evaluator.Environment
+	env      *evaluator.Environment
+	registry registry.FunctionRegistry
 }
 
 // NewCorePlugin creates a new core plugin
@@ -26,12 +28,16 @@ func NewCorePlugin(env *evaluator.Environment) *CorePlugin {
 			"Core language functionality (def, fn, quote, variables)",
 			[]string{}, // No dependencies
 		),
-		env: env,
+		env:      env,
+		registry: nil, // Will be set during registration
 	}
 }
 
 // RegisterFunctions registers core language functions
 func (p *CorePlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
+	// Store the registry for help functions
+	p.registry = reg
+
 	// def function
 	defFunc := functions.NewFunction(
 		"def",
@@ -77,6 +83,42 @@ func (p *CorePlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 		p.quoteFunc,
 	)
 	if err := reg.Register(quoteFunc); err != nil {
+		return err
+	}
+
+	// help function
+	helpFunc := functions.NewFunction(
+		"help",
+		registry.CategoryCore,
+		-1, // Variable arity: 0 or 1 argument
+		"Show help: (help) for all functions, (help function-name) for specific function",
+		p.helpFunc,
+	)
+	if err := reg.Register(helpFunc); err != nil {
+		return err
+	}
+
+	// env function
+	envFunc := functions.NewFunction(
+		"env",
+		registry.CategoryCore,
+		0,
+		"Show environment variables: (env)",
+		p.envFunc,
+	)
+	if err := reg.Register(envFunc); err != nil {
+		return err
+	}
+
+	// modules function
+	modulesFunc := functions.NewFunction(
+		"modules",
+		registry.CategoryCore,
+		0,
+		"Show loaded modules/plugins: (modules)",
+		p.modulesFunc,
+	)
+	if err := reg.Register(modulesFunc); err != nil {
 		return err
 	}
 
@@ -206,4 +248,115 @@ func (p *CorePlugin) exprToValue(expr types.Expr) types.Value {
 		// For other types, return as string representation
 		return types.StringValue(fmt.Sprintf("%v", expr))
 	}
+}
+
+// helpFunc shows help for functions
+func (p *CorePlugin) helpFunc(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	// If no arguments, show help for all functions
+	if len(args) == 0 {
+		return p.allFunctionsHelp(), nil
+	}
+
+	// If one argument, show help for specific function
+	if len(args) == 1 {
+		funcName, ok := args[0].(*types.SymbolExpr)
+		if !ok {
+			return nil, fmt.Errorf("help function name must be a symbol, got %T", args[0])
+		}
+		return p.specificFunctionHelp(funcName.Name), nil
+	}
+
+	return nil, fmt.Errorf("help requires 0 or 1 argument, got %d", len(args))
+}
+
+// allFunctionsHelp returns a list of all function names organized by category
+func (p *CorePlugin) allFunctionsHelp() types.Value {
+	if p.registry == nil {
+		return types.StringValue("Registry not available")
+	}
+
+	categories := p.registry.Categories()
+	var helpLines []string
+
+	helpLines = append(helpLines, "Available functions by category:")
+	helpLines = append(helpLines, "")
+
+	for _, category := range categories {
+		helpLines = append(helpLines, fmt.Sprintf("=== %s ===", category))
+		functions := p.registry.ListByCategory(category)
+
+		// List functions in rows for better readability
+		var currentLine strings.Builder
+		functionsPerLine := 3 // Reduce to 3 per line for better spacing
+		for i, funcName := range functions {
+			if i > 0 && i%functionsPerLine == 0 {
+				helpLines = append(helpLines, currentLine.String())
+				currentLine.Reset()
+			}
+			if currentLine.Len() > 0 {
+				currentLine.WriteString("  ")
+			}
+			currentLine.WriteString(fmt.Sprintf("%-20s", funcName)) // Increase spacing
+		}
+		if currentLine.Len() > 0 {
+			helpLines = append(helpLines, currentLine.String())
+		}
+		helpLines = append(helpLines, "")
+	}
+
+	helpLines = append(helpLines, "Use (help function-name) for detailed help on a specific function.")
+
+	// Return as a single string, not a list
+	return types.StringValue(strings.Join(helpLines, "\n"))
+}
+
+// specificFunctionHelp returns help information for a specific function
+func (p *CorePlugin) specificFunctionHelp(name string) types.Value {
+	if p.registry == nil {
+		return types.StringValue("Registry not available")
+	}
+
+	if fn, exists := p.registry.Get(name); exists {
+		arityStr := fmt.Sprintf("%d", fn.Arity())
+		if fn.Arity() == -1 {
+			arityStr = "variable"
+		}
+
+		helpText := fmt.Sprintf("Function: %s\nCategory: %s\nArity: %s\nHelp: %s",
+			fn.Name(), fn.Category(), arityStr, fn.Help())
+		return types.StringValue(helpText)
+	}
+	return types.StringValue(fmt.Sprintf("Function not found: %s", name))
+}
+
+// envFunc shows environment variables
+func (p *CorePlugin) envFunc(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 0 {
+		return nil, fmt.Errorf("env requires no arguments, got %d", len(args))
+	}
+
+	envText := "Environment variables are managed by the runtime\nUse (help) to see available functions"
+	return types.StringValue(envText), nil
+}
+
+// modulesFunc shows loaded modules/plugins
+func (p *CorePlugin) modulesFunc(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 0 {
+		return nil, fmt.Errorf("modules requires no arguments, got %d", len(args))
+	}
+
+	if p.registry == nil {
+		return types.StringValue("Registry not available"), nil
+	}
+
+	categories := p.registry.Categories()
+	var moduleLines []string
+
+	moduleLines = append(moduleLines, "Loaded plugin categories:")
+	for _, category := range categories {
+		functions := p.registry.ListByCategory(category)
+		moduleLines = append(moduleLines, fmt.Sprintf("  %s (%d functions)", category, len(functions)))
+	}
+
+	return types.StringValue(strings.Join(moduleLines, "\n")), nil
 }
