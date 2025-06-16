@@ -111,15 +111,15 @@ func (p *CorePlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 		return err
 	}
 
-	// modules function
-	modulesFunc := functions.NewFunction(
-		"modules",
+	// plugins function
+	pluginsFunc := functions.NewFunction(
+		"plugins",
 		registry.CategoryCore,
 		0,
-		"Show loaded modules/plugins: (modules)",
-		p.modulesFunc,
+		"Show loaded plugins: (plugins)",
+		p.pluginsFunc,
 	)
-	if err := reg.Register(modulesFunc); err != nil {
+	if err := reg.Register(pluginsFunc); err != nil {
 		return err
 	}
 
@@ -414,10 +414,10 @@ func (p *CorePlugin) envFunc(evaluator registry.Evaluator, args []types.Expr) (t
 	return types.StringValue(result.String()), nil
 }
 
-// modulesFunc shows loaded modules/plugins
-func (p *CorePlugin) modulesFunc(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+// pluginsFunc shows loaded plugins
+func (p *CorePlugin) pluginsFunc(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
 	if len(args) != 0 {
-		return nil, fmt.Errorf("modules requires no arguments, got %d", len(args))
+		return nil, fmt.Errorf("plugins requires no arguments, got %d", len(args))
 	}
 
 	if p.registry == nil {
@@ -425,13 +425,13 @@ func (p *CorePlugin) modulesFunc(evaluator registry.Evaluator, args []types.Expr
 	}
 
 	categories := p.registry.Categories()
-	var moduleLines []string
+	var pluginLines []string
 
-	moduleLines = append(moduleLines, "Loaded plugin categories:")
+	pluginLines = append(pluginLines, "Loaded plugin categories:")
 	for _, category := range categories {
 		functions := p.registry.ListByCategory(category)
-		moduleLines = append(moduleLines, fmt.Sprintf("  %s (%d functions)", category, len(functions)))
+		pluginLines = append(pluginLines, fmt.Sprintf("  %s (%d functions)", category, len(functions)))
 	}
 
-	return types.StringValue(strings.Join(moduleLines, "\n")), nil
+	return types.StringValue(strings.Join(pluginLines, "\n")), nil
 }

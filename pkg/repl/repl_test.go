@@ -368,7 +368,7 @@ func TestPrintWelcomeMessage(t *testing.T) {
 		"Multi-line expressions are supported",
 		"(help)",
 		"(env)",
-		"(modules)",
+		"(plugins)",
 	}
 
 	for _, part := range expectedParts {
