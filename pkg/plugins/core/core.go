@@ -3,6 +3,7 @@ package core
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
@@ -335,8 +336,82 @@ func (p *CorePlugin) envFunc(evaluator registry.Evaluator, args []types.Expr) (t
 		return nil, fmt.Errorf("env requires no arguments, got %d", len(args))
 	}
 
-	envText := "Environment variables are managed by the runtime\nUse (help) to see available functions"
-	return types.StringValue(envText), nil
+	var result strings.Builder
+	result.WriteString("Environment Variables and Functions:\n\n")
+
+	// Get bindings from the current environment
+	bindings := p.env.GetBindings()
+
+	// Separate variables and functions
+	var variables []string
+	var functions []string
+	var builtins []string
+
+	for name, value := range bindings {
+		switch value.(type) {
+		case *types.FunctionValue:
+			functions = append(functions, name)
+		case *types.ArithmeticFunctionValue, *types.BuiltinFunctionValue:
+			builtins = append(builtins, name)
+		default:
+			variables = append(variables, fmt.Sprintf("%s = %s", name, value.String()))
+		}
+	}
+
+	// Sort the slices for consistent output
+	sort.Strings(variables)
+	sort.Strings(functions)
+	sort.Strings(builtins)
+
+	// Display user-defined variables
+	if len(variables) > 0 {
+		result.WriteString("=== User-defined Variables ===\n")
+		for _, variable := range variables {
+			result.WriteString("  " + variable + "\n")
+		}
+		result.WriteString("\n")
+	} else {
+		result.WriteString("=== User-defined Variables ===\n")
+		result.WriteString("  (none)\n\n")
+	}
+
+	// Display user-defined functions
+	if len(functions) > 0 {
+		result.WriteString("=== User-defined Functions ===\n")
+		for _, function := range functions {
+			if value, exists := bindings[function]; exists {
+				if fn, ok := value.(*types.FunctionValue); ok {
+					result.WriteString(fmt.Sprintf("  %s(%s)\n", function, strings.Join(fn.Params, " ")))
+				} else {
+					result.WriteString(fmt.Sprintf("  %s\n", function))
+				}
+			}
+		}
+		result.WriteString("\n")
+	} else {
+		result.WriteString("=== User-defined Functions ===\n")
+		result.WriteString("  (none)\n\n")
+	}
+
+	// Display some built-in functions (limit to avoid clutter)
+	if len(builtins) > 0 {
+		result.WriteString("=== Built-in Functions (sample) ===\n")
+		count := 0
+		for _, builtin := range builtins {
+			if count < 10 { // Show only first 10 to avoid clutter
+				result.WriteString("  " + builtin + "\n")
+				count++
+			}
+		}
+		if len(builtins) > 10 {
+			result.WriteString(fmt.Sprintf("  ... and %d more (use 'help' to see all)\n", len(builtins)-10))
+		}
+		result.WriteString("\n")
+	}
+
+	result.WriteString("Use (help) to see all available functions.")
+
+	return types.StringValue(result.String()), nil
 }
 
 // modulesFunc shows loaded modules/plugins
