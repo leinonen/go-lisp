@@ -70,18 +70,28 @@ func (ve valueExpr) String() string {
 
 func TestControlPlugin_RegisterFunctions(t *testing.T) {
 	plugin := NewControlPlugin()
-	reg := registry.NewRegistry()
+	registry := registry.NewRegistry()
 
-	err := plugin.RegisterFunctions(reg)
+	err := plugin.RegisterFunctions(registry)
 	if err != nil {
 		t.Fatalf("Failed to register functions: %v", err)
 	}
 
-	expectedFunctions := []string{"if", "do"}
+	// Check that all functions are registered (including new ones)
+	expectedFunctions := []string{"if", "do", "cond", "when", "when-not"}
+	for _, funcName := range expectedFunctions {
+		if !registry.Has(funcName) {
+			t.Errorf("Function %s not registered", funcName)
+		}
 
-	for _, fnName := range expectedFunctions {
-		if !reg.Has(fnName) {
-			t.Errorf("Function %s was not registered", fnName)
+		// Get function and verify basic properties
+		fn, exists := registry.Get(funcName)
+		if !exists {
+			t.Errorf("Function %s not found in registry", funcName)
+		}
+
+		if fn.Name() != funcName {
+			t.Errorf("Expected function name '%s', got '%s'", funcName, fn.Name())
 		}
 	}
 }
@@ -313,6 +323,32 @@ func TestControlPlugin_IfWithComplexConditions(t *testing.T) {
 	}
 }
 
+// valuesEqual compares two values for equality
+func valuesEqual(a, b types.Value) bool {
+	switch va := a.(type) {
+	case types.NumberValue:
+		if vb, ok := b.(types.NumberValue); ok {
+			return va == vb
+		}
+	case types.StringValue:
+		if vb, ok := b.(types.StringValue); ok {
+			return va == vb
+		}
+	case types.BooleanValue:
+		if vb, ok := b.(types.BooleanValue); ok {
+			return va == vb
+		}
+	case types.KeywordValue:
+		if vb, ok := b.(types.KeywordValue); ok {
+			return va == vb
+		}
+	case *types.NilValue:
+		_, ok := b.(*types.NilValue)
+		return ok
+	}
+	return false
+}
+
 func TestControlPlugin_DoSequentialEvaluation(t *testing.T) {
 	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
@@ -334,5 +370,229 @@ func TestControlPlugin_DoSequentialEvaluation(t *testing.T) {
 	expected := types.NumberValue(42)
 	if result != expected {
 		t.Errorf("Expected %v, got %v", expected, result)
+	}
+}
+
+func TestControlPlugin_EvalCond(t *testing.T) {
+	plugin := NewControlPlugin()
+	evaluator := newMockEvaluator()
+
+	tests := []struct {
+		name     string
+		args     []types.Expr
+		expected types.Value
+		wantErr  bool
+	}{
+		{
+			name: "first condition true",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: true},
+				&types.StringExpr{Value: "yes"},
+				&types.BooleanExpr{Value: false},
+				&types.StringExpr{Value: "no"},
+			},
+			expected: types.StringValue("yes"),
+		},
+		{
+			name: "second condition true",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: false},
+				&types.StringExpr{Value: "no"},
+				&types.BooleanExpr{Value: true},
+				&types.StringExpr{Value: "yes"},
+			},
+			expected: types.StringValue("yes"),
+		},
+		{
+			name: "else clause",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: false},
+				&types.StringExpr{Value: "no"},
+				wrapValue(types.KeywordValue("else")),
+				&types.StringExpr{Value: "default"},
+			},
+			expected: types.StringValue("default"),
+		},
+		{
+			name: "no conditions match",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: false},
+				&types.StringExpr{Value: "no"},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name:     "empty arguments",
+			args:     []types.Expr{},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "odd number of arguments",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: true},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := plugin.evalCond(evaluator, tt.args)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("Expected error but got none")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("evalCond failed: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("Expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestControlPlugin_EvalWhen(t *testing.T) {
+	plugin := NewControlPlugin()
+	evaluator := newMockEvaluator()
+
+	tests := []struct {
+		name     string
+		args     []types.Expr
+		expected types.Value
+		wantErr  bool
+	}{
+		{
+			name: "condition true - single expression",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: true},
+				&types.NumberExpr{Value: 42},
+			},
+			expected: types.NumberValue(42),
+		},
+		{
+			name: "condition true - multiple expressions",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: true},
+				&types.NumberExpr{Value: 1},
+				&types.NumberExpr{Value: 2},
+				&types.NumberExpr{Value: 3},
+			},
+			expected: types.NumberValue(3), // Last expression
+		},
+		{
+			name: "condition false",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: false},
+				&types.NumberExpr{Value: 42},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "nil condition (falsy)",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: false}, // Use false instead of nil for mock
+				&types.StringExpr{Value: "should not execute"},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name:    "no arguments",
+			args:    []types.Expr{},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := plugin.evalWhen(evaluator, tt.args)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("Expected error but got none")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("evalWhen failed: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("Expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestControlPlugin_EvalWhenNot(t *testing.T) {
+	plugin := NewControlPlugin()
+	evaluator := newMockEvaluator()
+
+	tests := []struct {
+		name     string
+		args     []types.Expr
+		expected types.Value
+		wantErr  bool
+	}{
+		{
+			name: "condition false - execute body",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: false},
+				&types.NumberExpr{Value: 42},
+			},
+			expected: types.NumberValue(42),
+		},
+		{
+			name: "condition true - don't execute",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: true},
+				&types.NumberExpr{Value: 42},
+			},
+			expected: types.BooleanValue(false),
+		},
+		{
+			name: "nil condition (falsy) - execute body",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: false}, // Use false instead of nil for mock
+				&types.StringExpr{Value: "execute"},
+			},
+			expected: types.StringValue("execute"),
+		},
+		{
+			name: "multiple expressions when condition false",
+			args: []types.Expr{
+				&types.BooleanExpr{Value: false},
+				&types.NumberExpr{Value: 1},
+				&types.NumberExpr{Value: 2},
+				&types.NumberExpr{Value: 3},
+			},
+			expected: types.NumberValue(3),
+		},
+		{
+			name:    "no arguments",
+			args:    []types.Expr{},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := plugin.evalWhenNot(evaluator, tt.args)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("Expected error but got none")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("evalWhenNot failed: %v", err)
+			}
+
+			if !valuesEqual(result, tt.expected) {
+				t.Errorf("Expected %v, got %v", tt.expected, result)
+			}
+		})
 	}
 }

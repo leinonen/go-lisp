@@ -20,49 +20,6 @@ make build
 # Execute a Lisp file (explicit flag)
 ./lisp -f myprogram.lisp
 
-# Execute a Lisp file (legacy positional argument)
-./lisp myprogram.lisp
-
-# Development mode (without building)
-go run ./cmd/go-lisp -e "(* 6 7)"
-go run ./cmd/go-lisp -f examples/basic_features.lisp
-```
-
-## Command Line Usage
-
-Go Lisp supports multiple modes of operation through command line parameters:
-
-### Interactive REPL Mode
-```bash
-./lisp
-# Starts the interactive Read-Eval-Print Loop
-```
-
-### Direct Code Evaluation
-```bash
-# Evaluate expressions directly from the command line
-./lisp -e "(+ 1 2 3)"           # => 6
-./lisp -e "(list 1 2 3 4 5)"    # => (1 2 3 4 5)
-./lisp -e "(* 6 7)"             # => 42
-
-# Modern square bracket function syntax
-./lisp -e "(defn square [x] (* x x))"
-./lisp -e "((fn [x y] (+ x y)) 10 20)"  # => 30
-
-# Perfect for quick calculations and one-liners
-./lisp -e "(% 1000000000000000001 7)"  # => 0
-```
-
-### File Execution
-```bash
-# Execute Lisp programs from files
-./lisp -f script.lisp           # Explicit file flag
-./lisp script.lisp              # Legacy positional argument (still supported)
-```
-
-### Help and Information
-```bash
-./lisp -help                    # Show all available options
 ```
 
 ### Command Line Options
@@ -74,75 +31,75 @@ Go Lisp supports multiple modes of operation through command line parameters:
 | `-f <file>` | Execute a Lisp file | `./lisp -f program.lisp` |
 | (none) | Start interactive REPL | `./lisp` |
 
-**Note**: The interpreter maintains backward compatibility - you can still use `./lisp filename.lisp` without the `-f` flag.
-
 ## Current Status
 
-Go Lisp is **feature-complete** and **production-ready** with a modern plugin architecture:
+Go Lisp is a **functional Lisp interpreter** with a modern plugin architecture under active development:
 
-- Complete Language Support: All core Lisp constructs implemented
-- Plugin Architecture: Modular design with 15 plugin categories providing 122+ functions
-- Modern Tooling: REPL with help system, tab completion, and color-coded error messages
-- Advanced Data Types: Big numbers, hash maps, keywords, strings, lists, and functions
-- Performance Optimized: Efficient evaluation with proper tail call handling
-- High Code Quality: Clean architecture, comprehensive testing, TDD development
+- Core Language Support: Basic Lisp constructs implemented (arithmetic, lists, functions)
+- Plugin Architecture: Modular design with 21+ plugin categories
+- Interactive REPL: Basic REPL functionality for interactive development
+- Data Types: Numbers, strings, booleans, lists, and functions
+- File Execution: Support for running Lisp programs from files
+- Clean Architecture: Well-structured codebase with comprehensive testing
 
 **Go Compatibility**: Go 1.24.2+  
 **Platform Support**: Linux, macOS, Windows
+
+**Note**: This is an actively developed project. Some advanced features mentioned in the documentation may be in various stages of implementation.
 
 ## Plugin Architecture
 
 Go Lisp features a modular plugin system with the following categories:
 
-- **arithmetic** (5 functions) - Basic arithmetic operations
-- **atom** (4 functions) - Atomic operations and type checking  
-- **comparison** (5 functions) - Comparison and equality operations
-- **concurrency** (9 functions) - Concurrent programming primitives
-- **control** (2 functions) - Control flow constructs
-- **core** (7 functions) - Core language functionality (def, fn, quote, help, etc.)
-- **functional** (4 functions) - Functional programming utilities
-- **hashmap** (9 functions) - Hash map operations and utilities
-- **http** (4 functions) - HTTP client functionality
-- **io** (5 functions) - Input/output operations
-- **json** (4 functions) - JSON parsing and manipulation
-- **list** (10 functions) - List processing and manipulation
-- **logical** (3 functions) - Logical operations
-- **math** (30 functions) - Mathematical functions and constants
-- **string** (21 functions) - String processing and manipulation
+- **arithmetic** - Basic arithmetic operations
+- **atom** - Atomic operations and type checking  
+- **comparison** - Comparison and equality operations
+- **concurrency** - Concurrent programming primitives
+- **control** - Control flow constructs
+- **core** - Core language functionality (def, fn, quote, help, etc.)
+- **functional** - Functional programming utilities
+- **hashmap** - Hash map operations and utilities
+- **http** - HTTP client functionality
+- **io** - Input/output operations
+- **json** - JSON parsing and manipulation
+- **keyword** - Keyword support
+- **list** - List processing and manipulation
+- **logical** - Logical operations
+- **math** - Mathematical functions and constants
+- **string** - String processing and manipulation
+- **binding** - Variable binding and scoping
+- **environment** - Environment management
+- **macro** - Macro system
+- **sequence** - Sequence operations
+- **advanced** - Advanced language features
 
-Use `(plugins)` in the REPL to see all loaded plugins, or `(help)` to see all available functions.
+*Note: Plugin functionality is in various stages of implementation and testing.*
 
 ## Key Features
 
-- **Complete Lisp Implementation**: Full tokenizer, parser, and evaluator with modern plugin architecture
-- **Interactive REPL**: Rich development environment with built-in help system and tab completion
-- **File Execution**: Run Lisp programs from files with full multi-expression support
-- **Big Number Arithmetic**: Arbitrary precision integers with automatic overflow detection
-- **Advanced Data Types**: Lists, hash maps, keywords, strings, and functions as first-class citizens
-- **Performance Optimized**: Efficient evaluation with proper tail call handling
-- **Plugin System**: Modular architecture with 15 plugin categories providing 122+ functions
-- **String Processing**: Comprehensive string manipulation with 21+ built-in functions
-- **Error Handling**: Color-coded error messages with helpful suggestions
-- **Development Tools**: Environment inspection, debugging helpers, and comprehensive help system
-- **Mathematical Functions**: 30+ built-in math functions (trigonometry, logarithms, statistics, constants)
-- **Functional Programming**: Complete functional programming utilities with higher-order functions
-- **HTTP Client**: Full REST API support with GET, POST, PUT, DELETE operations
-- **JSON Processing**: Parse, stringify, and extract data with comprehensive JSON support
-- **Concurrency Support**: 9 concurrent programming primitives for parallel processing
-- **Hash Map Operations**: 9 functions for associative data structure manipulation
-- **Keywords Support**: Self-evaluating symbols perfect for hash map keys
-- **Modern Syntax**: Square bracket function parameters for improved readability
+- **Core Lisp Implementation**: Tokenizer, parser, and evaluator with plugin architecture
+- **Interactive REPL**: Development environment for interactive programming
+- **File Execution**: Run Lisp programs from files with multi-expression support
+- **Basic Arithmetic**: Support for fundamental mathematical operations
+- **List Processing**: Core list manipulation and processing functions
+- **Plugin System**: Modular architecture with 21+ plugin categories
+- **Modern Syntax**: Clean, readable Lisp syntax
+- **Error Handling**: Clear error messages for debugging
+- **Development Tools**: Command-line interface with multiple execution modes
+- **Extensible Design**: Plugin-based architecture for easy feature addition
+
+*Note: Advanced features like big number arithmetic, comprehensive string processing, HTTP clients, and other specialized functionality are in development.*
 
 ## REPL Features
 
-The interactive REPL provides a rich development environment:
+The interactive REPL provides a development environment:
 
-- **Tab Completion**: Press TAB to see available functions and complete names
-- **Color-coded Errors**: Different error types displayed with helpful suggestions
-- **Multi-line Input**: Automatic detection of balanced parentheses
-- **Built-in Help**: Use `(help)` for all functions, `(help function-name)` for specific help
-- **Environment Inspection**: Use `(env)` to see current variables and functions
-- **Plugin Information**: Use `(plugins)` to see all loaded plugin categories
+- **Interactive Execution**: Read-eval-print loop for immediate feedback
+- **Multi-line Input**: Support for complex expressions
+- **Basic Error Handling**: Clear error messages for common issues
+- **Expression Evaluation**: Direct evaluation of Lisp expressions
+
+*Note: Advanced REPL features like tab completion, syntax highlighting, and built-in help system are in development.*
 
 ## Architecture
 
@@ -167,25 +124,16 @@ All functionality is organized into focused plugins, making the codebase maintai
 
 ## Function Categories
 
-The 122+ built-in functions are organized into logical categories:
+The built-in functions are organized into logical categories:
 
-- **Core Functions**: Variable definition, function creation, quoting, help system
+- **Core Functions**: Variable definition, function creation, quoting
 - **Arithmetic**: Basic mathematical operations (+, -, *, /, %)
-- **Comparison**: Equality and ordering operations (=, <, >, <=, >=)
-- **Logical**: Boolean logic operations (and, or, not)
-- **Math**: Advanced mathematical functions (trigonometry, logarithms, statistics)
-- **String**: Text processing and manipulation (length, substring, split, join)
-- **List**: Collection operations (map, filter, reduce, first, rest)
-- **Hash Map**: Associative data structure operations (get, put, keys, values)
-- **I/O**: Input/output operations (print, println, read-file, write-file)
-- **HTTP**: Web client functionality (GET, POST, PUT, DELETE requests)
-- **JSON**: Data serialization (parse, stringify, extract)
-- **Atom**: Atomic operations for concurrent programming
+- **Comparison**: Equality and ordering operations
+- **Logical**: Boolean logic operations
+- **List**: Collection operations (list creation, manipulation)
 - **Control**: Flow control constructs (if, cond)
-- **Functional**: Higher-order programming utilities (curry, compose, partial)
-- **Concurrency**: Parallel processing primitives (spawn, await, channel operations)
 
-Use `(help)` in the REPL to explore all available functions, or `(help category-name)` for category-specific functions.
+*Note: Additional categories like advanced math, string processing, HTTP clients, JSON handling, and other specialized functions are implemented as plugins in various stages of development.*
 
 ## Documentation
 
@@ -205,57 +153,17 @@ The project includes comprehensive documentation (though some may reference the 
 - Future enhancements and roadmap
 - Contributing guidelines and standards
 
-## Building and Testing
+## Building and testing
 
 ### Quick Start
 ```bash
 # Clone and build
-git clone https://github.com/leinonen/lisp-interpreter.git
+git clone https://github.com/leinonen/go-lisp.git
 cd go-lisp
 make build
 
-# Start the REPL
-./lisp
-
-# Try some examples
-./lisp -e "(* 1000000000000000000 1000000000000000000)"
-./lisp -e "(plugins)"  # See all available plugin categories
-./lisp -e "(help)"     # See all available functions
-```
-
-### Development Commands
-```bash
-make build    # Build the interpreter binary
-make run      # Build and run the interpreter (REPL mode)  
-make test     # Run comprehensive test suite
-
-# Development mode
-go run ./cmd/go-lisp                    # Start REPL without building
-go run ./cmd/go-lisp -e "(+ 1 2 3)"    # Evaluate expression
-go run ./cmd/go-lisp -f script.lisp    # Execute file
-
-# Plugin exploration
-./lisp -e "(plugins)"                  # List all plugin categories
-./lisp -e "(help math)"                # Math functions (if implemented)
-./lisp -e "(help string)"              # String functions (if implemented)
-```
-
-### Requirements and Compatibility
-```bash
-# System requirements  
-go version     # Requires Go 1.24.2 or later
-make --version # GNU Make for build automation
-
-# Platform support
-# Linux (primary development platform)
-# macOS (full compatibility)  
-# Windows (cross-compiled)
-```
-
-### Manual Build
-```bash
-go build -o lisp ./cmd/go-lisp
-./lisp
+# Testing
+make test
 ```
 
 ## Project Structure
@@ -296,35 +204,36 @@ go-lisp/
 
 ## Contributing
 
-This project features a modern, plugin-based architecture built with production-quality standards. We welcome contributions in several areas:
+This project features a modern, plugin-based architecture built with clean coding standards. We welcome contributions in several areas:
 
 ### Areas for Contribution
 - **Bug Reports**: Help us maintain reliability by reporting issues
+- **Feature Implementation**: Complete plugin functionality and add new capabilities
 - **Documentation**: Improve guides, add tutorials, or enhance examples  
+- **Testing**: Add test coverage and edge case validation
 - **Performance**: Optimize critical paths and memory usage
-- **Plugin Development**: Add new function categories or extend existing ones
 - **Tool Integration**: IDE plugins, syntax highlighting, or language servers
 - **Examples**: Real-world applications and algorithm implementations
-- **Testing**: Edge cases, stress testing, and platform validation
 
 ### Development Standards
 - **Test-Driven Development**: All features require comprehensive tests
 - **Plugin Architecture**: New functionality should follow the modular plugin pattern
-- **Documentation First**: New features need documentation and examples
+- **Documentation**: New features need documentation and examples
 - **Clean Architecture**: Maintain separation of concerns and modularity
 - **Go Best Practices**: Follow Go idioms and conventions
-- **Backward Compatibility**: Preserve existing functionality
 
 The plugin system makes it easy to extend functionality while maintaining clean separation of concerns.
 
 ## Recognition
 
-**Built in 2025** as a comprehensive demonstration of:
-- Modern Go Lisp implementation with plugin architecture
-- Test-driven development methodologies  
+**Built in 2025** as a demonstration of:
+- Modern Go Lisp implementation with plugin architecture  
+- Test-driven development methodologies
 - Clean architecture principles in Go
 - Modular design patterns
-- Production-quality software engineering practices
+- Software engineering best practices
+
+This project showcases both educational value and practical Lisp programming capabilities through a well-structured, extensible codebase.
 
 ## License
 

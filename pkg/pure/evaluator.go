@@ -9,6 +9,7 @@ import (
 	"github.com/leinonen/lisp-interpreter/pkg/plugins"
 	"github.com/leinonen/lisp-interpreter/pkg/plugins/arithmetic"
 	atomplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/atom"
+	bindingplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/binding"
 	"github.com/leinonen/lisp-interpreter/pkg/plugins/comparison"
 	concurrencyplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/concurrency"
 	"github.com/leinonen/lisp-interpreter/pkg/plugins/control"
@@ -18,9 +19,12 @@ import (
 	httpplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/http"
 	ioplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/io"
 	jsonplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/json"
+	keywordplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/keyword"
 	"github.com/leinonen/lisp-interpreter/pkg/plugins/list"
 	"github.com/leinonen/lisp-interpreter/pkg/plugins/logical"
+	macroplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/macro"
 	mathplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/math"
+	sequenceplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/sequence"
 	stringplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/string"
 	"github.com/leinonen/lisp-interpreter/pkg/registry"
 	"github.com/leinonen/lisp-interpreter/pkg/types"
@@ -92,6 +96,31 @@ func (pe *PureEvaluator) loadAllPlugins() error {
 	controlPlugin := control.NewControlPlugin()
 	if err := pe.pluginManager.LoadPlugin(controlPlugin); err != nil {
 		return fmt.Errorf("failed to load control plugin: %v", err)
+	}
+
+	// Load essential new plugins
+	// Load keyword plugin
+	keywordPlugin := keywordplugin.NewKeywordPlugin()
+	if err := pe.pluginManager.LoadPlugin(keywordPlugin); err != nil {
+		return fmt.Errorf("failed to load keyword plugin: %v", err)
+	}
+
+	// Load binding plugin (let)
+	bindingPlugin := bindingplugin.NewBindingPlugin()
+	if err := pe.pluginManager.LoadPlugin(bindingPlugin); err != nil {
+		return fmt.Errorf("failed to load binding plugin: %v", err)
+	}
+
+	// Load sequence plugin (vector)
+	sequencePlugin := sequenceplugin.NewSequencePlugin()
+	if err := pe.pluginManager.LoadPlugin(sequencePlugin); err != nil {
+		return fmt.Errorf("failed to load sequence plugin: %v", err)
+	}
+
+	// Load macro plugin
+	macroPlugin := macroplugin.NewMacroPlugin()
+	if err := pe.pluginManager.LoadPlugin(macroPlugin); err != nil {
+		return fmt.Errorf("failed to load macro plugin: %v", err)
 	}
 
 	// Load string plugin

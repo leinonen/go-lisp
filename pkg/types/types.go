@@ -165,6 +165,7 @@ func (b BooleanValue) String() string {
 	return "false"
 }
 
+// KeywordValue represents a keyword (self-evaluating symbol starting with :)
 type KeywordValue string
 
 func (k KeywordValue) String() string {

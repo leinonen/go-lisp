@@ -139,6 +139,10 @@ func (p *IOPlugin) println(evaluator registry.Evaluator, args []types.Expr) (typ
 
 // Read-file reads the contents of a file and returns it as a string
 func (p *IOPlugin) readFile(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) == 0 {
+		return nil, fmt.Errorf("read-file requires exactly 1 argument, got %d", len(args))
+	}
+
 	// Evaluate the filename argument
 	filenameValue, err := evaluator.Eval(args[0])
 	if err != nil {
@@ -162,6 +166,10 @@ func (p *IOPlugin) readFile(evaluator registry.Evaluator, args []types.Expr) (ty
 
 // Write-file writes content to a file
 func (p *IOPlugin) writeFile(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("write-file requires exactly 2 arguments, got %d", len(args))
+	}
+
 	// Evaluate the filename argument
 	filenameValue, err := evaluator.Eval(args[0])
 	if err != nil {
@@ -198,6 +206,10 @@ func (p *IOPlugin) writeFile(evaluator registry.Evaluator, args []types.Expr) (t
 
 // File-exists? checks if a file exists
 func (p *IOPlugin) fileExists(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) == 0 {
+		return nil, fmt.Errorf("file-exists? requires exactly 1 argument, got %d", len(args))
+	}
+
 	// Evaluate the filename argument
 	filenameValue, err := evaluator.Eval(args[0])
 	if err != nil {
