@@ -101,7 +101,7 @@ func TestIOPlugin_RegisterFunctions(t *testing.T) {
 		t.Fatalf("Failed to register functions: %v", err)
 	}
 
-	expectedFunctions := []string{"print!", "println!", "read-file", "write-file", "file-exists?"}
+	expectedFunctions := []string{"print", "println", "read-file", "write-file", "file-exists?"}
 
 	for _, fnName := range expectedFunctions {
 		if !reg.Has(fnName) {

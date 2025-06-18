@@ -32,10 +32,10 @@ func NewIOPlugin() *IOPlugin {
 func (p *IOPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 	// Print function
 	printFunc := functions.NewFunction(
-		"print!",
+		"print",
 		registry.CategoryIO,
 		-1, // Variadic
-		"Print values to stdout without newline: (print! \"hello\" \"world\") => prints \"hello world\"",
+		"Print values to stdout without newline: (print \"hello\" \"world\") => prints \"hello world\"",
 		p.print,
 	)
 	if err := reg.Register(printFunc); err != nil {
@@ -44,10 +44,10 @@ func (p *IOPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 
 	// Println function
 	printlnFunc := functions.NewFunction(
-		"println!",
+		"println",
 		registry.CategoryIO,
 		-1, // Variadic
-		"Print values to stdout with newline: (println! \"hello\" \"world\") => prints \"hello world\\n\"",
+		"Print values to stdout with newline: (println \"hello\" \"world\") => prints \"hello world\\n\"",
 		p.println,
 	)
 	if err := reg.Register(printlnFunc); err != nil {
@@ -93,7 +93,7 @@ func (p *IOPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 	return nil
 }
 
-// Print! function - outputs values to stdout without newline (side effect)
+// Print function - outputs values to stdout without newline (side effect)
 func (p *IOPlugin) print(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
 	if len(args) == 0 {
 		return &types.NilValue{}, nil
@@ -114,7 +114,7 @@ func (p *IOPlugin) print(evaluator registry.Evaluator, args []types.Expr) (types
 	return &types.NilValue{}, nil
 }
 
-// Println! function - outputs values to stdout with newline (side effect)
+// Println function - outputs values to stdout with newline (side effect)
 func (p *IOPlugin) println(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
 	if len(args) == 0 {
 		fmt.Println()
