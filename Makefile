@@ -3,7 +3,7 @@
 # Variables
 BINARY_NAME=golisp
 
-.PHONY: build run test
+.PHONY: build run test fmt
 
 # Default target
 all: build
@@ -16,3 +16,6 @@ run: build ## Build and run the interpreter
 
 test: ## Run all tests
 	go test ./...
+
+fmt: ## Format all Go source files
+	go fmt ./...

@@ -130,6 +130,12 @@ func (me *mockEvaluator) CallFunction(funcValue types.Value, args []types.Expr) 
 	return nil, nil
 }
 
+func (me *mockEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]types.Value) (types.Value, error) {
+	// For testing purposes, just call regular Eval
+	// In a real implementation, this would use the bindings
+	return me.Eval(expr)
+}
+
 // Mock function type for testing
 type mockFunction struct {
 	name string

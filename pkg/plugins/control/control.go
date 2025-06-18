@@ -21,7 +21,7 @@ func NewControlPlugin() *ControlPlugin {
 		BasePlugin: plugins.NewBasePlugin(
 			"control",
 			"1.0.0",
-			"Control flow operations (if, do)",
+			"Control flow operations (if, do, cond, when, when-not, loop, recur)",
 			[]string{"logical"}, // Depends on logical for truthiness
 		),
 	}
@@ -85,7 +85,137 @@ func (cp *ControlPlugin) RegisterFunctions(reg registry.FunctionRegistry) error 
 		"Negated conditional execution: (when-not test expr1 expr2 ...)",
 		cp.evalWhenNot,
 	)
-	return reg.Register(whenNotFunc)
+	if err := reg.Register(whenNotFunc); err != nil {
+		return err
+	}
+
+	// loop - establish recursion point
+	loopFunc := functions.NewFunction(
+		"loop",
+		registry.CategoryControl,
+		-1, // At least 1 argument: binding vector and body
+		"Establish recursion point: (loop [bindings*] body*)",
+		cp.evalLoop,
+	)
+	if err := reg.Register(loopFunc); err != nil {
+		return err
+	}
+
+	// recur - jump back to loop with new values
+	recurFunc := functions.NewFunction(
+		"recur",
+		registry.CategoryControl,
+		-1, // Variadic - number of args must match loop bindings
+		"Jump back to loop: (recur args*)",
+		cp.evalRecur,
+	)
+	return reg.Register(recurFunc)
+}
+
+// evalLoop implements loop/recur functionality
+// Loop establishes a recursion point with local bindings
+// Syntax: (loop [var1 init1 var2 init2 ...] body...)
+// The body is evaluated with the bindings in scope
+// If recur is called, execution jumps back to the loop with new binding values
+func (cp *ControlPlugin) evalLoop(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) < 1 {
+		return nil, fmt.Errorf("loop requires at least 1 argument (binding vector)")
+	}
+
+	// First argument should be a binding vector [name1 val1 name2 val2 ...]
+	bindings, ok := args[0].(*types.BracketExpr)
+	if !ok {
+		return nil, fmt.Errorf("loop first argument must be a binding vector")
+	}
+
+	if len(bindings.Elements)%2 != 0 {
+		return nil, fmt.Errorf("loop binding vector must have even number of elements")
+	}
+
+	// Extract binding names and initial values
+	var bindingNames []string
+	var bindingValues []types.Value
+
+	for i := 0; i < len(bindings.Elements); i += 2 {
+		nameExpr, ok := bindings.Elements[i].(*types.SymbolExpr)
+		if !ok {
+			return nil, fmt.Errorf("loop binding names must be symbols")
+		}
+		bindingNames = append(bindingNames, nameExpr.Name)
+
+		// Evaluate the initial value
+		value, err := evaluator.Eval(bindings.Elements[i+1])
+		if err != nil {
+			return nil, fmt.Errorf("loop binding value evaluation failed: %v", err)
+		}
+		bindingValues = append(bindingValues, value)
+	}
+
+	// Body expressions (everything after the binding vector)
+	body := args[1:]
+
+	// Main loop - continue until no recur exception is thrown
+	for {
+		// Create a map of current bindings for this iteration
+		currentBindings := make(map[string]types.Value)
+		for i, name := range bindingNames {
+			currentBindings[name] = bindingValues[i]
+		}
+
+		var result types.Value = types.BooleanValue(false)
+		var err error
+		var recurCalled bool
+
+		// Evaluate each body expression with the current bindings
+		for _, expr := range body {
+			result, err = evaluator.EvalWithBindings(expr, currentBindings)
+			if err != nil {
+				// Check if it's a recur exception
+				if recurErr, ok := err.(*types.RecurException); ok {
+					// Validate argument count matches binding count
+					if len(recurErr.Args) != len(bindingNames) {
+						return nil, fmt.Errorf("recur argument count (%d) doesn't match loop binding count (%d)",
+							len(recurErr.Args), len(bindingNames))
+					}
+
+					// Update binding values for next iteration
+					bindingValues = recurErr.Args
+					recurCalled = true
+					break // Break out of body evaluation and continue loop
+				}
+				return nil, err
+			}
+		}
+
+		// If we completed the body without a recur, return the result
+		if !recurCalled {
+			return result, nil
+		}
+
+		// If we got here due to recur, continue the loop with updated bindings
+		// (bindingValues has been updated above)
+	}
+}
+
+// evalRecur implements recur functionality
+// Recur jumps back to the nearest enclosing loop with new binding values
+// Syntax: (recur arg1 arg2 ...)
+// The number of arguments must match the number of bindings in the loop
+// This throws a RecurException that is caught by the loop construct
+func (cp *ControlPlugin) evalRecur(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	// Evaluate all arguments
+	var values []types.Value
+	for _, arg := range args {
+		value, err := evaluator.Eval(arg)
+		if err != nil {
+			return nil, fmt.Errorf("recur argument evaluation failed: %v", err)
+		}
+		values = append(values, value)
+	}
+
+	// Throw a RecurException to be caught by the nearest loop
+	// This is how we implement the control flow jump
+	return nil, types.NewRecurException(values)
 }
 
 // evalIf implements conditional evaluation

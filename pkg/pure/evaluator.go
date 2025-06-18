@@ -420,3 +420,24 @@ func (pe *PureEvaluator) GetFunctionHelp(name string) (string, bool) {
 func (pe *PureEvaluator) GetRegistry() registry.FunctionRegistry {
 	return pe.registry
 }
+
+// EvalWithBindings evaluates an expression with additional temporary bindings
+func (pe *PureEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]types.Value) (types.Value, error) {
+	// Create a child environment with the additional bindings
+	childEnv := pe.env.NewChildEnvironment()
+
+	// Set the additional bindings in the child environment
+	for name, value := range bindings {
+		childEnv.Set(name, value)
+	}
+
+	// Create a temporary evaluator with the child environment
+	tempEvaluator := &PureEvaluator{
+		env:           childEnv.(*evaluator.Environment),
+		registry:      pe.registry,
+		pluginManager: pe.pluginManager,
+	}
+
+	// Evaluate the expression with the temporary evaluator
+	return tempEvaluator.Eval(expr)
+}

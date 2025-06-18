@@ -554,3 +554,21 @@ func (w *WaitGroupValue) Wait() {
 func (w *WaitGroupValue) String() string {
 	return "#<wait-group>"
 }
+
+// RecurException represents a recur call that should jump back to the nearest loop
+type RecurException struct {
+	Args []Value // Arguments to pass to the next iteration
+}
+
+func (r *RecurException) Error() string {
+	return "recur called outside of loop"
+}
+
+func (r *RecurException) String() string {
+	return fmt.Sprintf("RecurException(%v)", r.Args)
+}
+
+// Helper function to create a RecurException
+func NewRecurException(args []Value) *RecurException {
+	return &RecurException{Args: args}
+}

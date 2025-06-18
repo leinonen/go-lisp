@@ -13,6 +13,7 @@ import (
 type Evaluator interface {
 	Eval(expr types.Expr) (types.Value, error)
 	CallFunction(funcValue types.Value, args []types.Expr) (types.Value, error)
+	EvalWithBindings(expr types.Expr, bindings map[string]types.Value) (types.Value, error)
 }
 
 // BuiltinFunction represents a built-in function that can be registered

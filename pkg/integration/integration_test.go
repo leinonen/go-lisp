@@ -124,6 +124,12 @@ func (ie *integrationEvaluator) CallFunction(funcValue types.Value, args []types
 	return types.StringValue("function-result"), nil
 }
 
+func (ie *integrationEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]types.Value) (types.Value, error) {
+	// For testing purposes, just call regular Eval
+	// In a real implementation, this would use the bindings
+	return ie.Eval(expr)
+}
+
 func testKeywordFeatures(t *testing.T, evaluator *integrationEvaluator, reg registry.FunctionRegistry) {
 	// Test keyword creation
 	keywordFunc, _ := reg.Get("keyword")
