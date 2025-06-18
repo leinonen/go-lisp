@@ -283,6 +283,39 @@ func (l *ListValue) String() string {
 	return result
 }
 
+// VectorValue represents a vector of values (indexed collection)
+type VectorValue struct {
+	Elements []Value
+}
+
+func (v *VectorValue) String() string {
+	if len(v.Elements) == 0 {
+		return "[]"
+	}
+	var elements []string
+	for _, elem := range v.Elements {
+		if elem == nil {
+			elements = append(elements, "nil")
+		} else {
+			elements = append(elements, elem.String())
+		}
+	}
+	result := "["
+	for i, elem := range elements {
+		if i > 0 {
+			result += " "
+		}
+		result += elem
+	}
+	result += "]"
+	return result
+}
+
+// Helper function to create a VectorValue
+func NewVectorValue(elements []Value) *VectorValue {
+	return &VectorValue{Elements: elements}
+}
+
 // HashMapValue represents a hash map with string keys and arbitrary values
 type HashMapValue struct {
 	Elements map[string]Value

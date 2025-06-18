@@ -65,6 +65,15 @@ Real-world example combining multiple features:
 - Report generation
 - Complex nested data navigation
 
+### `vector_operations.lisp`
+Demonstrates vector data structure operations:
+- Creating vectors with `[...]` literals and `vector` function
+- Vector type checking with `vector?`
+- Vector operations: `count`, `nth`, `conj`
+- Functional operations preserving vector type: `map`, `filter`, `reduce`
+- Converting between vectors and lists: `vec`, `seq`
+- Working with nested vectors
+
 ## Running Examples
 
 To run these examples, use the Go Lisp REPL or interpreter:
@@ -83,7 +92,7 @@ make build
 
 ## Features Demonstrated
 
-- **Data Structures**: Lists, Hash Maps, Strings, Numbers
+- **Data Structures**: Lists, Hash Maps, Strings, Numbers, Vectors
 - **Functional Programming**: Map, Filter, Reduce, Higher-order functions
 - **Control Flow**: Conditionals, Function definitions, Recursion
 - **String Processing**: Manipulation, Regular expressions, Formatting

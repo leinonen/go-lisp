@@ -98,15 +98,24 @@ func (p *FunctionalPlugin) mapFunc(evaluator registry.Evaluator, args []types.Ex
 		return nil, err
 	}
 
-	// Check if it's a list
-	list, ok := listValue.(*types.ListValue)
-	if !ok {
-		return nil, fmt.Errorf("map requires a list as second argument, got %T", listValue)
+	// Check if it's a list or vector
+	var elements []types.Value
+	var isVector bool
+
+	switch v := listValue.(type) {
+	case *types.ListValue:
+		elements = v.Elements
+		isVector = false
+	case *types.VectorValue:
+		elements = v.Elements
+		isVector = true
+	default:
+		return nil, fmt.Errorf("map requires a list or vector as second argument, got %T", listValue)
 	}
 
 	// Apply function to each element
 	var results []types.Value
-	for _, elem := range list.Elements {
+	for _, elem := range elements {
 		// Create argument list for function call
 		argExpr := p.valueToExpr(elem)
 		result, err := p.callFunction(evaluator, fnValue, []types.Expr{argExpr})
@@ -116,6 +125,10 @@ func (p *FunctionalPlugin) mapFunc(evaluator registry.Evaluator, args []types.Ex
 		results = append(results, result)
 	}
 
+	// Return same type as input
+	if isVector {
+		return types.NewVectorValue(results), nil
+	}
 	return &types.ListValue{Elements: results}, nil
 }
 
@@ -137,15 +150,24 @@ func (p *FunctionalPlugin) filterFunc(evaluator registry.Evaluator, args []types
 		return nil, err
 	}
 
-	// Check if it's a list
-	list, ok := listValue.(*types.ListValue)
-	if !ok {
-		return nil, fmt.Errorf("filter requires a list as second argument, got %T", listValue)
+	// Check if it's a list or vector
+	var elements []types.Value
+	var isVector bool
+
+	switch v := listValue.(type) {
+	case *types.ListValue:
+		elements = v.Elements
+		isVector = false
+	case *types.VectorValue:
+		elements = v.Elements
+		isVector = true
+	default:
+		return nil, fmt.Errorf("filter requires a list or vector as second argument, got %T", listValue)
 	}
 
 	// Filter elements based on predicate
 	var results []types.Value
-	for _, elem := range list.Elements {
+	for _, elem := range elements {
 		// Create argument list for predicate call
 		argExpr := p.valueToExpr(elem)
 		result, err := p.callFunction(evaluator, predValue, []types.Expr{argExpr})
@@ -159,6 +181,10 @@ func (p *FunctionalPlugin) filterFunc(evaluator registry.Evaluator, args []types
 		}
 	}
 
+	// Return same type as input
+	if isVector {
+		return types.NewVectorValue(results), nil
+	}
 	return &types.ListValue{Elements: results}, nil
 }
 
@@ -186,14 +212,20 @@ func (p *FunctionalPlugin) reduceFunc(evaluator registry.Evaluator, args []types
 		return nil, err
 	}
 
-	// Check if it's a list
-	list, ok := listValue.(*types.ListValue)
-	if !ok {
-		return nil, fmt.Errorf("reduce requires a list as third argument, got %T", listValue)
+	// Check if it's a list or vector
+	var elements []types.Value
+
+	switch v := listValue.(type) {
+	case *types.ListValue:
+		elements = v.Elements
+	case *types.VectorValue:
+		elements = v.Elements
+	default:
+		return nil, fmt.Errorf("reduce requires a list or vector as third argument, got %T", listValue)
 	}
 
-	// Reduce the list
-	for _, elem := range list.Elements {
+	// Reduce the collection
+	for _, elem := range elements {
 		// Create argument list for function call (accumulator, current element)
 		accExpr := p.valueToExpr(accumulator)
 		elemExpr := p.valueToExpr(elem)
@@ -264,6 +296,12 @@ func (p *FunctionalPlugin) valueToExpr(value types.Value) types.Expr {
 			elements = append(elements, p.valueToExpr(elem))
 		}
 		return &types.ListExpr{Elements: elements}
+	case *types.VectorValue:
+		var elements []types.Expr
+		for _, elem := range v.Elements {
+			elements = append(elements, p.valueToExpr(elem))
+		}
+		return &types.BracketExpr{Elements: elements}
 	default:
 		// For complex types, create a symbol that would represent the value
 		// This is a fallback and might not work perfectly in all cases
@@ -283,6 +321,8 @@ func (p *FunctionalPlugin) isTruthy(value types.Value) bool {
 	case types.StringValue:
 		return string(v) != ""
 	case *types.ListValue:
+		return len(v.Elements) > 0
+	case *types.VectorValue:
 		return len(v.Elements) > 0
 	default:
 		return true // Non-nil values are generally truthy

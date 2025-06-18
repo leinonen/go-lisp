@@ -43,7 +43,7 @@ func (lp *ListPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 		{"empty?", 1, "Check if list is empty: (empty? '()) => true", lp.evalEmpty},
 		{"append", -1, "Append lists: (append '(1 2) '(3 4)) => (1 2 3 4)", lp.evalAppend},
 		{"reverse", 1, "Reverse list: (reverse '(1 2 3)) => (3 2 1)", lp.evalReverse},
-		{"nth", 2, "Get nth element: (nth 1 '(a b c)) => b", lp.evalNth},
+		{"nth", 2, "Get nth element: (nth '(a b c) 1) => b", lp.evalNth},
 		{"last", 1, "Get last element: (last '(1 2 3)) => 3", lp.evalLast},
 	}
 
@@ -197,29 +197,36 @@ func (lp *ListPlugin) evalReverse(evaluator registry.Evaluator, args []types.Exp
 	return &types.ListValue{Elements: reversed}, nil
 }
 
-// evalNth returns the nth element of a list (0-indexed)
+// evalNth returns the nth element of a list or vector (0-indexed)
+// Follows Clojure convention: (nth collection index)
 func (lp *ListPlugin) evalNth(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
 	values, err := functions.EvalArgs(evaluator, args)
 	if err != nil {
 		return nil, err
 	}
 
-	index, err := functions.ExtractFloat64(values[0])
-	if err != nil {
-		return nil, fmt.Errorf("nth: first argument must be a number, got %T", values[0])
+	// Handle both lists and vectors
+	var elements []types.Value
+	switch v := values[0].(type) {
+	case *types.ListValue:
+		elements = v.Elements
+	case *types.VectorValue:
+		elements = v.Elements
+	default:
+		return nil, fmt.Errorf("nth: first argument must be a list or vector, got %T", values[0])
 	}
 
-	list, err := functions.ExtractList(values[1])
+	index, err := functions.ExtractFloat64(values[1])
 	if err != nil {
-		return nil, fmt.Errorf("nth: second argument must be a list, got %T", values[1])
+		return nil, fmt.Errorf("nth: second argument must be a number, got %T", values[1])
 	}
 
 	idx := int(index)
-	if idx < 0 || idx >= len(list.Elements) {
-		return nil, fmt.Errorf("nth: index %d out of bounds for list of length %d", idx, len(list.Elements))
+	if idx < 0 || idx >= len(elements) {
+		return nil, fmt.Errorf("nth: index %d out of bounds for collection of length %d", idx, len(elements))
 	}
 
-	return list.Elements[idx], nil
+	return elements[idx], nil
 }
 
 // evalLast returns the last element of a list

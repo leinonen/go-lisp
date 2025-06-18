@@ -258,13 +258,20 @@ func (pe *PureEvaluator) evalList(list *types.ListExpr) (types.Value, error) {
 	return pe.CallFunction(funcValue, list.Elements[1:])
 }
 
-// evalBracket evaluates bracket expressions (only for function parameters)
+// evalBracket evaluates bracket expressions as vectors
 func (pe *PureEvaluator) evalBracket(bracket *types.BracketExpr) (types.Value, error) {
-	// Brackets should primarily be used for function parameters
-	// When evaluated as expressions, they create empty lists for now
-	// This is a design choice - in practice, brackets should mainly appear
-	// in function definitions, not as standalone expressions
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	// Evaluate all elements in the bracket expression
+	var elements []types.Value
+	for _, elem := range bracket.Elements {
+		value, err := pe.Eval(elem)
+		if err != nil {
+			return nil, err
+		}
+		elements = append(elements, value)
+	}
+
+	// Return a VectorValue
+	return types.NewVectorValue(elements), nil
 }
 
 // evalModuleAccess evaluates module.symbol access

@@ -1012,42 +1012,42 @@ func TestNthFunction(t *testing.T) {
 	}{
 		{
 			name:     "nth first element (index 0)",
-			input:    "(nth 0 (list \"a\" \"b\" \"c\"))",
+			input:    "(nth (list \"a\" \"b\" \"c\") 0)",
 			expected: types.StringValue("a"),
 		},
 		{
 			name:     "nth middle element",
-			input:    "(nth 1 (list 10 20 30 40))",
+			input:    "(nth (list 10 20 30 40) 1)",
 			expected: types.NumberValue(20),
 		},
 		{
 			name:     "nth last element",
-			input:    "(nth 2 (list \"x\" \"y\" \"z\"))",
+			input:    "(nth (list \"x\" \"y\" \"z\") 2)",
 			expected: types.StringValue("z"),
 		},
 		{
 			name:     "nth single element list",
-			input:    "(nth 0 (list 42))",
+			input:    "(nth (list 42) 0)",
 			expected: types.NumberValue(42),
 		},
 		{
 			name:        "nth index out of bounds (too high)",
-			input:       "(nth 5 (list 1 2 3))",
+			input:       "(nth (list 1 2 3) 5)",
 			expectError: true,
 		},
 		{
 			name:        "nth negative index",
-			input:       "(nth -1 (list 1 2 3))",
+			input:       "(nth (list 1 2 3) -1)",
 			expectError: true,
 		},
 		{
 			name:        "nth empty list",
-			input:       "(nth 0 (list))",
+			input:       "(nth (list) 0)",
 			expectError: true,
 		},
 		{
 			name:     "nth with mixed types",
-			input:    "(nth 1 (list true \"hello\" 3.14))",
+			input:    "(nth (list true \"hello\" 3.14) 1)",
 			expected: types.StringValue("hello"),
 		},
 	}

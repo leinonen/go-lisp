@@ -250,7 +250,7 @@ func testVectorFeatures(t *testing.T, evaluator *integrationEvaluator, reg regis
 	if err != nil {
 		t.Errorf("vector function failed: %v", err)
 	}
-	if vec, ok := result.(*types.ListValue); !ok || len(vec.Elements) != 3 {
+	if vec, ok := result.(*types.VectorValue); !ok || len(vec.Elements) != 3 {
 		t.Errorf("Expected vector with 3 elements, got %v", result)
 	}
 
@@ -265,7 +265,7 @@ func testVectorFeatures(t *testing.T, evaluator *integrationEvaluator, reg regis
 	if err != nil {
 		t.Errorf("vec function failed: %v", err)
 	}
-	if vec, ok := result.(*types.ListValue); !ok || len(vec.Elements) != 2 {
+	if vec, ok := result.(*types.VectorValue); !ok || len(vec.Elements) != 2 {
 		t.Errorf("Expected vector with 2 elements, got %v", result)
 	}
 }

@@ -245,6 +245,12 @@ func (p *CorePlugin) exprToValue(expr types.Expr) types.Value {
 			elements = append(elements, p.exprToValue(elem))
 		}
 		return &types.ListValue{Elements: elements}
+	case *types.BracketExpr:
+		var elements []types.Value
+		for _, elem := range ex.Elements {
+			elements = append(elements, p.exprToValue(elem))
+		}
+		return types.NewVectorValue(elements)
 	default:
 		// For other types, return as string representation
 		return types.StringValue(fmt.Sprintf("%v", expr))

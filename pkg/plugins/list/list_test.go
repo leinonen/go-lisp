@@ -663,8 +663,8 @@ func TestListPlugin_evalNth(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			args := []types.Expr{
-				wrapValue(types.NumberValue(tt.index)),
 				wrapValue(list),
+				wrapValue(types.NumberValue(tt.index)),
 			}
 			result, err := plugin.evalNth(evaluator, args)
 
