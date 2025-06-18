@@ -4,10 +4,10 @@ package sequence
 import (
 	"fmt"
 
-	"github.com/leinonen/lisp-interpreter/pkg/functions"
-	"github.com/leinonen/lisp-interpreter/pkg/plugins"
-	"github.com/leinonen/lisp-interpreter/pkg/registry"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/plugins"
+	"github.com/leinonen/go-lisp/pkg/registry"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // SequencePlugin provides vector and sequence operations

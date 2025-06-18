@@ -3,8 +3,8 @@ package macro
 import (
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/registry"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/registry"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // Mock evaluator for testing macro features

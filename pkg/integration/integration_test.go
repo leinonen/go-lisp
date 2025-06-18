@@ -3,16 +3,16 @@ package main
 import (
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
-	"github.com/leinonen/lisp-interpreter/pkg/plugins/advanced"
-	"github.com/leinonen/lisp-interpreter/pkg/plugins/binding"
-	"github.com/leinonen/lisp-interpreter/pkg/plugins/control"
-	"github.com/leinonen/lisp-interpreter/pkg/plugins/environment"
-	"github.com/leinonen/lisp-interpreter/pkg/plugins/keyword"
-	"github.com/leinonen/lisp-interpreter/pkg/plugins/macro"
-	"github.com/leinonen/lisp-interpreter/pkg/plugins/sequence"
-	"github.com/leinonen/lisp-interpreter/pkg/registry"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/evaluator"
+	"github.com/leinonen/go-lisp/pkg/plugins/advanced"
+	"github.com/leinonen/go-lisp/pkg/plugins/binding"
+	"github.com/leinonen/go-lisp/pkg/plugins/control"
+	"github.com/leinonen/go-lisp/pkg/plugins/environment"
+	"github.com/leinonen/go-lisp/pkg/plugins/keyword"
+	"github.com/leinonen/go-lisp/pkg/plugins/macro"
+	"github.com/leinonen/go-lisp/pkg/plugins/sequence"
+	"github.com/leinonen/go-lisp/pkg/registry"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // IntegrationTestSuite tests all the new features together

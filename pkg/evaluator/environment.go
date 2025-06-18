@@ -1,6 +1,6 @@
 package evaluator
 
-import "github.com/leinonen/lisp-interpreter/pkg/types"
+import "github.com/leinonen/go-lisp/pkg/types"
 
 // Environment represents a variable binding environment
 type Environment struct {

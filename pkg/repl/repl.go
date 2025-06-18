@@ -9,9 +9,9 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
-	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
-	"github.com/leinonen/lisp-interpreter/pkg/registry"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/evaluator"
+	"github.com/leinonen/go-lisp/pkg/registry"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // Interpreter interface for dependency injection in tests

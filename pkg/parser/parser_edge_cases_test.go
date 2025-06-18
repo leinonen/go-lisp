@@ -3,7 +3,7 @@ package parser
 import (
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 func TestParserEdgeCases(t *testing.T) {

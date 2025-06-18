@@ -6,7 +6,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // Evaluator interface for plugin functions to call back to the evaluator

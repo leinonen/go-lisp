@@ -1,4 +1,4 @@
-module github.com/leinonen/lisp-interpreter
+module github.com/leinonen/go-lisp
 
 go 1.24.2
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/leinonen/lisp-interpreter/pkg/executor"
-	"github.com/leinonen/lisp-interpreter/pkg/interpreter"
-	"github.com/leinonen/lisp-interpreter/pkg/repl"
+	"github.com/leinonen/go-lisp/pkg/executor"
+	"github.com/leinonen/go-lisp/pkg/interpreter"
+	"github.com/leinonen/go-lisp/pkg/repl"
 )
 
 func main() {

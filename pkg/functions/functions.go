@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/leinonen/lisp-interpreter/pkg/registry"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/registry"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // BaseFunction provides a basic implementation of BuiltinFunction

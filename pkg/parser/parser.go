@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 type Parser struct {

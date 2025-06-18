@@ -5,9 +5,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
-	"github.com/leinonen/lisp-interpreter/pkg/registry"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/evaluator"
+	"github.com/leinonen/go-lisp/pkg/registry"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // CompletionProvider provides tab completion functionality for the REPL

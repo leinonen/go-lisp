@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/interpreter"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/interpreter"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // Mock interpreter for testing REPL functionality

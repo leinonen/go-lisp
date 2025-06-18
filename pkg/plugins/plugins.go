@@ -6,7 +6,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/leinonen/lisp-interpreter/pkg/registry"
+	"github.com/leinonen/go-lisp/pkg/registry"
 )
 
 // Plugin represents a loadable plugin that can register functions

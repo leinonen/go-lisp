@@ -3,8 +3,8 @@ package logical
 import (
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/evaluator"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // Mock evaluator for testing

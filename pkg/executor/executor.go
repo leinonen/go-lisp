@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/leinonen/lisp-interpreter/pkg/interpreter"
-	"github.com/leinonen/lisp-interpreter/pkg/tokenizer"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/interpreter"
+	"github.com/leinonen/go-lisp/pkg/tokenizer"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // ExecuteFile reads and executes a Lisp file using the provided interpreter

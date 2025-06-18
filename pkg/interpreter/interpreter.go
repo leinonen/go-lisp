@@ -1,13 +1,13 @@
 package interpreter
 
 import (
-	"github.com/leinonen/lisp-interpreter/pkg/evaluator"
-	"github.com/leinonen/lisp-interpreter/pkg/parser"
-	concurrencyplugin "github.com/leinonen/lisp-interpreter/pkg/plugins/concurrency"
-	"github.com/leinonen/lisp-interpreter/pkg/pure"
-	"github.com/leinonen/lisp-interpreter/pkg/registry"
-	"github.com/leinonen/lisp-interpreter/pkg/tokenizer"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/evaluator"
+	"github.com/leinonen/go-lisp/pkg/parser"
+	concurrencyplugin "github.com/leinonen/go-lisp/pkg/plugins/concurrency"
+	"github.com/leinonen/go-lisp/pkg/pure"
+	"github.com/leinonen/go-lisp/pkg/registry"
+	"github.com/leinonen/go-lisp/pkg/tokenizer"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // Interpreter combines tokenizer, parser, and evaluator

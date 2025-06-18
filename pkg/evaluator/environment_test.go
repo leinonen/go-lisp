@@ -3,7 +3,7 @@ package evaluator
 import (
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 func TestEnvironment(t *testing.T) {

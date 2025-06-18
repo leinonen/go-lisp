@@ -3,7 +3,7 @@ package evaluator
 import (
 	"math"
 
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // valuesEqual is a helper function for comparing values in tests

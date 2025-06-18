@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // Helper function to create a test interpreter

@@ -1,7 +1,7 @@
 # Lisp Interpreter Makefile
 
 # Variables
-BINARY_NAME=lisp
+BINARY_NAME=golisp
 
 .PHONY: build run test
 
@@ -9,10 +9,10 @@ BINARY_NAME=lisp
 all: build
 
 build: ## Build the interpreter binary
-	go build -o $(BINARY_NAME) ./cmd/go-lisp
+	go build -o ./bin/$(BINARY_NAME) ./cmd/go-lisp
 
 run: build ## Build and run the interpreter
-	./$(BINARY_NAME)
+	./bin/$(BINARY_NAME)
 
 test: ## Run all tests
 	go test ./...

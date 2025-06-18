@@ -3,7 +3,7 @@ package tokenizer
 import (
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 func TestTokenizerEdgeCases(t *testing.T) {

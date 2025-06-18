@@ -4,10 +4,10 @@ package concurrency
 import (
 	"fmt"
 
-	"github.com/leinonen/lisp-interpreter/pkg/functions"
-	"github.com/leinonen/lisp-interpreter/pkg/plugins"
-	"github.com/leinonen/lisp-interpreter/pkg/registry"
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/plugins"
+	"github.com/leinonen/go-lisp/pkg/registry"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // InterpreterDependency is an optional interface that the interpreter can implement

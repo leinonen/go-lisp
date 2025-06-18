@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/types"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 func TestKeywordTokenization(t *testing.T) {

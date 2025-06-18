@@ -9,16 +9,16 @@ A modern, production-ready Lisp dialect implemented in Go with a modular plugin 
 make build
 
 # Show help and available options
-./lisp -help
+./bin/golisp -help
 
 # Start interactive REPL
-./lisp
+./bin/golisp
 
 # Evaluate code directly from command line
-./lisp -e "(+ 1 2 3)"
+./bin/golisp -e "(+ 1 2 3)"
 
 # Execute a Lisp file (explicit flag)
-./lisp -f myprogram.lisp
+./bin/golisp -f myprogram.lisp
 
 ```
 
@@ -26,10 +26,10 @@ make build
 
 | Option | Description | Example |
 |--------|-------------|---------|
-| `-help` | Show help message and usage examples | `./lisp -help` |
-| `-e <code>` | Evaluate Lisp code directly | `./lisp -e "(+ 1 2)"` |
-| `-f <file>` | Execute a Lisp file | `./lisp -f program.lisp` |
-| (none) | Start interactive REPL | `./lisp` |
+| `-help` | Show help message and usage examples | `./bin/golisp -help` |
+| `-e <code>` | Evaluate Lisp code directly | `./bin/golisp -e "(+ 1 2)"` |
+| `-f <file>` | Execute a Lisp file | `./bin/golisp -f program.lisp` |
+| (none) | Start interactive REPL | `./bin/golisp` |
 
 ## Current Status
 
@@ -172,6 +172,7 @@ The project follows a clean, modular architecture:
 
 ```
 go-lisp/
+├── bin/golisp             # Built binary
 ├── cmd/go-lisp/           # Main application entry point
 ├── pkg/                   # Core packages
 │   ├── evaluator/         # Expression evaluation and environment

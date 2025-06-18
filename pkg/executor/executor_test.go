@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leinonen/lisp-interpreter/pkg/interpreter"
+	"github.com/leinonen/go-lisp/pkg/interpreter"
 )
 
 func TestExecuteFileSimple(t *testing.T) {
