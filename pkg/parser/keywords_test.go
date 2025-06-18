@@ -17,20 +17,21 @@ func TestKeywordParsing(t *testing.T) {
 		{
 			name:     "simple keyword",
 			input:    ":name",
-			expected: &types.KeywordExpr{Value: "name"},
+			expected: &types.KeywordExpr{Value: "name", Position: types.Position{Line: 1, Column: 1}},
 		},
 		{
 			name:     "keyword with dash",
 			input:    ":first-name",
-			expected: &types.KeywordExpr{Value: "first-name"},
+			expected: &types.KeywordExpr{Value: "first-name", Position: types.Position{Line: 1, Column: 1}},
 		},
 		{
 			name:  "keyword in list",
 			input: "(:name \"Alice\")",
 			expected: &types.ListExpr{
+				Position: types.Position{Line: 1, Column: 1},
 				Elements: []types.Expr{
-					&types.KeywordExpr{Value: "name"},
-					&types.StringExpr{Value: "Alice"},
+					&types.KeywordExpr{Value: "name", Position: types.Position{Line: 1, Column: 2}},
+					&types.StringExpr{Value: "Alice", Position: types.Position{Line: 1, Column: 8}},
 				},
 			},
 		},
@@ -38,12 +39,13 @@ func TestKeywordParsing(t *testing.T) {
 			name:  "hash map with keywords",
 			input: "(hash-map :name \"Alice\" :age 30)",
 			expected: &types.ListExpr{
+				Position: types.Position{Line: 1, Column: 1},
 				Elements: []types.Expr{
-					&types.SymbolExpr{Name: "hash-map"},
-					&types.KeywordExpr{Value: "name"},
-					&types.StringExpr{Value: "Alice"},
-					&types.KeywordExpr{Value: "age"},
-					&types.NumberExpr{Value: 30},
+					&types.SymbolExpr{Name: "hash-map", Position: types.Position{Line: 1, Column: 2}},
+					&types.KeywordExpr{Value: "name", Position: types.Position{Line: 1, Column: 11}},
+					&types.StringExpr{Value: "Alice", Position: types.Position{Line: 1, Column: 17}},
+					&types.KeywordExpr{Value: "age", Position: types.Position{Line: 1, Column: 25}},
+					&types.NumberExpr{Value: 30, Position: types.Position{Line: 1, Column: 30}},
 				},
 			},
 		},

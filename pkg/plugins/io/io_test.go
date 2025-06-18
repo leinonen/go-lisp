@@ -76,6 +76,10 @@ func (ve valueExpr) String() string {
 	return ve.value.String()
 }
 
+func (ve valueExpr) GetPosition() types.Position {
+	return types.Position{Line: 1, Column: 1}
+}
+
 // Helper function to capture stdout output
 func captureOutput(f func()) string {
 	old := os.Stdout

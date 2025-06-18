@@ -75,6 +75,10 @@ func (ve valueExpr) String() string {
 	return ve.value.String()
 }
 
+func (ve valueExpr) GetPosition() types.Position {
+	return types.Position{Line: 1, Column: 1}
+}
+
 // valuesEqual compares two values for equality
 func valuesEqual(a, b types.Value) bool {
 	if reflect.TypeOf(a) != reflect.TypeOf(b) {

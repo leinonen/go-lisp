@@ -11,11 +11,15 @@ type Tokenizer struct {
 	input    string
 	position int
 	current  rune
+	line     int // 1-based line number
+	column   int // 1-based column number
 }
 
 func NewTokenizer(input string) *Tokenizer {
 	t := &Tokenizer{
-		input: input,
+		input:  input,
+		line:   1,
+		column: 0,
 	}
 	t.readChar()
 	return t
@@ -27,6 +31,15 @@ func (t *Tokenizer) readChar() {
 	} else {
 		t.current = rune(t.input[t.position])
 	}
+
+	// Track line and column numbers
+	if t.current == '\n' {
+		t.line++
+		t.column = 0
+	} else {
+		t.column++
+	}
+
 	t.position++
 }
 
@@ -119,58 +132,68 @@ func (t *Tokenizer) TokenizeWithError() ([]types.Token, error) {
 			continue
 		}
 
+		// Record position before consuming token
+		pos := t.getCurrentPosition()
+
 		switch t.current {
 		case '(':
-			tokens = append(tokens, types.Token{Type: types.LPAREN, Value: "("})
+			tokens = append(tokens, types.Token{Type: types.LPAREN, Value: "(", Position: pos})
 			t.readChar()
 		case ')':
-			tokens = append(tokens, types.Token{Type: types.RPAREN, Value: ")"})
+			tokens = append(tokens, types.Token{Type: types.RPAREN, Value: ")", Position: pos})
 			t.readChar()
 		case '[':
-			tokens = append(tokens, types.Token{Type: types.LBRACKET, Value: "["})
+			tokens = append(tokens, types.Token{Type: types.LBRACKET, Value: "[", Position: pos})
 			t.readChar()
 		case ']':
-			tokens = append(tokens, types.Token{Type: types.RBRACKET, Value: "]"})
+			tokens = append(tokens, types.Token{Type: types.RBRACKET, Value: "]", Position: pos})
 			t.readChar()
 		case '\'':
-			tokens = append(tokens, types.Token{Type: types.QUOTE, Value: "'"})
+			tokens = append(tokens, types.Token{Type: types.QUOTE, Value: "'", Position: pos})
 			t.readChar()
 		case '"':
 			str, err := t.readString()
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("line %d, column %d: %s", pos.Line, pos.Column, err.Error())
 			}
-			tokens = append(tokens, types.Token{Type: types.STRING, Value: str})
+			tokens = append(tokens, types.Token{Type: types.STRING, Value: str, Position: pos})
 			t.readChar() // consume closing quote
 
 		case ':':
 			// Keywords
 			t.readChar() // consume ':'
 			if !isSymbolChar(t.current) {
-				return nil, fmt.Errorf("invalid keyword: colon must be followed by symbol characters")
+				return nil, fmt.Errorf("line %d, column %d: invalid keyword: colon must be followed by symbol characters", pos.Line, pos.Column)
 			}
 			keyword := t.readSymbol()
 			if keyword == "" {
-				return nil, fmt.Errorf("invalid keyword: empty keyword name")
+				return nil, fmt.Errorf("line %d, column %d: invalid keyword: empty keyword name", pos.Line, pos.Column)
 			}
-			tokens = append(tokens, types.Token{Type: types.KEYWORD, Value: keyword})
+			tokens = append(tokens, types.Token{Type: types.KEYWORD, Value: keyword, Position: pos})
 		default:
 			if unicode.IsDigit(t.current) || (t.current == '-' && unicode.IsDigit(t.peekChar())) {
 				number := t.readNumber()
-				tokens = append(tokens, types.Token{Type: types.NUMBER, Value: number})
+				tokens = append(tokens, types.Token{Type: types.NUMBER, Value: number, Position: pos})
 			} else if isSymbolChar(t.current) {
 				symbol := t.readSymbol()
 				// Check for boolean literals
 				if symbol == "true" || symbol == "false" {
-					tokens = append(tokens, types.Token{Type: types.BOOLEAN, Value: symbol})
+					tokens = append(tokens, types.Token{Type: types.BOOLEAN, Value: symbol, Position: pos})
 				} else {
-					tokens = append(tokens, types.Token{Type: types.SYMBOL, Value: symbol})
+					tokens = append(tokens, types.Token{Type: types.SYMBOL, Value: symbol, Position: pos})
 				}
 			} else {
-				return nil, fmt.Errorf("invalid character: %c", t.current)
+				return nil, fmt.Errorf("line %d, column %d: invalid character: %c", pos.Line, pos.Column, t.current)
 			}
 		}
 	}
 
 	return tokens, nil
+}
+
+func (t *Tokenizer) getCurrentPosition() types.Position {
+	return types.Position{
+		Line:   t.line,
+		Column: t.column,
+	}
 }

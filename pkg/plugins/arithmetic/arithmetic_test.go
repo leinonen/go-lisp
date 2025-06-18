@@ -65,6 +65,10 @@ func (ve valueExpr) String() string {
 	return ve.value.String()
 }
 
+func (ve valueExpr) GetPosition() types.Position {
+	return types.Position{Line: 1, Column: 1}
+}
+
 // Helper function for floating point comparison
 func floatEqual(a, b float64, tolerance float64) bool {
 	return math.Abs(a-b) < tolerance

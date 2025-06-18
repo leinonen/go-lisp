@@ -1,9 +1,11 @@
 package repl
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // ErrorType represents different categories of errors for color coding
@@ -165,7 +167,26 @@ func (ef *ErrorFormatter) FormatError(err error) string {
 	errorColor := ef.getColorForErrorType(errorType)
 	errorLabel := ef.getErrorTypeLabel(errorType)
 
-	// Format with colored prefix and message
+	// Check if this is a positional error
+	var posErr *types.PositionalError
+	if errors.As(err, &posErr) {
+		// For positional errors, format with enhanced line information
+		prefix := ef.prefixColor.Sprintf("%s:", errorLabel)
+		locationColor := color.New(color.FgHiBlue, color.Bold)
+		location := locationColor.Sprintf(" (line %d, column %d)", posErr.Position.Line, posErr.Position.Column)
+		message := errorColor.Sprintf(" %s", posErr.Message)
+		return prefix + location + message
+	}
+
+	// Check if the error message already contains line information
+	if strings.Contains(errMsg, "line ") && strings.Contains(errMsg, "column ") {
+		// Extract and format existing line/column information
+		prefix := ef.prefixColor.Sprintf("%s:", errorLabel)
+		message := errorColor.Sprintf(" %s", errMsg)
+		return prefix + message
+	}
+
+	// Standard error formatting
 	prefix := ef.prefixColor.Sprintf("%s:", errorLabel)
 	message := errorColor.Sprintf(" %s", errMsg)
 

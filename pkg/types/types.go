@@ -24,15 +24,23 @@ const (
 	QUOTE
 )
 
+// Position represents the location of a token in the source code
+type Position struct {
+	Line   int // 1-based line number
+	Column int // 1-based column number
+}
+
 // Token represents a single token in the input
 type Token struct {
-	Type  TokenType
-	Value string
+	Type     TokenType
+	Value    string
+	Position Position
 }
 
 // Expr represents an expression in the AST
 type Expr interface {
 	String() string
+	GetPosition() Position
 }
 
 // Value represents a value that can be returned from evaluation
@@ -42,67 +50,107 @@ type Value interface {
 
 // Expression types
 type NumberExpr struct {
-	Value float64
+	Value    float64
+	Position Position
 }
 
 func (n *NumberExpr) String() string {
 	return fmt.Sprintf("NumberExpr(%g)", n.Value)
 }
 
+func (n *NumberExpr) GetPosition() Position {
+	return n.Position
+}
+
 type BigNumberExpr struct {
-	Value string // Store as string to preserve precision during parsing
+	Value    string // Store as string to preserve precision during parsing
+	Position Position
 }
 
 func (b *BigNumberExpr) String() string {
 	return fmt.Sprintf("BigNumberExpr(%s)", b.Value)
 }
 
+func (b *BigNumberExpr) GetPosition() Position {
+	return b.Position
+}
+
 type StringExpr struct {
-	Value string
+	Value    string
+	Position Position
 }
 
 func (s *StringExpr) String() string {
 	return fmt.Sprintf("StringExpr(%q)", s.Value)
 }
 
+func (s *StringExpr) GetPosition() Position {
+	return s.Position
+}
+
 type BooleanExpr struct {
-	Value bool
+	Value    bool
+	Position Position
 }
 
 func (b *BooleanExpr) String() string {
 	return fmt.Sprintf("BooleanExpr(%t)", b.Value)
 }
 
+func (b *BooleanExpr) GetPosition() Position {
+	return b.Position
+}
+
 type SymbolExpr struct {
-	Name string
+	Name     string
+	Position Position
 }
 
 func (s *SymbolExpr) String() string {
 	return fmt.Sprintf("SymbolExpr(%s)", s.Name)
 }
 
+func (s *SymbolExpr) GetPosition() Position {
+	return s.Position
+}
+
 type KeywordExpr struct {
-	Value string
+	Value    string
+	Position Position
 }
 
 func (k *KeywordExpr) String() string {
 	return fmt.Sprintf("KeywordExpr(:%s)", k.Value)
 }
 
+func (k *KeywordExpr) GetPosition() Position {
+	return k.Position
+}
+
 type ListExpr struct {
 	Elements []Expr
+	Position Position
 }
 
 func (l *ListExpr) String() string {
 	return fmt.Sprintf("ListExpr(%v)", l.Elements)
 }
 
+func (l *ListExpr) GetPosition() Position {
+	return l.Position
+}
+
 type BracketExpr struct {
 	Elements []Expr
+	Position Position
 }
 
 func (b *BracketExpr) String() string {
 	return fmt.Sprintf("BracketExpr(%v)", b.Elements)
+}
+
+func (b *BracketExpr) GetPosition() Position {
+	return b.Position
 }
 
 // Value types
@@ -284,31 +332,46 @@ func (m *ModuleValue) String() string {
 
 // ModuleExpr represents a module definition expression
 type ModuleExpr struct {
-	Name    string
-	Exports []string
-	Body    []Expr
+	Name     string
+	Exports  []string
+	Body     []Expr
+	Position Position
 }
 
 func (m *ModuleExpr) String() string {
 	return fmt.Sprintf("ModuleExpr(name:%s, exports:%v, body:%v)", m.Name, m.Exports, m.Body)
 }
 
+func (m *ModuleExpr) GetPosition() Position {
+	return m.Position
+}
+
 // ImportExpr represents an import expression
 type ImportExpr struct {
 	ModuleName string
+	Position   Position
 }
 
 func (i *ImportExpr) String() string {
 	return fmt.Sprintf("ImportExpr(%s)", i.ModuleName)
 }
 
+func (i *ImportExpr) GetPosition() Position {
+	return i.Position
+}
+
 // LoadExpr represents a load file expression
 type LoadExpr struct {
 	Filename string
+	Position Position
 }
 
 func (l *LoadExpr) String() string {
 	return fmt.Sprintf("LoadExpr(%s)", l.Filename)
+}
+
+func (l *LoadExpr) GetPosition() Position {
+	return l.Position
 }
 
 // RequireExpr represents a require expression that combines load and import
@@ -316,6 +379,7 @@ type RequireExpr struct {
 	Filename string
 	AsAlias  string   // For :as syntax
 	OnlyList []string // For :only syntax
+	Position Position
 }
 
 func (r *RequireExpr) String() string {
@@ -326,6 +390,10 @@ func (r *RequireExpr) String() string {
 		return fmt.Sprintf("RequireExpr(%s :only %v)", r.Filename, r.OnlyList)
 	}
 	return fmt.Sprintf("RequireExpr(%s)", r.Filename)
+}
+
+func (r *RequireExpr) GetPosition() Position {
+	return r.Position
 }
 
 // ArithmeticFunctionValue represents a built-in arithmetic operation as a callable function
@@ -571,4 +639,31 @@ func (r *RecurException) String() string {
 // Helper function to create a RecurException
 func NewRecurException(args []Value) *RecurException {
 	return &RecurException{Args: args}
+}
+
+// PositionalError wraps an error with position information
+type PositionalError struct {
+	Message  string
+	Position Position
+	Cause    error
+}
+
+func (pe *PositionalError) Error() string {
+	if pe.Position.Line > 0 {
+		return fmt.Sprintf("line %d, column %d: %s", pe.Position.Line, pe.Position.Column, pe.Message)
+	}
+	return pe.Message
+}
+
+func (pe *PositionalError) Unwrap() error {
+	return pe.Cause
+}
+
+// NewPositionalError creates a new positional error
+func NewPositionalError(message string, pos Position, cause error) *PositionalError {
+	return &PositionalError{
+		Message:  message,
+		Position: pos,
+		Cause:    cause,
+	}
 }

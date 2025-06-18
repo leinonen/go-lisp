@@ -62,6 +62,10 @@ func (ve valueExpr) String() string {
 	return ve.value.String()
 }
 
+func (ve valueExpr) GetPosition() types.Position {
+	return types.Position{Line: 1, Column: 1}
+}
+
 func TestHTTPPlugin_RegisterFunctions(t *testing.T) {
 	plugin := NewHTTPPlugin()
 	reg := registry.NewRegistry()
