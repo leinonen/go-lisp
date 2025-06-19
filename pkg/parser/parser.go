@@ -65,12 +65,16 @@ func (p *Parser) parseExpr() (types.Expr, error) {
 		return p.parseList()
 	case types.LBRACKET:
 		return p.parseBracket()
+	case types.LBRACE:
+		return p.parseHashMap()
 	case types.QUOTE:
 		return p.parseQuote()
 	case types.RPAREN:
 		return nil, fmt.Errorf("line %d, column %d: unexpected closing parenthesis", p.current.Position.Line, p.current.Position.Column)
 	case types.RBRACKET:
 		return nil, fmt.Errorf("line %d, column %d: unexpected closing bracket", p.current.Position.Line, p.current.Position.Column)
+	case types.RBRACE:
+		return nil, fmt.Errorf("line %d, column %d: unexpected closing brace", p.current.Position.Line, p.current.Position.Column)
 	default:
 		return nil, fmt.Errorf("line %d, column %d: unexpected token: %v", p.current.Position.Line, p.current.Position.Column, p.current)
 	}
@@ -364,4 +368,33 @@ func (p *Parser) parseBracket() (types.Expr, error) {
 	p.readToken() // consume ']'
 
 	return &types.BracketExpr{Elements: elements, Position: bracketPos}, nil
+}
+
+func (p *Parser) parseHashMap() (types.Expr, error) {
+	bracePos := p.current.Position // Capture position of opening brace
+	p.readToken()                  // consume '{'
+
+	elements := make([]types.Expr, 0)
+
+	for p.current.Type != types.RBRACE {
+		if p.current.Type == types.TokenType(-1) { // EOF
+			return nil, fmt.Errorf("line %d, column %d: unmatched opening brace", bracePos.Line, bracePos.Column)
+		}
+
+		expr, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+
+		elements = append(elements, expr)
+	}
+
+	// Hash maps require an even number of elements (key-value pairs)
+	if len(elements)%2 != 0 {
+		return nil, fmt.Errorf("line %d, column %d: hash map requires an even number of elements", bracePos.Line, bracePos.Column)
+	}
+
+	p.readToken() // consume '}'
+
+	return &types.HashMapExpr{Elements: elements, Position: bracePos}, nil
 }

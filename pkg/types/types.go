@@ -16,6 +16,8 @@ const (
 	RPAREN
 	LBRACKET
 	RBRACKET
+	LBRACE
+	RBRACE
 	NUMBER
 	SYMBOL
 	STRING
@@ -151,6 +153,19 @@ func (b *BracketExpr) String() string {
 
 func (b *BracketExpr) GetPosition() Position {
 	return b.Position
+}
+
+type HashMapExpr struct {
+	Elements []Expr // Key-value pairs as a flat list [key1, value1, key2, value2, ...]
+	Position Position
+}
+
+func (h *HashMapExpr) String() string {
+	return fmt.Sprintf("HashMapExpr(%v)", h.Elements)
+}
+
+func (h *HashMapExpr) GetPosition() Position {
+	return h.Position
 }
 
 // Value types

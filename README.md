@@ -38,7 +38,8 @@ Go Lisp is a **functional Lisp interpreter** with a modern plugin architecture u
 - Core Language Support: Basic Lisp constructs implemented (arithmetic, lists, functions)
 - Plugin Architecture: Modular design with 21+ plugin categories
 - Interactive REPL: Basic REPL functionality for interactive development
-- Data Types: Numbers, strings, booleans, lists, and functions
+- Data Types: Numbers, strings, booleans, lists, hash maps, and functions
+- Hash Map Literals: Clojure-style syntax for easy hash map creation using `{:key "value"}`
 - File Execution: Support for running Lisp programs from files
 - Clean Architecture: Well-structured codebase with comprehensive testing
 

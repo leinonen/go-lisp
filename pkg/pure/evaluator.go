@@ -205,6 +205,8 @@ func (pe *PureEvaluator) Eval(expr types.Expr) (types.Value, error) {
 	case *types.BracketExpr:
 		// Evaluate bracket expressions as hashmaps or vectors
 		return pe.evalBracket(ex)
+	case *types.HashMapExpr:
+		return pe.evalHashMap(ex)
 	default:
 		return nil, fmt.Errorf("unsupported expression type: %T", expr)
 	}
@@ -368,6 +370,45 @@ func (pe *PureEvaluator) callUserFunctionWithTCO(fn *types.FunctionValue, args [
 		// Evaluate function body
 		return fnEvaluator.Eval(currentFn.Body)
 	}
+}
+
+// evalHashMap evaluates hash map expressions
+func (pe *PureEvaluator) evalHashMap(hashMap *types.HashMapExpr) (types.Value, error) {
+	// Evaluate all elements in the hash map expression
+	elements := make(map[string]types.Value)
+
+	// Elements are stored as [key1, value1, key2, value2, ...]
+	for i := 0; i < len(hashMap.Elements); i += 2 {
+		keyExpr := hashMap.Elements[i]
+		valueExpr := hashMap.Elements[i+1]
+
+		// Evaluate key
+		keyValue, err := pe.Eval(keyExpr)
+		if err != nil {
+			return nil, err
+		}
+
+		// Evaluate value
+		value, err := pe.Eval(valueExpr)
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert key to string for storage
+		var keyStr string
+		switch kv := keyValue.(type) {
+		case types.StringValue:
+			keyStr = string(kv)
+		case types.KeywordValue:
+			keyStr = string(kv)
+		default:
+			return nil, fmt.Errorf("hash map keys must be strings or keywords, got %T", keyValue)
+		}
+
+		elements[keyStr] = value
+	}
+
+	return &types.HashMapValue{Elements: elements}, nil
 }
 
 // SetInterpreterDependency allows setting an interpreter reference for plugins that need it
