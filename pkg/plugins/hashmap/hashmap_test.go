@@ -76,7 +76,7 @@ func TestHashMapPlugin_RegisterFunctions(t *testing.T) {
 	expectedFunctions := []string{
 		"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
 		"hash-map-contains?", "hash-map-keys", "hash-map-values",
-		"hash-map-size", "hash-map-empty?",
+		"hash-map-size", "hash-map-empty?", "assoc", "dissoc",
 	}
 
 	for _, fnName := range expectedFunctions {
@@ -235,6 +235,248 @@ func TestHashMapPlugin_ErrorCases(t *testing.T) {
 	nonHashMap := types.NumberValue(42)
 	_, err = plugin.evalHashMapGet(evaluator, []types.Expr{
 		wrapValue(nonHashMap),
+		&types.StringExpr{Value: "key"},
+	})
+	if err == nil {
+		t.Error("Expected error for non-hashmap argument")
+	}
+}
+
+func TestHashMapPlugin_Assoc(t *testing.T) {
+	plugin := NewHashMapPlugin()
+	evaluator := newMockEvaluator()
+
+	// Create initial hash map
+	initialHashMap := &types.HashMapValue{
+		Elements: map[string]types.Value{
+			"key1": types.StringValue("value1"),
+			"key2": types.NumberValue(42),
+		},
+	}
+
+	// Test assoc with one key-value pair
+	assocArgs := []types.Expr{
+		wrapValue(initialHashMap),
+		&types.StringExpr{Value: "key3"},
+		&types.StringExpr{Value: "value3"},
+	}
+
+	result, err := plugin.evalAssoc(evaluator, assocArgs)
+	if err != nil {
+		t.Fatalf("evalAssoc failed: %v", err)
+	}
+
+	newHashMap, ok := result.(*types.HashMapValue)
+	if !ok {
+		t.Fatalf("Expected HashMapValue, got %T", result)
+	}
+
+	// Check that the new key was added
+	if newHashMap.Elements["key3"] != types.StringValue("value3") {
+		t.Errorf("Expected 'value3' for key3, got %v", newHashMap.Elements["key3"])
+	}
+
+	// Check that original keys are still present
+	if newHashMap.Elements["key1"] != types.StringValue("value1") {
+		t.Errorf("Expected original key1 to be preserved")
+	}
+
+	// Test assoc with multiple key-value pairs
+	multiAssocArgs := []types.Expr{
+		wrapValue(initialHashMap),
+		&types.StringExpr{Value: "key3"},
+		&types.StringExpr{Value: "value3"},
+		&types.StringExpr{Value: "key4"},
+		&types.NumberExpr{Value: 100},
+	}
+
+	result, err = plugin.evalAssoc(evaluator, multiAssocArgs)
+	if err != nil {
+		t.Fatalf("evalAssoc with multiple pairs failed: %v", err)
+	}
+
+	multiHashMap, ok := result.(*types.HashMapValue)
+	if !ok {
+		t.Fatalf("Expected HashMapValue, got %T", result)
+	}
+
+	// Check that both new keys were added
+	if multiHashMap.Elements["key3"] != types.StringValue("value3") {
+		t.Errorf("Expected 'value3' for key3, got %v", multiHashMap.Elements["key3"])
+	}
+	if multiHashMap.Elements["key4"] != types.NumberValue(100) {
+		t.Errorf("Expected 100 for key4, got %v", multiHashMap.Elements["key4"])
+	}
+
+	// Test assoc with existing key (should update)
+	updateArgs := []types.Expr{
+		wrapValue(initialHashMap),
+		&types.StringExpr{Value: "key1"},
+		&types.StringExpr{Value: "updated_value"},
+	}
+
+	result, err = plugin.evalAssoc(evaluator, updateArgs)
+	if err != nil {
+		t.Fatalf("evalAssoc update failed: %v", err)
+	}
+
+	updatedHashMap, ok := result.(*types.HashMapValue)
+	if !ok {
+		t.Fatalf("Expected HashMapValue, got %T", result)
+	}
+
+	if updatedHashMap.Elements["key1"] != types.StringValue("updated_value") {
+		t.Errorf("Expected 'updated_value' for key1, got %v", updatedHashMap.Elements["key1"])
+	}
+}
+
+func TestHashMapPlugin_AssocErrors(t *testing.T) {
+	plugin := NewHashMapPlugin()
+	evaluator := newMockEvaluator()
+
+	// Test assoc with too few arguments
+	_, err := plugin.evalAssoc(evaluator, []types.Expr{
+		wrapValue(&types.HashMapValue{Elements: map[string]types.Value{}}),
+		&types.StringExpr{Value: "key"},
+		// Missing value
+	})
+	if err == nil {
+		t.Error("Expected error for too few arguments")
+	}
+
+	// Test assoc with odd number of key-value pairs
+	_, err = plugin.evalAssoc(evaluator, []types.Expr{
+		wrapValue(&types.HashMapValue{Elements: map[string]types.Value{}}),
+		&types.StringExpr{Value: "key1"},
+		&types.StringExpr{Value: "value1"},
+		&types.StringExpr{Value: "key2"},
+		// Missing value for key2
+	})
+	if err == nil {
+		t.Error("Expected error for odd number of key-value pairs")
+	}
+
+	// Test assoc with non-hashmap
+	_, err = plugin.evalAssoc(evaluator, []types.Expr{
+		wrapValue(types.NumberValue(42)),
+		&types.StringExpr{Value: "key"},
+		&types.StringExpr{Value: "value"},
+	})
+	if err == nil {
+		t.Error("Expected error for non-hashmap argument")
+	}
+}
+
+func TestHashMapPlugin_Dissoc(t *testing.T) {
+	plugin := NewHashMapPlugin()
+	evaluator := newMockEvaluator()
+
+	// Create initial hash map
+	initialHashMap := &types.HashMapValue{
+		Elements: map[string]types.Value{
+			"key1": types.StringValue("value1"),
+			"key2": types.NumberValue(42),
+			"key3": types.StringValue("value3"),
+		},
+	}
+
+	// Test dissoc with one key
+	dissocArgs := []types.Expr{
+		wrapValue(initialHashMap),
+		&types.StringExpr{Value: "key2"},
+	}
+
+	result, err := plugin.evalDissoc(evaluator, dissocArgs)
+	if err != nil {
+		t.Fatalf("evalDissoc failed: %v", err)
+	}
+
+	newHashMap, ok := result.(*types.HashMapValue)
+	if !ok {
+		t.Fatalf("Expected HashMapValue, got %T", result)
+	}
+
+	// Check that the key was removed
+	if _, exists := newHashMap.Elements["key2"]; exists {
+		t.Errorf("Expected key2 to be removed")
+	}
+
+	// Check that other keys are still present
+	if newHashMap.Elements["key1"] != types.StringValue("value1") {
+		t.Errorf("Expected key1 to be preserved")
+	}
+	if newHashMap.Elements["key3"] != types.StringValue("value3") {
+		t.Errorf("Expected key3 to be preserved")
+	}
+
+	// Test dissoc with multiple keys
+	multiDissocArgs := []types.Expr{
+		wrapValue(initialHashMap),
+		&types.StringExpr{Value: "key1"},
+		&types.StringExpr{Value: "key3"},
+	}
+
+	result, err = plugin.evalDissoc(evaluator, multiDissocArgs)
+	if err != nil {
+		t.Fatalf("evalDissoc with multiple keys failed: %v", err)
+	}
+
+	multiHashMap, ok := result.(*types.HashMapValue)
+	if !ok {
+		t.Fatalf("Expected HashMapValue, got %T", result)
+	}
+
+	// Check that both keys were removed
+	if _, exists := multiHashMap.Elements["key1"]; exists {
+		t.Errorf("Expected key1 to be removed")
+	}
+	if _, exists := multiHashMap.Elements["key3"]; exists {
+		t.Errorf("Expected key3 to be removed")
+	}
+
+	// Check that key2 is still present
+	if multiHashMap.Elements["key2"] != types.NumberValue(42) {
+		t.Errorf("Expected key2 to be preserved")
+	}
+
+	// Test dissoc with non-existing key (should not error)
+	nonExistingArgs := []types.Expr{
+		wrapValue(initialHashMap),
+		&types.StringExpr{Value: "non_existing_key"},
+	}
+
+	result, err = plugin.evalDissoc(evaluator, nonExistingArgs)
+	if err != nil {
+		t.Fatalf("evalDissoc with non-existing key failed: %v", err)
+	}
+
+	resultHashMap, ok := result.(*types.HashMapValue)
+	if !ok {
+		t.Fatalf("Expected HashMapValue, got %T", result)
+	}
+
+	// Should return same size since key didn't exist
+	if len(resultHashMap.Elements) != len(initialHashMap.Elements) {
+		t.Errorf("Expected same size after dissoc with non-existing key")
+	}
+}
+
+func TestHashMapPlugin_DissocErrors(t *testing.T) {
+	plugin := NewHashMapPlugin()
+	evaluator := newMockEvaluator()
+
+	// Test dissoc with too few arguments
+	_, err := plugin.evalDissoc(evaluator, []types.Expr{
+		wrapValue(&types.HashMapValue{Elements: map[string]types.Value{}}),
+		// Missing key
+	})
+	if err == nil {
+		t.Error("Expected error for too few arguments")
+	}
+
+	// Test dissoc with non-hashmap
+	_, err = plugin.evalDissoc(evaluator, []types.Expr{
+		wrapValue(types.NumberValue(42)),
 		&types.StringExpr{Value: "key"},
 	})
 	if err == nil {

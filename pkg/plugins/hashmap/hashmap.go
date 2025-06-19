@@ -32,7 +32,7 @@ func (p *HashMapPlugin) Functions() []string {
 	return []string{
 		"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
 		"hash-map-contains?", "hash-map-keys", "hash-map-values",
-		"hash-map-size", "hash-map-empty?",
+		"hash-map-size", "hash-map-empty?", "assoc", "dissoc",
 	}
 }
 
@@ -143,6 +143,30 @@ func (p *HashMapPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 		p.evalHashMapEmpty,
 	)
 	if err := reg.Register(hashMapEmptyFunc); err != nil {
+		return err
+	}
+
+	// assoc function (alias for hash-map-put with multiple key-value pairs support)
+	assocFunc := functions.NewFunction(
+		"assoc",
+		registry.CategoryHashMap,
+		-1, // Variable arguments (map, key, value, [key, value, ...])
+		"Associate key-value pairs in hash map: (assoc map :key1 \"value1\" :key2 \"value2\")",
+		p.evalAssoc,
+	)
+	if err := reg.Register(assocFunc); err != nil {
+		return err
+	}
+
+	// dissoc function (alias for hash-map-remove with multiple keys support)
+	dissocFunc := functions.NewFunction(
+		"dissoc",
+		registry.CategoryHashMap,
+		-1, // Variable arguments (map, key1, key2, ...)
+		"Dissociate keys from hash map: (dissoc map :key1 :key2)",
+		p.evalDissoc,
+	)
+	if err := reg.Register(dissocFunc); err != nil {
 		return err
 	}
 
@@ -420,4 +444,96 @@ func (p *HashMapPlugin) evalHashMapEmpty(evaluator registry.Evaluator, args []ty
 	}
 
 	return types.BooleanValue(len(hashMap.Elements) == 0), nil
+}
+
+// evalAssoc associates multiple key-value pairs in a hash map (returns new hash map)
+func (p *HashMapPlugin) evalAssoc(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) < 3 {
+		return nil, fmt.Errorf("assoc requires at least 3 arguments (map, key, value), got %d", len(args))
+	}
+
+	if (len(args)-1)%2 != 0 {
+		return nil, fmt.Errorf("assoc requires an even number of key-value pairs after the map argument")
+	}
+
+	hashMapValue, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	hashMap, ok := hashMapValue.(*types.HashMapValue)
+	if !ok {
+		return nil, fmt.Errorf("expected hash-map as first argument to assoc, got %T", hashMapValue)
+	}
+
+	// Create a new hash map with the current elements
+	newElements := make(map[string]types.Value)
+	for k, v := range hashMap.Elements {
+		newElements[k] = v
+	}
+
+	// Process key-value pairs
+	for i := 1; i < len(args); i += 2 {
+		keyValue, err := evaluator.Eval(args[i])
+		if err != nil {
+			return nil, err
+		}
+
+		valueValue, err := evaluator.Eval(args[i+1])
+		if err != nil {
+			return nil, err
+		}
+
+		keyStr, err := p.convertKeyToString(keyValue)
+		if err != nil {
+			return nil, err
+		}
+
+		newElements[keyStr] = valueValue
+	}
+
+	return &types.HashMapValue{Elements: newElements}, nil
+}
+
+// evalDissoc dissociates multiple keys from a hash map (returns new hash map)
+func (p *HashMapPlugin) evalDissoc(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) < 2 {
+		return nil, fmt.Errorf("dissoc requires at least 2 arguments (map, key), got %d", len(args))
+	}
+
+	hashMapValue, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	hashMap, ok := hashMapValue.(*types.HashMapValue)
+	if !ok {
+		return nil, fmt.Errorf("expected hash-map as first argument to dissoc, got %T", hashMapValue)
+	}
+
+	// Create a set of keys to remove
+	keysToRemove := make(map[string]bool)
+	for i := 1; i < len(args); i++ {
+		keyValue, err := evaluator.Eval(args[i])
+		if err != nil {
+			return nil, err
+		}
+
+		keyStr, err := p.convertKeyToString(keyValue)
+		if err != nil {
+			return nil, err
+		}
+
+		keysToRemove[keyStr] = true
+	}
+
+	// Create a new hash map without the specified keys
+	newElements := make(map[string]types.Value)
+	for k, v := range hashMap.Elements {
+		if !keysToRemove[k] {
+			newElements[k] = v
+		}
+	}
+
+	return &types.HashMapValue{Elements: newElements}, nil
 }
