@@ -1,4 +1,4 @@
-;; Assoc and Dissoc Examples in Go Lisp
+;; Assoc and Dissoc Examples in GoLisp
 ;; These functions provide traditional Lisp-style hashmap manipulation
 
 ;; Create initial hashmap using literal syntax

@@ -1,4 +1,4 @@
-;; String manipulation examples in Go Lisp
+;; String manipulation examples in GoLisp
 
 ;; Basic string operations
 (string-concat "Hello" " " "World" "!")           ; => "Hello World!"
@@ -51,4 +51,4 @@
 (defn word-count [text]
   (length (string-split (string-trim text) " ")))
 
-(word-count "Hello world from Go Lisp")           ; => 5
+(word-count "Hello world from GoLisp")           ; => 5

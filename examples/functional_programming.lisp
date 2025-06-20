@@ -1,4 +1,4 @@
-;; Functional programming examples in Go Lisp
+;; Functional programming examples in GoLisp
 
 ;; Map - apply a function to each element
 (map (fn [x] (* x x)) '(1 2 3 4 5))              ; => (1 4 9 16 25)

@@ -273,7 +273,7 @@ func TestREPLFlow(t *testing.T) {
 				{result: types.NumberValue(3), err: nil},
 			},
 			expectedOutput: []string{
-				"Welcome to Go Lisp!",
+				"Welcome to GoLisp!",
 				"lisp> ",
 				"=> 3",
 				"lisp> ",
@@ -287,7 +287,7 @@ func TestREPLFlow(t *testing.T) {
 				{result: nil, err: fmt.Errorf("undefined function: undefined-function")},
 			},
 			expectedOutput: []string{
-				"Welcome to Go Lisp!",
+				"Welcome to GoLisp!",
 				"lisp> ",
 				"Error: undefined function: undefined-function",
 				"lisp> ",
@@ -301,7 +301,7 @@ func TestREPLFlow(t *testing.T) {
 				{result: types.NumberValue(3), err: nil},
 			},
 			expectedOutput: []string{
-				"Welcome to Go Lisp!",
+				"Welcome to GoLisp!",
 				"lisp> ",
 				"...   ",
 				"...   ",
@@ -317,7 +317,7 @@ func TestREPLFlow(t *testing.T) {
 				{result: types.NumberValue(2), err: nil},
 			},
 			expectedOutput: []string{
-				"Welcome to Go Lisp!",
+				"Welcome to GoLisp!",
 				"lisp> ",
 				"lisp> ",
 				"lisp> ",
@@ -332,7 +332,7 @@ func TestREPLFlow(t *testing.T) {
 			input:     "exit\n",
 			responses: []interpretResponse{},
 			expectedOutput: []string{
-				"Welcome to Go Lisp!",
+				"Welcome to GoLisp!",
 				"lisp> ",
 				"Goodbye!",
 			},
@@ -363,12 +363,11 @@ func TestPrintWelcomeMessage(t *testing.T) {
 	})
 
 	expectedParts := []string{
-		"Welcome to Go Lisp!",
+		"Welcome to GoLisp!",
 		"Type expressions to evaluate them",
 		"Multi-line expressions are supported",
 		"(help)",
 		"(env)",
-		"(plugins)",
 	}
 
 	for _, part := range expectedParts {
@@ -404,7 +403,7 @@ func TestREPLIntegration(t *testing.T) {
 	})
 
 	expectedParts := []string{
-		"Welcome to Go Lisp!",
+		"Welcome to GoLisp!",
 		"lisp> ",
 		"=> 3",
 		"Goodbye!",

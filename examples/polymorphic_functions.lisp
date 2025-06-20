@@ -1,4 +1,4 @@
-;; Polymorphic Functions Examples in Go Lisp
+;; Polymorphic Functions Examples in GoLisp
 ;; These examples demonstrate how functions work across different data types
 
 ;; ========== SEQUENCE FUNCTIONS ==========

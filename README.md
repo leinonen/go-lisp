@@ -35,7 +35,7 @@ make build
 
 ## Current Status
 
-Go Lisp is a **functional Lisp interpreter** with a modern plugin architecture under active development:
+GoLisp is a **functional Lisp interpreter** with a modern plugin architecture under active development:
 
 - Core Language Support: Basic Lisp constructs implemented (arithmetic, lists, functions)
 - Plugin Architecture: Modular design with 21+ plugin categories
@@ -52,7 +52,7 @@ Go Lisp is a **functional Lisp interpreter** with a modern plugin architecture u
 
 ## Plugin Architecture
 
-Go Lisp features a modular plugin system with the following categories:
+GoLisp features a modular plugin system with the following categories:
 
 - **arithmetic** - Basic arithmetic operations
 - **atom** - Atomic operations and type checking  
@@ -99,7 +99,7 @@ Go Lisp features a modular plugin system with the following categories:
 
 ## Language Design
 
-Go Lisp draws major inspiration from **Clojure**, incorporating modern Lisp design principles and idiomatic function names. The language features:
+GoLisp draws major inspiration from **Clojure**, incorporating modern Lisp design principles and idiomatic function names. The language features:
 
 - **Clojure-Compatible Functions**: Familiar function names like `get`, `assoc`, `dissoc`, `contains?`, `keys`, `vals`
 - **Polymorphic Operations**: Functions like `first`, `rest`, `last`, `nth`, `count`, `empty?` work across all collection types (lists, vectors, strings, hashmaps)
@@ -109,7 +109,7 @@ Go Lisp draws major inspiration from **Clojure**, incorporating modern Lisp desi
 - **Functional Paradigm**: Emphasis on immutable data structures and functional programming patterns
 - **Practical Design**: Balance between academic correctness and real-world usability
 
-While maintaining its own identity, Go Lisp aims to provide a familiar experience for developers coming from Clojure while offering the performance and deployment advantages of Go.
+While maintaining its own identity, GoLisp aims to provide a familiar experience for developers coming from Clojure while offering the performance and deployment advantages of Go.
 
 ## REPL Features
 
@@ -124,7 +124,7 @@ The interactive REPL provides a development environment:
 
 ## Architecture
 
-Go Lisp is built with a modern, modular plugin architecture that provides clean separation of concerns and extensibility. The core components include:
+GoLisp is built with a modern, modular plugin architecture that provides clean separation of concerns and extensibility. The core components include:
 
 ### Core Components
 - **Tokenizer**: Lexical analysis converting source code to tokens
@@ -256,7 +256,7 @@ The plugin system makes it easy to extend functionality while maintaining clean 
 ## Recognition
 
 **Built in 2025** as a demonstration of:
-- Modern Go Lisp implementation with plugin architecture  
+- Modern GoLisp implementation with plugin architecture  
 - Test-driven development methodologies
 - Clean architecture principles in Go
 - Modular design patterns

@@ -1,6 +1,6 @@
-# Go Lisp Examples
+# GoLisp Examples
 
-This directory contains focused examples demonstrating various features of the Go Lisp interpreter.
+This directory contains focused examples demonstrating various features of the GoLisp interpreter.
 
 ## Available Examples
 
@@ -90,7 +90,7 @@ Demonstrates vector data structure operations:
 
 ## Running Examples
 
-To run these examples, use the Go Lisp REPL or interpreter:
+To run these examples, use the GoLisp REPL or interpreter:
 
 ```bash
 # Build the interpreter

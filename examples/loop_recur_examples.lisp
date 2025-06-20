@@ -1,4 +1,4 @@
-;; Example usage of loop and recur in Go Lisp
+;; Example usage of loop and recur in GoLisp
 
 ;; Simple countdown example
 (loop [i 5]

@@ -1,6 +1,6 @@
 # Loop and Recur Implementation
 
-This document describes the implementation of `loop` and `recur` constructs in the Go Lisp interpreter.
+This document describes the implementation of `loop` and `recur` constructs in the GoLisp interpreter.
 
 ## Overview
 
@@ -110,9 +110,9 @@ The implementation includes comprehensive tests:
 - Argument count validation
 - RecurException throwing and catching
 
-## Usage in Go Lisp
+## Usage in GoLisp
 
-The `loop` and `recur` functions are automatically registered when the control plugin is loaded. They can be used immediately in any Go Lisp program.
+The `loop` and `recur` functions are automatically registered when the control plugin is loaded. They can be used immediately in any GoLisp program.
 
 ## Performance Benefits
 

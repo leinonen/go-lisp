@@ -1,4 +1,4 @@
-;; Hash map examples in Go Lisp
+;; Hash map examples in GoLisp
 
 ;; Creating hash maps with the new literal syntax (Clojure-style)
 {:name "John" :age 30 :city "Boston"}

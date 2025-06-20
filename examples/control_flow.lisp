@@ -1,4 +1,4 @@
-;; Control flow and variable binding examples in Go Lisp
+;; Control flow and variable binding examples in GoLisp
 
 ;; Variable definitions
 (def x 10)

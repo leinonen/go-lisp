@@ -206,7 +206,7 @@ func printWelcomeMessage() {
 	instructionColor := color.New(color.FgYellow)
 	commandColor := color.New(color.FgGreen)
 
-	titleColor.Println("Welcome to Go Lisp!")
+	titleColor.Println("Welcome to GoLisp!")
 	instructionColor.Println("Type expressions to evaluate them, or 'quit' to exit.")
 	instructionColor.Println("Multi-line expressions are supported - the REPL will wait for balanced parentheses.")
 	fmt.Println()
@@ -214,9 +214,6 @@ func printWelcomeMessage() {
 	fmt.Println("  (help)        - List all available built-in functions")
 	fmt.Println("  (help <func>) - Get help for a specific function")
 	fmt.Println("  (env)         - Show current environment variables")
-	fmt.Println("  (plugins)     - Show loaded plugins")
-	fmt.Println()
-	instructionColor.Println("✨ Errors are now color-coded by type with helpful suggestions!")
 	fmt.Println()
 }
 
@@ -228,7 +225,7 @@ func printGoodbyeMessage() {
 
 // printWelcomeMessageNoColor prints welcome message without colors (for testing)
 func printWelcomeMessageNoColor() {
-	fmt.Println("Welcome to Go Lisp!")
+	fmt.Println("Welcome to GoLisp!")
 	fmt.Println("Type expressions to evaluate them, or 'quit' to exit.")
 	fmt.Println("Multi-line expressions are supported - the REPL will wait for balanced parentheses.")
 	fmt.Println()
@@ -236,9 +233,6 @@ func printWelcomeMessageNoColor() {
 	fmt.Println("  (help)        - List all available built-in functions")
 	fmt.Println("  (help <func>) - Get help for a specific function")
 	fmt.Println("  (env)         - Show current environment variables")
-	fmt.Println("  (plugins)     - Show loaded plugins")
-	fmt.Println()
-	fmt.Println("✨ Errors are now color-coded by type with helpful suggestions!")
 	fmt.Println()
 }
 

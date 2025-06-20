@@ -1,4 +1,4 @@
-;; Arithmetic and math examples in Go Lisp
+;; Arithmetic and math examples in GoLisp
 
 ;; Basic arithmetic
 (+ 1 2 3 4 5)                                     ; => 15

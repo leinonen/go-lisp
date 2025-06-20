@@ -1,4 +1,4 @@
-;; List operations examples in Go Lisp
+;; List operations examples in GoLisp
 ;; Note: Many functions are now polymorphic and work on lists, vectors, and strings
 
 ;; Creating lists
