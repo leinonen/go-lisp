@@ -144,10 +144,10 @@ func REPLWithCompletion(interp Interpreter, enableColors bool) error {
 	// Add tab completion info to welcome message
 	if enableColors {
 		instructionColor := color.New(color.FgYellow)
-		instructionColor.Println("✨ Tab completion is enabled! Press TAB to see available functions.")
+		instructionColor.Println("✨ Tab completion is enabled! Press TAB inside '(' to see available functions.")
 		fmt.Println()
 	} else {
-		fmt.Println("✨ Tab completion is enabled! Press TAB to see available functions.")
+		fmt.Println("✨ Tab completion is enabled! Press TAB inside '(' to see available functions.")
 		fmt.Println()
 	}
 
