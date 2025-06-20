@@ -1,4 +1,6 @@
-# Go Lisp
+# GoLisp
+
+![GoLisp logo](./docs/img/golisp-logo.png)
 
 A modern, production-ready Lisp dialect implemented in Go with a modular plugin architecture. Features comprehensive language support, advanced data types, functional programming utilities, and a powerful plugin system.
 
