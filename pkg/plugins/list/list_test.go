@@ -121,8 +121,9 @@ func TestListPlugin_RegisterFunctions(t *testing.T) {
 	}
 
 	expectedFunctions := []string{
-		"list", "first", "rest", "cons", "length", "empty?",
-		"append", "reverse", "nth", "last",
+		"list", "cons", "length", "append",
+		// Clojure-style aliases
+		"concat",
 	}
 
 	for _, fnName := range expectedFunctions {
@@ -186,123 +187,6 @@ func TestListPlugin_evalList(t *testing.T) {
 			result, err := plugin.evalList(evaluator, tt.args)
 			if err != nil {
 				t.Fatalf("evalList failed: %v", err)
-			}
-
-			list, ok := result.(*types.ListValue)
-			if !ok {
-				t.Fatalf("Expected ListValue, got %T", result)
-			}
-
-			if len(list.Elements) != len(tt.expected) {
-				t.Fatalf("Expected %d elements, got %d", len(tt.expected), len(list.Elements))
-			}
-
-			for i, expected := range tt.expected {
-				if !valuesEqual(list.Elements[i], expected) {
-					t.Errorf("Element %d: expected %v, got %v", i, expected, list.Elements[i])
-				}
-			}
-		})
-	}
-}
-
-func TestListPlugin_evalFirst(t *testing.T) {
-	plugin := NewListPlugin()
-	evaluator := newMockEvaluator()
-
-	tests := []struct {
-		name        string
-		list        *types.ListValue
-		expected    types.Value
-		expectError bool
-	}{
-		{
-			name: "non-empty list",
-			list: &types.ListValue{Elements: []types.Value{
-				types.NumberValue(1),
-				types.NumberValue(2),
-				types.NumberValue(3),
-			}},
-			expected: types.NumberValue(1),
-		},
-		{
-			name: "single element list",
-			list: &types.ListValue{Elements: []types.Value{
-				types.StringValue("hello"),
-			}},
-			expected: types.StringValue("hello"),
-		},
-		{
-			name:        "empty list",
-			list:        &types.ListValue{Elements: []types.Value{}},
-			expectError: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			args := []types.Expr{wrapValue(tt.list)}
-			result, err := plugin.evalFirst(evaluator, args)
-
-			if tt.expectError {
-				if err == nil {
-					t.Fatal("Expected error but got none")
-				}
-				return
-			}
-
-			if err != nil {
-				t.Fatalf("evalFirst failed: %v", err)
-			}
-
-			if !valuesEqual(result, tt.expected) {
-				t.Errorf("Expected %v, got %v", tt.expected, result)
-			}
-		})
-	}
-}
-
-func TestListPlugin_evalRest(t *testing.T) {
-	plugin := NewListPlugin()
-	evaluator := newMockEvaluator()
-
-	tests := []struct {
-		name     string
-		list     *types.ListValue
-		expected []types.Value
-	}{
-		{
-			name: "multiple elements",
-			list: &types.ListValue{Elements: []types.Value{
-				types.NumberValue(1),
-				types.NumberValue(2),
-				types.NumberValue(3),
-			}},
-			expected: []types.Value{
-				types.NumberValue(2),
-				types.NumberValue(3),
-			},
-		},
-		{
-			name: "single element",
-			list: &types.ListValue{Elements: []types.Value{
-				types.NumberValue(1),
-			}},
-			expected: []types.Value{},
-		},
-		{
-			name:     "empty list",
-			list:     &types.ListValue{Elements: []types.Value{}},
-			expected: []types.Value{},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			args := []types.Expr{wrapValue(tt.list)}
-			result, err := plugin.evalRest(evaluator, args)
-			if err != nil {
-				t.Fatalf("evalRest failed: %v", err)
 			}
 
 			list, ok := result.(*types.ListValue)
@@ -435,49 +319,6 @@ func TestListPlugin_evalLength(t *testing.T) {
 	}
 }
 
-func TestListPlugin_evalEmpty(t *testing.T) {
-	plugin := NewListPlugin()
-	evaluator := newMockEvaluator()
-
-	tests := []struct {
-		name     string
-		list     *types.ListValue
-		expected bool
-	}{
-		{
-			name:     "empty list",
-			list:     &types.ListValue{Elements: []types.Value{}},
-			expected: true,
-		},
-		{
-			name: "non-empty list",
-			list: &types.ListValue{Elements: []types.Value{
-				types.NumberValue(1),
-			}},
-			expected: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			args := []types.Expr{wrapValue(tt.list)}
-			result, err := plugin.evalEmpty(evaluator, args)
-			if err != nil {
-				t.Fatalf("evalEmpty failed: %v", err)
-			}
-
-			isEmpty, ok := result.(types.BooleanValue)
-			if !ok {
-				t.Fatalf("Expected BooleanValue, got %T", result)
-			}
-
-			if bool(isEmpty) != tt.expected {
-				t.Errorf("Expected %v, got %v", tt.expected, bool(isEmpty))
-			}
-		})
-	}
-}
-
 func TestListPlugin_evalAppend(t *testing.T) {
 	plugin := NewListPlugin()
 	evaluator := newMockEvaluator()
@@ -555,193 +396,6 @@ func TestListPlugin_evalAppend(t *testing.T) {
 	}
 }
 
-func TestListPlugin_evalReverse(t *testing.T) {
-	plugin := NewListPlugin()
-	evaluator := newMockEvaluator()
-
-	tests := []struct {
-		name     string
-		list     *types.ListValue
-		expected []types.Value
-	}{
-		{
-			name:     "empty list",
-			list:     &types.ListValue{Elements: []types.Value{}},
-			expected: []types.Value{},
-		},
-		{
-			name: "single element",
-			list: &types.ListValue{Elements: []types.Value{
-				types.NumberValue(1),
-			}},
-			expected: []types.Value{types.NumberValue(1)},
-		},
-		{
-			name: "multiple elements",
-			list: &types.ListValue{Elements: []types.Value{
-				types.NumberValue(1),
-				types.NumberValue(2),
-				types.NumberValue(3),
-			}},
-			expected: []types.Value{
-				types.NumberValue(3),
-				types.NumberValue(2),
-				types.NumberValue(1),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			args := []types.Expr{wrapValue(tt.list)}
-			result, err := plugin.evalReverse(evaluator, args)
-			if err != nil {
-				t.Fatalf("evalReverse failed: %v", err)
-			}
-
-			list, ok := result.(*types.ListValue)
-			if !ok {
-				t.Fatalf("Expected ListValue, got %T", result)
-			}
-
-			if len(list.Elements) != len(tt.expected) {
-				t.Fatalf("Expected %d elements, got %d", len(tt.expected), len(list.Elements))
-			}
-
-			for i, expected := range tt.expected {
-				if !valuesEqual(list.Elements[i], expected) {
-					t.Errorf("Element %d: expected %v, got %v", i, expected, list.Elements[i])
-				}
-			}
-		})
-	}
-}
-
-func TestListPlugin_evalNth(t *testing.T) {
-	plugin := NewListPlugin()
-	evaluator := newMockEvaluator()
-
-	list := &types.ListValue{Elements: []types.Value{
-		types.StringValue("a"),
-		types.StringValue("b"),
-		types.StringValue("c"),
-	}}
-
-	tests := []struct {
-		name        string
-		index       int
-		expected    types.Value
-		expectError bool
-	}{
-		{
-			name:     "valid index 0",
-			index:    0,
-			expected: types.StringValue("a"),
-		},
-		{
-			name:     "valid index 1",
-			index:    1,
-			expected: types.StringValue("b"),
-		},
-		{
-			name:     "valid index 2",
-			index:    2,
-			expected: types.StringValue("c"),
-		},
-		{
-			name:        "negative index",
-			index:       -1,
-			expectError: true,
-		},
-		{
-			name:        "index out of bounds",
-			index:       3,
-			expectError: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			args := []types.Expr{
-				wrapValue(list),
-				wrapValue(types.NumberValue(tt.index)),
-			}
-			result, err := plugin.evalNth(evaluator, args)
-
-			if tt.expectError {
-				if err == nil {
-					t.Fatal("Expected error but got none")
-				}
-				return
-			}
-
-			if err != nil {
-				t.Fatalf("evalNth failed: %v", err)
-			}
-
-			if !valuesEqual(result, tt.expected) {
-				t.Errorf("Expected %v, got %v", tt.expected, result)
-			}
-		})
-	}
-}
-
-func TestListPlugin_evalLast(t *testing.T) {
-	plugin := NewListPlugin()
-	evaluator := newMockEvaluator()
-
-	tests := []struct {
-		name        string
-		list        *types.ListValue
-		expected    types.Value
-		expectError bool
-	}{
-		{
-			name: "non-empty list",
-			list: &types.ListValue{Elements: []types.Value{
-				types.NumberValue(1),
-				types.NumberValue(2),
-				types.NumberValue(3),
-			}},
-			expected: types.NumberValue(3),
-		},
-		{
-			name: "single element list",
-			list: &types.ListValue{Elements: []types.Value{
-				types.StringValue("hello"),
-			}},
-			expected: types.StringValue("hello"),
-		},
-		{
-			name:        "empty list",
-			list:        &types.ListValue{Elements: []types.Value{}},
-			expectError: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			args := []types.Expr{wrapValue(tt.list)}
-			result, err := plugin.evalLast(evaluator, args)
-
-			if tt.expectError {
-				if err == nil {
-					t.Fatal("Expected error but got none")
-				}
-				return
-			}
-
-			if err != nil {
-				t.Fatalf("evalLast failed: %v", err)
-			}
-
-			if !valuesEqual(result, tt.expected) {
-				t.Errorf("Expected %v, got %v", tt.expected, result)
-			}
-		})
-	}
-}
-
 func TestListPlugin_InvalidArguments(t *testing.T) {
 	plugin := NewListPlugin()
 	evaluator := newMockEvaluator()
@@ -755,33 +409,8 @@ func TestListPlugin_InvalidArguments(t *testing.T) {
 		args     []types.Expr
 	}{
 		{
-			name:     "first with non-list",
-			function: plugin.evalFirst,
-			args:     []types.Expr{wrapValue(nonList)},
-		},
-		{
-			name:     "rest with non-list",
-			function: plugin.evalRest,
-			args:     []types.Expr{wrapValue(nonList)},
-		},
-		{
 			name:     "length with non-list",
 			function: plugin.evalLength,
-			args:     []types.Expr{wrapValue(nonList)},
-		},
-		{
-			name:     "empty? with non-list",
-			function: plugin.evalEmpty,
-			args:     []types.Expr{wrapValue(nonList)},
-		},
-		{
-			name:     "reverse with non-list",
-			function: plugin.evalReverse,
-			args:     []types.Expr{wrapValue(nonList)},
-		},
-		{
-			name:     "last with non-list",
-			function: plugin.evalLast,
 			args:     []types.Expr{wrapValue(nonList)},
 		},
 		{
@@ -789,22 +418,6 @@ func TestListPlugin_InvalidArguments(t *testing.T) {
 			function: plugin.evalCons,
 			args: []types.Expr{
 				wrapValue(types.NumberValue(1)),
-				wrapValue(nonList),
-			},
-		},
-		{
-			name:     "nth with non-number first arg",
-			function: plugin.evalNth,
-			args: []types.Expr{
-				wrapValue(types.StringValue("not-a-number")),
-				wrapValue(&types.ListValue{Elements: []types.Value{types.NumberValue(1)}}),
-			},
-		},
-		{
-			name:     "nth with non-list second arg",
-			function: plugin.evalNth,
-			args: []types.Expr{
-				wrapValue(types.NumberValue(0)),
 				wrapValue(nonList),
 			},
 		},
@@ -822,5 +435,47 @@ func TestListPlugin_InvalidArguments(t *testing.T) {
 				t.Fatal("Expected error but got none")
 			}
 		})
+	}
+}
+
+func TestListPlugin_ClojureConcatAlias(t *testing.T) {
+	plugin := NewListPlugin()
+	evaluator := newMockEvaluator()
+
+	// Test that concat is an alias for append
+	list1 := &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2)}}
+	list2 := &types.ListValue{Elements: []types.Value{types.NumberValue(3), types.NumberValue(4)}}
+
+	// Test append functionality (which concat should alias)
+	result, err := plugin.evalAppend(evaluator, []types.Expr{
+		wrapValue(list1),
+		wrapValue(list2),
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	resultList, ok := result.(*types.ListValue)
+	if !ok {
+		t.Fatalf("Expected ListValue, got %T", result)
+	}
+
+	expected := []types.Value{
+		types.NumberValue(1), types.NumberValue(2),
+		types.NumberValue(3), types.NumberValue(4),
+	}
+
+	if len(resultList.Elements) != len(expected) {
+		t.Errorf("Expected length %d, got %d", len(expected), len(resultList.Elements))
+	}
+
+	for i, expectedVal := range expected {
+		if i >= len(resultList.Elements) {
+			t.Errorf("Missing element at index %d", i)
+			continue
+		}
+		if resultList.Elements[i].String() != expectedVal.String() {
+			t.Errorf("At index %d: expected %v, got %v", i, expectedVal, resultList.Elements[i])
+		}
 	}
 }

@@ -22,17 +22,17 @@ func TestEvalHashMapLiteral(t *testing.T) {
 		{
 			name:     "simple hash map with keyword keys",
 			input:    "{:name \"John\" :age 30}",
-			expected: "{\"name\" John \"age\" 30}",
+			expected: "{\"age\" 30 \"name\" John}",
 		},
 		{
 			name:     "hash map with string keys",
 			input:    "{\"name\" \"Alice\" \"job\" \"Engineer\"}",
-			expected: "{\"name\" Alice \"job\" Engineer}",
+			expected: "{\"job\" Engineer \"name\" Alice}",
 		},
 		{
 			name:     "mixed key types",
 			input:    "{:name \"Bob\" \"age\" 35}",
-			expected: "{\"name\" Bob \"age\" 35}",
+			expected: "{\"age\" 35 \"name\" Bob}",
 		},
 	}
 

@@ -21,7 +21,7 @@ func NewListPlugin() *ListPlugin {
 		BasePlugin: plugins.NewBasePlugin(
 			"list",
 			"1.0.0",
-			"List manipulation functions (list, first, rest, cons, length, empty?)",
+			"List creation and manipulation functions (list, cons, length, append)",
 			[]string{}, // No dependencies
 		),
 	}
@@ -36,15 +36,11 @@ func (lp *ListPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 		handler func(registry.Evaluator, []types.Expr) (types.Value, error)
 	}{
 		{"list", -1, "Create a list: (list 1 2 3) => (1 2 3)", lp.evalList},
-		{"first", 1, "Get first element: (first '(1 2 3)) => 1", lp.evalFirst},
-		{"rest", 1, "Get rest of list: (rest '(1 2 3)) => (2 3)", lp.evalRest},
 		{"cons", 2, "Prepend element: (cons 0 '(1 2)) => (0 1 2)", lp.evalCons},
 		{"length", 1, "Get list length: (length '(1 2 3)) => 3", lp.evalLength},
-		{"empty?", 1, "Check if list is empty: (empty? '()) => true", lp.evalEmpty},
 		{"append", -1, "Append lists: (append '(1 2) '(3 4)) => (1 2 3 4)", lp.evalAppend},
-		{"reverse", 1, "Reverse list: (reverse '(1 2 3)) => (3 2 1)", lp.evalReverse},
-		{"nth", 2, "Get nth element: (nth '(a b c) 1) => b", lp.evalNth},
-		{"last", 1, "Get last element: (last '(1 2 3)) => 3", lp.evalLast},
+		// Clojure-style aliases
+		{"concat", -1, "Concatenate lists: (concat '(1 2) '(3 4)) => (1 2 3 4)", lp.evalAppend},
 	}
 
 	for _, fn := range listFunctions {
@@ -64,44 +60,6 @@ func (lp *ListPlugin) evalList(evaluator registry.Evaluator, args []types.Expr) 
 		return nil, err
 	}
 	return &types.ListValue{Elements: values}, nil
-}
-
-// evalFirst returns the first element of a list
-func (lp *ListPlugin) evalFirst(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	values, err := functions.EvalArgs(evaluator, args)
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := functions.ExtractList(values[0])
-	if err != nil {
-		return nil, fmt.Errorf("first: %v", err)
-	}
-
-	if len(list.Elements) == 0 {
-		return nil, fmt.Errorf("first: cannot get first element of empty list")
-	}
-
-	return list.Elements[0], nil
-}
-
-// evalRest returns all elements except the first
-func (lp *ListPlugin) evalRest(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	values, err := functions.EvalArgs(evaluator, args)
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := functions.ExtractList(values[0])
-	if err != nil {
-		return nil, fmt.Errorf("rest: %v", err)
-	}
-
-	if len(list.Elements) == 0 {
-		return &types.ListValue{Elements: []types.Value{}}, nil
-	}
-
-	return &types.ListValue{Elements: list.Elements[1:]}, nil
 }
 
 // evalCons prepends an element to a list
@@ -139,21 +97,6 @@ func (lp *ListPlugin) evalLength(evaluator registry.Evaluator, args []types.Expr
 	return types.NumberValue(len(list.Elements)), nil
 }
 
-// evalEmpty checks if a list is empty
-func (lp *ListPlugin) evalEmpty(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	values, err := functions.EvalArgs(evaluator, args)
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := functions.ExtractList(values[0])
-	if err != nil {
-		return nil, fmt.Errorf("empty?: %v", err)
-	}
-
-	return types.BooleanValue(len(list.Elements) == 0), nil
-}
-
 // evalAppend concatenates multiple lists
 func (lp *ListPlugin) evalAppend(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
 	if len(args) == 0 {
@@ -175,75 +118,4 @@ func (lp *ListPlugin) evalAppend(evaluator registry.Evaluator, args []types.Expr
 	}
 
 	return &types.ListValue{Elements: allElements}, nil
-}
-
-// evalReverse reverses a list
-func (lp *ListPlugin) evalReverse(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	values, err := functions.EvalArgs(evaluator, args)
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := functions.ExtractList(values[0])
-	if err != nil {
-		return nil, fmt.Errorf("reverse: %v", err)
-	}
-
-	reversed := make([]types.Value, len(list.Elements))
-	for i, elem := range list.Elements {
-		reversed[len(list.Elements)-1-i] = elem
-	}
-
-	return &types.ListValue{Elements: reversed}, nil
-}
-
-// evalNth returns the nth element of a list or vector (0-indexed)
-// Follows Clojure convention: (nth collection index)
-func (lp *ListPlugin) evalNth(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	values, err := functions.EvalArgs(evaluator, args)
-	if err != nil {
-		return nil, err
-	}
-
-	// Handle both lists and vectors
-	var elements []types.Value
-	switch v := values[0].(type) {
-	case *types.ListValue:
-		elements = v.Elements
-	case *types.VectorValue:
-		elements = v.Elements
-	default:
-		return nil, fmt.Errorf("nth: first argument must be a list or vector, got %T", values[0])
-	}
-
-	index, err := functions.ExtractFloat64(values[1])
-	if err != nil {
-		return nil, fmt.Errorf("nth: second argument must be a number, got %T", values[1])
-	}
-
-	idx := int(index)
-	if idx < 0 || idx >= len(elements) {
-		return nil, fmt.Errorf("nth: index %d out of bounds for collection of length %d", idx, len(elements))
-	}
-
-	return elements[idx], nil
-}
-
-// evalLast returns the last element of a list
-func (lp *ListPlugin) evalLast(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	values, err := functions.EvalArgs(evaluator, args)
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := functions.ExtractList(values[0])
-	if err != nil {
-		return nil, fmt.Errorf("last: %v", err)
-	}
-
-	if len(list.Elements) == 0 {
-		return nil, fmt.Errorf("last: cannot get last element of empty list")
-	}
-
-	return list.Elements[len(list.Elements)-1], nil
 }

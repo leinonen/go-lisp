@@ -81,15 +81,33 @@ Go Lisp features a modular plugin system with the following categories:
 - **Core Lisp Implementation**: Tokenizer, parser, and evaluator with plugin architecture
 - **Interactive REPL**: Development environment for interactive programming
 - **File Execution**: Run Lisp programs from files with multi-expression support
+- **Clojure-Style Functions**: Modern Clojure-compatible function names and aliases
+- **Polymorphic Functions**: Type-aware functions that work across different data types (lists, vectors, strings, hashmaps)
+- **Unified Sequence Operations**: Functions like `first`, `rest`, `last`, `nth`, `count`, `empty?` work on all collection types
+- **Cross-Type Compatibility**: `get` and `contains?` work on hashmaps, vectors, lists, and strings
 - **Basic Arithmetic**: Support for fundamental mathematical operations
 - **List Processing**: Core list manipulation and processing functions
 - **Plugin System**: Modular architecture with 21+ plugin categories
-- **Modern Syntax**: Clean, readable Lisp syntax
+- **Modern Syntax**: Clean, readable Lisp syntax with Clojure-style literals
 - **Error Handling**: Clear error messages for debugging
 - **Development Tools**: Command-line interface with multiple execution modes
 - **Extensible Design**: Plugin-based architecture for easy feature addition
 
 *Note: Advanced features like big number arithmetic, comprehensive string processing, HTTP clients, and other specialized functionality are in development.*
+
+## Language Design
+
+Go Lisp draws major inspiration from **Clojure**, incorporating modern Lisp design principles and idiomatic function names. The language features:
+
+- **Clojure-Compatible Functions**: Familiar function names like `get`, `assoc`, `dissoc`, `contains?`, `keys`, `vals`
+- **Polymorphic Operations**: Functions like `first`, `rest`, `last`, `nth`, `count`, `empty?` work across all collection types (lists, vectors, strings, hashmaps)
+- **Cross-Type Compatibility**: Advanced functions like `get` and `contains?` work seamlessly on hashmaps, vectors, lists, and strings
+- **Unified Sequence Interface**: All collections can be treated as sequences with consistent behavior
+- **Modern Syntax**: Clean, readable syntax with support for hash map literals `{:key "value"}`
+- **Functional Paradigm**: Emphasis on immutable data structures and functional programming patterns
+- **Practical Design**: Balance between academic correctness and real-world usability
+
+While maintaining its own identity, Go Lisp aims to provide a familiar experience for developers coming from Clojure while offering the performance and deployment advantages of Go.
 
 ## REPL Features
 
@@ -131,7 +149,9 @@ The built-in functions are organized into logical categories:
 - **Arithmetic**: Basic mathematical operations (+, -, *, /, %)
 - **Comparison**: Equality and ordering operations
 - **Logical**: Boolean logic operations
-- **List**: Collection operations (list creation, manipulation)
+- **Polymorphic Functions**: Type-aware sequence operations (`first`, `rest`, `last`, `nth`, `second`, `empty?`, `take`, `drop`, `reverse`)
+- **Collection Operations**: Cross-type functions (`get`, `contains?`, `count`) that work on all data types
+- **List**: List-specific operations (list creation, cons, append)
 - **Control**: Flow control constructs (if, cond)
 
 *Note: Additional categories like advanced math, string processing, HTTP clients, JSON handling, and other specialized functions are implemented as plugins in various stages of development.*
@@ -148,6 +168,11 @@ The project includes comprehensive documentation (though some may reference the 
 - HTTP client and JSON processing
 - Code examples and tutorials
 - Usage and building guide
+
+### Modern Language Features
+- **[Modern Functions Guide](docs/modern_functions.md)** - Complete reference for modern function names and aliases
+- **[Quick Reference](docs/quick_reference.md)** - Cheat sheet for modern syntax and functions
+- **[Examples](examples/modern_functions_demo.lisp)** - Practical examples demonstrating modern features
 
 ### Development Documentation
 - Implementation design and plugin architecture

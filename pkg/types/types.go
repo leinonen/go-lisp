@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"math/big"
+	"sort"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -340,12 +341,21 @@ func (h *HashMapValue) String() string {
 	if len(h.Elements) == 0 {
 		return "{}"
 	}
+
+	// Get keys and sort them for deterministic output
+	keys := make([]string, 0, len(h.Elements))
+	for key := range h.Elements {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
 	result := "{"
 	first := true
-	for key, value := range h.Elements {
+	for _, key := range keys {
 		if !first {
 			result += " "
 		}
+		value := h.Elements[key]
 		result += fmt.Sprintf("%q %s", key, value.String())
 		first = false
 	}

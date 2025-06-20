@@ -4,6 +4,20 @@ This directory contains focused examples demonstrating various features of the G
 
 ## Available Examples
 
+### `polymorphic_functions.lisp`
+Demonstrates polymorphic functions that work across all data types:
+- Sequence functions: `first`, `rest`, `last`, `nth`, `second` on lists, vectors, strings
+- Collection functions: `count`, `empty?` on all collection types
+- Access functions: `get`, `contains?` on hashmaps, vectors, lists, strings
+- Transformation functions: `take`, `drop`, `reverse` on all sequences
+- Type predicate functions: `seq?`, `coll?`, `sequential?`, `indexed?`
+
+### `polymorphic_demo.lisp`
+Interactive demonstration of polymorphic functions working across different data types:
+- Side-by-side comparison of the same functions on lists, vectors, strings, and hashmaps
+- Practical examples of unified data processing
+- Complete overview of type predicates and their behavior
+
 ### `loop_recur_examples.lisp`
 Demonstrates the `loop` and `recur` constructs for efficient tail recursion:
 - Simple countdown
@@ -13,7 +27,7 @@ Demonstrates the `loop` and `recur` constructs for efficient tail recursion:
 ### `list_operations.lisp`
 Shows list manipulation functions:
 - Creating lists with `list`
-- Accessing elements with `first`, `rest`, `last`, `nth`
+- Accessing elements with polymorphic functions (`first`, `rest`, `last`, `nth`)
 - Adding elements with `cons`, `append`
 - List properties: `length`, `empty?`
 - List transformations: `reverse`
@@ -92,6 +106,8 @@ make build
 
 ## Features Demonstrated
 
+- **Polymorphic Functions**: Type-aware functions that work across lists, vectors, strings, and hashmaps
+- **Cross-Type Operations**: Unified interface for all collection types with consistent behavior
 - **Data Structures**: Lists, Hash Maps, Strings, Numbers, Vectors
 - **Functional Programming**: Map, Filter, Reduce, Higher-order functions
 - **Control Flow**: Conditionals, Function definitions, Recursion

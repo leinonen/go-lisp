@@ -85,7 +85,7 @@ func TestCorePlugin_RegisterFunctions(t *testing.T) {
 		t.Fatalf("Failed to register functions: %v", err)
 	}
 
-	expectedFunctions := []string{"def", "fn", "defn", "quote", "help", "env", "plugins"}
+	expectedFunctions := []string{"def", "fn", "defn", "quote", "help", "env", "plugins", "count"}
 
 	for _, fnName := range expectedFunctions {
 		if !reg.Has(fnName) {
@@ -711,5 +711,177 @@ func TestCorePlugin_PluginInfo(t *testing.T) {
 	deps := plugin.Dependencies()
 	if len(deps) != 0 {
 		t.Errorf("Expected no dependencies, got %v", deps)
+	}
+}
+
+func TestCorePlugin_CountFunc(t *testing.T) {
+	env := evaluator.NewEnvironment()
+	plugin := NewCorePlugin(env)
+	evaluator := newMockEvaluator()
+
+	tests := []struct {
+		name     string
+		args     []types.Expr
+		expected interface{}
+		wantErr  bool
+	}{
+		// Test with lists
+		{
+			name: "count empty list",
+			args: []types.Expr{
+				wrapValue(&types.ListValue{Elements: []types.Value{}}),
+			},
+			expected: int64(0),
+			wantErr:  false,
+		},
+		{
+			name: "count list with elements",
+			args: []types.Expr{
+				wrapValue(&types.ListValue{Elements: []types.Value{
+					types.NumberValue(1),
+					types.StringValue("hello"),
+					types.BooleanValue(true),
+				}}),
+			},
+			expected: int64(3),
+			wantErr:  false,
+		},
+		// Test with vectors
+		{
+			name: "count empty vector",
+			args: []types.Expr{
+				wrapValue(&types.VectorValue{Elements: []types.Value{}}),
+			},
+			expected: int64(0),
+			wantErr:  false,
+		},
+		{
+			name: "count vector with elements",
+			args: []types.Expr{
+				wrapValue(&types.VectorValue{Elements: []types.Value{
+					types.NumberValue(1),
+					types.NumberValue(2),
+					types.NumberValue(3),
+					types.NumberValue(4),
+				}}),
+			},
+			expected: int64(4),
+			wantErr:  false,
+		},
+		// Test with hash maps
+		{
+			name: "count empty hash map",
+			args: []types.Expr{
+				wrapValue(&types.HashMapValue{Elements: map[string]types.Value{}}),
+			},
+			expected: int64(0),
+			wantErr:  false,
+		},
+		{
+			name: "count hash map with elements",
+			args: []types.Expr{
+				wrapValue(&types.HashMapValue{Elements: map[string]types.Value{
+					"key1": types.StringValue("value1"),
+					"key2": types.NumberValue(42),
+				}}),
+			},
+			expected: int64(2),
+			wantErr:  false,
+		},
+		// Test with strings
+		{
+			name: "count empty string",
+			args: []types.Expr{
+				wrapValue(types.StringValue("")),
+			},
+			expected: int64(0),
+			wantErr:  false,
+		},
+		{
+			name: "count string with characters",
+			args: []types.Expr{
+				wrapValue(types.StringValue("hello")),
+			},
+			expected: int64(5),
+			wantErr:  false,
+		},
+		{
+			name: "count unicode string",
+			args: []types.Expr{
+				wrapValue(types.StringValue("héllo")),
+			},
+			expected: int64(5),
+			wantErr:  false,
+		},
+		// Test with nil
+		{
+			name: "count nil",
+			args: []types.Expr{
+				wrapValue(&types.NilValue{}),
+			},
+			expected: int64(0),
+			wantErr:  false,
+		},
+		// Error cases
+		{
+			name:     "count with no arguments",
+			args:     []types.Expr{},
+			expected: nil,
+			wantErr:  true,
+		},
+		{
+			name: "count with too many arguments",
+			args: []types.Expr{
+				wrapValue(&types.ListValue{Elements: []types.Value{}}),
+				wrapValue(types.NumberValue(1)),
+			},
+			expected: nil,
+			wantErr:  true,
+		},
+		{
+			name: "count with unsupported type",
+			args: []types.Expr{
+				wrapValue(types.NumberValue(42)),
+			},
+			expected: nil,
+			wantErr:  true,
+		},
+		{
+			name: "count with boolean",
+			args: []types.Expr{
+				wrapValue(types.BooleanValue(true)),
+			},
+			expected: nil,
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := plugin.countFunc(evaluator, tt.args)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("Expected error, but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
+
+			numResult, ok := result.(types.NumberValue)
+			if !ok {
+				t.Errorf("Expected NumberValue result, got %T", result)
+				return
+			}
+
+			expectedNum := tt.expected.(int64)
+			if int64(numResult) != expectedNum {
+				t.Errorf("Expected %d, got %d", expectedNum, int64(numResult))
+			}
+		})
 	}
 }

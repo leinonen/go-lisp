@@ -38,6 +38,8 @@ func (p *StringPlugin) Functions() []string {
 		"string-contains?", "string-starts-with?", "string-ends-with?", "string-replace",
 		"string-index-of", "string->number", "number->string", "string-regex-match?",
 		"string-regex-find-all", "string-repeat", "string?", "string-empty?",
+		// Clojure-style aliases
+		"str", "subs", "split", "join", "replace", "trim", "upper-case", "lower-case",
 	}
 }
 
@@ -292,6 +294,103 @@ func (p *StringPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 		p.evalStringEmpty,
 	)
 	if err := reg.Register(stringEmptyFunc); err != nil {
+		return err
+	}
+
+	// Clojure-style aliases
+	// str function (alias for string-concat)
+	strFunc := functions.NewFunction(
+		"str",
+		registry.CategoryString,
+		-1, // Variadic
+		"Concatenate strings: (str \"Hello\" \" \" \"World\")",
+		p.evalStringConcat,
+	)
+	if err := reg.Register(strFunc); err != nil {
+		return err
+	}
+
+	// subs function (alias for string-substring)
+	subsFunc := functions.NewFunction(
+		"subs",
+		registry.CategoryString,
+		3,
+		"Extract substring: (subs \"Hello\" 1 4) => \"ell\"",
+		p.evalStringSubstring,
+	)
+	if err := reg.Register(subsFunc); err != nil {
+		return err
+	}
+
+	// split function (alias for string-split)
+	clojureSplitFunc := functions.NewFunction(
+		"split",
+		registry.CategoryString,
+		2,
+		"Split string: (split \"a,b,c\" \",\") => (\"a\" \"b\" \"c\")",
+		p.evalStringSplit,
+	)
+	if err := reg.Register(clojureSplitFunc); err != nil {
+		return err
+	}
+
+	// join function (alias for string-join)
+	clojureJoinFunc := functions.NewFunction(
+		"join",
+		registry.CategoryString,
+		2,
+		"Join strings: (join \",\" (list \"a\" \"b\" \"c\")) => \"a,b,c\"",
+		p.evalStringJoin,
+	)
+	if err := reg.Register(clojureJoinFunc); err != nil {
+		return err
+	}
+
+	// replace function (alias for string-replace)
+	clojureReplaceFunc := functions.NewFunction(
+		"replace",
+		registry.CategoryString,
+		3,
+		"Replace all occurrences: (replace \"hello\" \"l\" \"x\") => \"hexxo\"",
+		p.evalStringReplace,
+	)
+	if err := reg.Register(clojureReplaceFunc); err != nil {
+		return err
+	}
+
+	// trim function (alias for string-trim)
+	clojureTrimFunc := functions.NewFunction(
+		"trim",
+		registry.CategoryString,
+		1,
+		"Trim whitespace: (trim \"  hello  \") => \"hello\"",
+		p.evalStringTrim,
+	)
+	if err := reg.Register(clojureTrimFunc); err != nil {
+		return err
+	}
+
+	// upper-case function (alias for string-upper)
+	upperCaseFunc := functions.NewFunction(
+		"upper-case",
+		registry.CategoryString,
+		1,
+		"Convert to uppercase: (upper-case \"hello\") => \"HELLO\"",
+		p.evalStringUpper,
+	)
+	if err := reg.Register(upperCaseFunc); err != nil {
+		return err
+	}
+
+	// lower-case function (alias for string-lower)
+	lowerCaseFunc := functions.NewFunction(
+		"lower-case",
+		registry.CategoryString,
+		1,
+		"Convert to lowercase: (lower-case \"HELLO\") => \"hello\"",
+		p.evalStringLower,
+	)
+	if err := reg.Register(lowerCaseFunc); err != nil {
 		return err
 	}
 

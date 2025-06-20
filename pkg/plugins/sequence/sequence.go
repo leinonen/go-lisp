@@ -53,17 +53,7 @@ func (p *SequencePlugin) RegisterFunctions(reg registry.FunctionRegistry) error 
 		return err
 	}
 
-	// seq function (convert to sequence)
-	seqFunc := functions.NewFunction(
-		"seq",
-		registry.CategoryList,
-		1,
-		"Convert to sequence: (seq [1 2 3]) => (1 2 3)",
-		p.evalSeq,
-	)
-	if err := reg.Register(seqFunc); err != nil {
-		return err
-	}
+	// Note: seq function is provided by the polymorphic plugin for better cross-type support
 
 	// vector? predicate
 	vectorPredFunc := functions.NewFunction(
@@ -85,19 +75,7 @@ func (p *SequencePlugin) RegisterFunctions(reg registry.FunctionRegistry) error 
 		"Add elements to collection: (conj [1 2] 3 4) => [1 2 3 4]",
 		p.evalConj,
 	)
-	if err := reg.Register(conjFunc); err != nil {
-		return err
-	}
-
-	// count for vectors
-	countFunc := functions.NewFunction(
-		"count",
-		registry.CategoryList,
-		1,
-		"Get count of elements: (count [1 2 3]) => 3",
-		p.evalCount,
-	)
-	return reg.Register(countFunc)
+	return reg.Register(conjFunc)
 }
 
 // evalVector creates a vector from arguments
@@ -130,29 +108,6 @@ func (p *SequencePlugin) evalVec(evaluator registry.Evaluator, args []types.Expr
 		return v, nil
 	default:
 		return nil, fmt.Errorf("vec: cannot convert %T to vector", value)
-	}
-}
-
-// evalSeq converts to sequence
-func (p *SequencePlugin) evalSeq(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf("seq requires exactly 1 argument, got %d", len(args))
-	}
-
-	value, err := evaluator.Eval(args[0])
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert various types to sequences (lists)
-	switch v := value.(type) {
-	case *types.ListValue:
-		return v, nil
-	case *types.VectorValue:
-		// Convert vector to list
-		return &types.ListValue{Elements: v.Elements}, nil
-	default:
-		return nil, fmt.Errorf("seq: cannot convert %T to sequence", value)
 	}
 }
 
@@ -209,30 +164,5 @@ func (p *SequencePlugin) evalConj(evaluator registry.Evaluator, args []types.Exp
 		return &types.ListValue{Elements: newElements}, nil
 	default:
 		return nil, fmt.Errorf("conj: cannot add to %T", coll)
-	}
-}
-
-// evalCount gets count of elements
-func (p *SequencePlugin) evalCount(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf("count requires exactly 1 argument, got %d", len(args))
-	}
-
-	coll, err := evaluator.Eval(args[0])
-	if err != nil {
-		return nil, err
-	}
-
-	switch c := coll.(type) {
-	case *types.VectorValue:
-		return types.NumberValue(len(c.Elements)), nil
-	case *types.ListValue:
-		return types.NumberValue(len(c.Elements)), nil
-	case *types.HashMapValue:
-		return types.NumberValue(len(c.Elements)), nil
-	case types.StringValue:
-		return types.NumberValue(len(string(c))), nil
-	default:
-		return nil, fmt.Errorf("count: cannot count %T", coll)
 	}
 }

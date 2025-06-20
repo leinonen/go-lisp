@@ -8,24 +8,26 @@ import (
 	"github.com/leinonen/go-lisp/pkg/evaluator"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/plugins/arithmetic"
-	atomplugin "github.com/leinonen/go-lisp/pkg/plugins/atom"
-	bindingplugin "github.com/leinonen/go-lisp/pkg/plugins/binding"
+	"github.com/leinonen/go-lisp/pkg/plugins/atom"
+	"github.com/leinonen/go-lisp/pkg/plugins/binding"
 	"github.com/leinonen/go-lisp/pkg/plugins/comparison"
-	concurrencyplugin "github.com/leinonen/go-lisp/pkg/plugins/concurrency"
+	"github.com/leinonen/go-lisp/pkg/plugins/concurrency"
 	"github.com/leinonen/go-lisp/pkg/plugins/control"
-	coreplugin "github.com/leinonen/go-lisp/pkg/plugins/core"
-	functionalplugin "github.com/leinonen/go-lisp/pkg/plugins/functional"
-	hashmapplugin "github.com/leinonen/go-lisp/pkg/plugins/hashmap"
-	httpplugin "github.com/leinonen/go-lisp/pkg/plugins/http"
-	ioplugin "github.com/leinonen/go-lisp/pkg/plugins/io"
-	jsonplugin "github.com/leinonen/go-lisp/pkg/plugins/json"
-	keywordplugin "github.com/leinonen/go-lisp/pkg/plugins/keyword"
+	"github.com/leinonen/go-lisp/pkg/plugins/core"
+	"github.com/leinonen/go-lisp/pkg/plugins/functional"
+	"github.com/leinonen/go-lisp/pkg/plugins/hashmap"
+	"github.com/leinonen/go-lisp/pkg/plugins/http"
+	"github.com/leinonen/go-lisp/pkg/plugins/io"
+	"github.com/leinonen/go-lisp/pkg/plugins/json"
+	"github.com/leinonen/go-lisp/pkg/plugins/keyword"
 	"github.com/leinonen/go-lisp/pkg/plugins/list"
 	"github.com/leinonen/go-lisp/pkg/plugins/logical"
-	macroplugin "github.com/leinonen/go-lisp/pkg/plugins/macro"
-	mathplugin "github.com/leinonen/go-lisp/pkg/plugins/math"
-	sequenceplugin "github.com/leinonen/go-lisp/pkg/plugins/sequence"
+	"github.com/leinonen/go-lisp/pkg/plugins/macro"
+	"github.com/leinonen/go-lisp/pkg/plugins/math"
+	"github.com/leinonen/go-lisp/pkg/plugins/polymorphic"
+	"github.com/leinonen/go-lisp/pkg/plugins/sequence"
 	stringplugin "github.com/leinonen/go-lisp/pkg/plugins/string"
+	"github.com/leinonen/go-lisp/pkg/plugins/utils"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
 )
@@ -35,7 +37,7 @@ type PureEvaluator struct {
 	env               *evaluator.Environment
 	registry          registry.FunctionRegistry
 	pluginManager     plugins.PluginManager
-	concurrencyPlugin *concurrencyplugin.ConcurrencyPlugin
+	concurrencyPlugin *concurrency.ConcurrencyPlugin
 }
 
 // NewPureEvaluator creates a new pure plugin-based evaluator
@@ -63,7 +65,7 @@ func NewPureEvaluator(env *evaluator.Environment) (*PureEvaluator, error) {
 // loadAllPlugins loads all plugins for complete functionality
 func (pe *PureEvaluator) loadAllPlugins() error {
 	// Load core plugin first (def, fn, quote, etc.)
-	corePlugin := coreplugin.NewCorePlugin(pe.env)
+	corePlugin := core.NewCorePlugin(pe.env)
 	if err := pe.pluginManager.LoadPlugin(corePlugin); err != nil {
 		return fmt.Errorf("failed to load core plugin: %v", err)
 	}
@@ -86,6 +88,12 @@ func (pe *PureEvaluator) loadAllPlugins() error {
 		return fmt.Errorf("failed to load logical plugin: %v", err)
 	}
 
+	// Load polymorphic plugin for advanced features
+	polymorphicPlugin := polymorphic.NewPolymorphicPlugin()
+	if err := pe.pluginManager.LoadPlugin(polymorphicPlugin); err != nil {
+		return fmt.Errorf("failed to load polymorphic plugin: %v", err)
+	}
+
 	// Load list plugin
 	listPlugin := list.NewListPlugin()
 	if err := pe.pluginManager.LoadPlugin(listPlugin); err != nil {
@@ -100,25 +108,25 @@ func (pe *PureEvaluator) loadAllPlugins() error {
 
 	// Load essential new plugins
 	// Load keyword plugin
-	keywordPlugin := keywordplugin.NewKeywordPlugin()
+	keywordPlugin := keyword.NewKeywordPlugin()
 	if err := pe.pluginManager.LoadPlugin(keywordPlugin); err != nil {
 		return fmt.Errorf("failed to load keyword plugin: %v", err)
 	}
 
 	// Load binding plugin (let)
-	bindingPlugin := bindingplugin.NewBindingPlugin()
+	bindingPlugin := binding.NewBindingPlugin()
 	if err := pe.pluginManager.LoadPlugin(bindingPlugin); err != nil {
 		return fmt.Errorf("failed to load binding plugin: %v", err)
 	}
 
 	// Load sequence plugin (vector)
-	sequencePlugin := sequenceplugin.NewSequencePlugin()
+	sequencePlugin := sequence.NewSequencePlugin()
 	if err := pe.pluginManager.LoadPlugin(sequencePlugin); err != nil {
 		return fmt.Errorf("failed to load sequence plugin: %v", err)
 	}
 
 	// Load macro plugin
-	macroPlugin := macroplugin.NewMacroPlugin()
+	macroPlugin := macro.NewMacroPlugin()
 	if err := pe.pluginManager.LoadPlugin(macroPlugin); err != nil {
 		return fmt.Errorf("failed to load macro plugin: %v", err)
 	}
@@ -129,50 +137,56 @@ func (pe *PureEvaluator) loadAllPlugins() error {
 		return fmt.Errorf("failed to load string plugin: %v", err)
 	}
 
+	// Load utils plugin
+	utilsPlugin := utils.NewUtilsPlugin()
+	if err := pe.pluginManager.LoadPlugin(utilsPlugin); err != nil {
+		return fmt.Errorf("failed to load utils plugin: %v", err)
+	}
+
 	// Load functional plugin (map, filter, reduce, etc.)
-	functionalPlugin := functionalplugin.NewFunctionalPlugin()
+	functionalPlugin := functional.NewFunctionalPlugin()
 	if err := pe.pluginManager.LoadPlugin(functionalPlugin); err != nil {
 		return fmt.Errorf("failed to load functional plugin: %v", err)
 	}
 
 	// Load math plugin
-	mathPlugin := mathplugin.NewMathPlugin()
+	mathPlugin := math.NewMathPlugin()
 	if err := pe.pluginManager.LoadPlugin(mathPlugin); err != nil {
 		return fmt.Errorf("failed to load math plugin: %v", err)
 	}
 
 	// Load hashmap plugin
-	hashmapPlugin := hashmapplugin.NewHashMapPlugin()
+	hashmapPlugin := hashmap.NewHashMapPlugin()
 	if err := pe.pluginManager.LoadPlugin(hashmapPlugin); err != nil {
 		return fmt.Errorf("failed to load hashmap plugin: %v", err)
 	}
 
 	// Load atom plugin
-	atomPlugin := atomplugin.NewAtomPlugin()
+	atomPlugin := atom.NewAtomPlugin()
 	if err := pe.pluginManager.LoadPlugin(atomPlugin); err != nil {
 		return fmt.Errorf("failed to load atom plugin: %v", err)
 	}
 
 	// Load HTTP plugin
-	httpPlugin := httpplugin.NewHTTPPlugin()
+	httpPlugin := http.NewHTTPPlugin()
 	if err := pe.pluginManager.LoadPlugin(httpPlugin); err != nil {
 		return fmt.Errorf("failed to load HTTP plugin: %v", err)
 	}
 
 	// Load JSON plugin
-	jsonPlugin := jsonplugin.NewJSONPlugin()
+	jsonPlugin := json.NewJSONPlugin()
 	if err := pe.pluginManager.LoadPlugin(jsonPlugin); err != nil {
 		return fmt.Errorf("failed to load JSON plugin: %v", err)
 	}
 
 	// Load I/O plugin
-	ioPlugin := ioplugin.NewIOPlugin()
+	ioPlugin := io.NewIOPlugin()
 	if err := pe.pluginManager.LoadPlugin(ioPlugin); err != nil {
 		return fmt.Errorf("failed to load I/O plugin: %v", err)
 	}
 
 	// Load concurrency plugin
-	concurrencyPlugin := concurrencyplugin.NewConcurrencyPlugin()
+	concurrencyPlugin := concurrency.NewConcurrencyPlugin()
 	if err := pe.pluginManager.LoadPlugin(concurrencyPlugin); err != nil {
 		return fmt.Errorf("failed to load concurrency plugin: %v", err)
 	}
@@ -415,7 +429,7 @@ func (pe *PureEvaluator) evalHashMap(hashMap *types.HashMapExpr) (types.Value, e
 func (pe *PureEvaluator) SetInterpreterDependency(interp interface{}) {
 	// For now, we only support the concurrency plugin dependency
 	if pe.concurrencyPlugin != nil {
-		if interpDep, ok := interp.(concurrencyplugin.InterpreterDependency); ok {
+		if interpDep, ok := interp.(concurrency.InterpreterDependency); ok {
 			pe.concurrencyPlugin.SetInterpreter(interpDep)
 		}
 	}

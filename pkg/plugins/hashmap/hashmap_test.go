@@ -77,6 +77,8 @@ func TestHashMapPlugin_RegisterFunctions(t *testing.T) {
 		"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
 		"hash-map-contains?", "hash-map-keys", "hash-map-values",
 		"hash-map-size", "hash-map-empty?", "assoc", "dissoc",
+		// Clojure-style aliases
+		"get", "contains?", "keys", "vals",
 	}
 
 	for _, fnName := range expectedFunctions {
@@ -481,5 +483,243 @@ func TestHashMapPlugin_DissocErrors(t *testing.T) {
 	})
 	if err == nil {
 		t.Error("Expected error for non-hashmap argument")
+	}
+}
+
+// Tests for Clojure-style aliases
+func TestHashMapPlugin_ClojureGet(t *testing.T) {
+	plugin := NewHashMapPlugin()
+	evaluator := newMockEvaluator()
+
+	// Create a hash map
+	hashMap := &types.HashMapValue{
+		Elements: map[string]types.Value{
+			"name": types.StringValue("Alice"),
+			"age":  types.NumberValue(30),
+		},
+	}
+
+	// Test get with existing key
+	result, err := plugin.evalHashMapGet(evaluator, []types.Expr{
+		wrapValue(hashMap),
+		&types.StringExpr{Value: "name"},
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	strVal, ok := result.(types.StringValue)
+	if !ok {
+		t.Fatalf("Expected StringValue, got %T", result)
+	}
+
+	if string(strVal) != "Alice" {
+		t.Errorf("Expected 'Alice', got '%s'", string(strVal))
+	}
+
+	// Test get with non-existing key
+	result, err = plugin.evalHashMapGet(evaluator, []types.Expr{
+		wrapValue(hashMap),
+		&types.StringExpr{Value: "missing"},
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if _, ok := result.(*types.NilValue); !ok {
+		t.Errorf("Expected NilValue for missing key, got %T", result)
+	}
+}
+
+func TestHashMapPlugin_ClojureContains(t *testing.T) {
+	plugin := NewHashMapPlugin()
+	evaluator := newMockEvaluator()
+
+	// Create a hash map
+	hashMap := &types.HashMapValue{
+		Elements: map[string]types.Value{
+			"name": types.StringValue("Alice"),
+			"age":  types.NumberValue(30),
+		},
+	}
+
+	// Test contains? with existing key
+	result, err := plugin.evalHashMapContains(evaluator, []types.Expr{
+		wrapValue(hashMap),
+		&types.StringExpr{Value: "name"},
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	boolVal, ok := result.(types.BooleanValue)
+	if !ok {
+		t.Fatalf("Expected BooleanValue, got %T", result)
+	}
+
+	if !bool(boolVal) {
+		t.Error("Expected true for existing key")
+	}
+
+	// Test contains? with non-existing key
+	result, err = plugin.evalHashMapContains(evaluator, []types.Expr{
+		wrapValue(hashMap),
+		&types.StringExpr{Value: "missing"},
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	boolVal, ok = result.(types.BooleanValue)
+	if !ok {
+		t.Fatalf("Expected BooleanValue, got %T", result)
+	}
+
+	if bool(boolVal) {
+		t.Error("Expected false for non-existing key")
+	}
+}
+
+func TestHashMapPlugin_ClojureKeys(t *testing.T) {
+	plugin := NewHashMapPlugin()
+	evaluator := newMockEvaluator()
+
+	// Create a hash map
+	hashMap := &types.HashMapValue{
+		Elements: map[string]types.Value{
+			"name": types.StringValue("Alice"),
+			"age":  types.NumberValue(30),
+		},
+	}
+
+	// Test keys
+	result, err := plugin.evalHashMapKeys(evaluator, []types.Expr{
+		wrapValue(hashMap),
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	listVal, ok := result.(*types.ListValue)
+	if !ok {
+		t.Fatalf("Expected ListValue, got %T", result)
+	}
+
+	if len(listVal.Elements) != 2 {
+		t.Errorf("Expected 2 keys, got %d", len(listVal.Elements))
+	}
+
+	// Check that we have the expected keys (order may vary)
+	keyStrings := make(map[string]bool)
+	for _, key := range listVal.Elements {
+		if strKey, ok := key.(types.StringValue); ok {
+			keyStrings[string(strKey)] = true
+		} else {
+			t.Errorf("Expected string key, got %T", key)
+		}
+	}
+
+	if !keyStrings["name"] {
+		t.Error("Missing 'name' key")
+	}
+	if !keyStrings["age"] {
+		t.Error("Missing 'age' key")
+	}
+}
+
+func TestHashMapPlugin_ClojureVals(t *testing.T) {
+	plugin := NewHashMapPlugin()
+	evaluator := newMockEvaluator()
+
+	// Create a hash map
+	hashMap := &types.HashMapValue{
+		Elements: map[string]types.Value{
+			"name": types.StringValue("Alice"),
+			"age":  types.NumberValue(30),
+		},
+	}
+
+	// Test vals
+	result, err := plugin.evalHashMapValues(evaluator, []types.Expr{
+		wrapValue(hashMap),
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	listVal, ok := result.(*types.ListValue)
+	if !ok {
+		t.Fatalf("Expected ListValue, got %T", result)
+	}
+
+	if len(listVal.Elements) != 2 {
+		t.Errorf("Expected 2 values, got %d", len(listVal.Elements))
+	}
+
+	// Check that we have the expected values (order may vary)
+	hasAlice := false
+	hasAge := false
+	for _, value := range listVal.Elements {
+		if strVal, ok := value.(types.StringValue); ok && string(strVal) == "Alice" {
+			hasAlice = true
+		}
+		if numVal, ok := value.(types.NumberValue); ok && float64(numVal) == 30 {
+			hasAge = true
+		}
+	}
+
+	if !hasAlice {
+		t.Error("Missing 'Alice' value")
+	}
+	if !hasAge {
+		t.Error("Missing age value 30")
+	}
+}
+
+func TestHashMapPlugin_ClojureCount(t *testing.T) {
+	plugin := NewHashMapPlugin()
+	evaluator := newMockEvaluator()
+
+	// Create a hash map
+	hashMap := &types.HashMapValue{
+		Elements: map[string]types.Value{
+			"name": types.StringValue("Alice"),
+			"age":  types.NumberValue(30),
+		},
+	}
+
+	// Test count
+	result, err := plugin.evalHashMapSize(evaluator, []types.Expr{
+		wrapValue(hashMap),
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	numVal, ok := result.(types.NumberValue)
+	if !ok {
+		t.Fatalf("Expected NumberValue, got %T", result)
+	}
+
+	if float64(numVal) != 2 {
+		t.Errorf("Expected count 2, got %f", float64(numVal))
+	}
+
+	// Test count on empty hash map
+	emptyMap := &types.HashMapValue{Elements: make(map[string]types.Value)}
+	result, err = plugin.evalHashMapSize(evaluator, []types.Expr{
+		wrapValue(emptyMap),
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	numVal, ok = result.(types.NumberValue)
+	if !ok {
+		t.Fatalf("Expected NumberValue, got %T", result)
+	}
+
+	if float64(numVal) != 0 {
+		t.Errorf("Expected count 0, got %f", float64(numVal))
 	}
 }

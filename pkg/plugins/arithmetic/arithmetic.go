@@ -86,7 +86,31 @@ func (ap *ArithmeticPlugin) RegisterFunctions(reg registry.FunctionRegistry) err
 		"Modulo operation: (% 10 3) => 1",
 		ap.evalModulo,
 	)
-	return reg.Register(modFunc)
+	if err := reg.Register(modFunc); err != nil {
+		return err
+	}
+
+	// Clojure-style increment
+	incFunc := functions.NewFunction(
+		"inc",
+		registry.CategoryArithmetic,
+		1,
+		"Increment by 1: (inc 5) => 6",
+		ap.evalInc,
+	)
+	if err := reg.Register(incFunc); err != nil {
+		return err
+	}
+
+	// Clojure-style decrement
+	decFunc := functions.NewFunction(
+		"dec",
+		registry.CategoryArithmetic,
+		1,
+		"Decrement by 1: (dec 5) => 4",
+		ap.evalDec,
+	)
+	return reg.Register(decFunc)
 }
 
 // evalAdd implements addition
@@ -356,4 +380,52 @@ func (ap *ArithmeticPlugin) evalModulo(evaluator registry.Evaluator, args []type
 	// Use Go's built-in modulo behavior
 	result := math.Mod(x, y)
 	return types.NumberValue(result), nil
+}
+
+// evalInc implements increment operation
+func (ap *ArithmeticPlugin) evalInc(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("inc requires exactly 1 argument, got %d", len(args))
+	}
+
+	values, err := functions.EvalArgs(evaluator, args)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := values[0].(type) {
+	case types.NumberValue:
+		return types.NumberValue(float64(v) + 1), nil
+	case *types.BigNumberValue:
+		result := types.NewBigNumberValue(v.Value)
+		one := types.NewBigNumberFromInt64(1)
+		result.Value.Add(result.Value, one.Value)
+		return result, nil
+	default:
+		return nil, fmt.Errorf("inc: expected number, got %T", values[0])
+	}
+}
+
+// evalDec implements decrement operation
+func (ap *ArithmeticPlugin) evalDec(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("dec requires exactly 1 argument, got %d", len(args))
+	}
+
+	values, err := functions.EvalArgs(evaluator, args)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := values[0].(type) {
+	case types.NumberValue:
+		return types.NumberValue(float64(v) - 1), nil
+	case *types.BigNumberValue:
+		result := types.NewBigNumberValue(v.Value)
+		one := types.NewBigNumberFromInt64(1)
+		result.Value.Sub(result.Value, one.Value)
+		return result, nil
+	default:
+		return nil, fmt.Errorf("dec: expected number, got %T", values[0])
+	}
 }

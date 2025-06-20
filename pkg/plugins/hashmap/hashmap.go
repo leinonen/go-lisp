@@ -3,6 +3,7 @@ package hashmap
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
 	"github.com/leinonen/go-lisp/pkg/plugins"
@@ -33,6 +34,8 @@ func (p *HashMapPlugin) Functions() []string {
 		"hash-map", "hash-map-get", "hash-map-put", "hash-map-remove",
 		"hash-map-contains?", "hash-map-keys", "hash-map-values",
 		"hash-map-size", "hash-map-empty?", "assoc", "dissoc",
+		// Clojure-style aliases
+		"get", "contains?", "keys", "vals",
 	}
 }
 
@@ -167,6 +170,55 @@ func (p *HashMapPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 		p.evalDissoc,
 	)
 	if err := reg.Register(dissocFunc); err != nil {
+		return err
+	}
+
+	// Clojure-style aliases
+	// get function (polymorphic - works with hashmaps, vectors, lists, strings)
+	getFunc := functions.NewFunction(
+		"get",
+		registry.CategoryHashMap,
+		2,
+		"Get value from collection: (get coll key) - works with hashmaps, vectors, lists, strings",
+		p.evalGet,
+	)
+	if err := reg.Register(getFunc); err != nil {
+		return err
+	}
+
+	// contains? function (polymorphic - works with hashmaps, vectors, lists, strings)
+	containsFunc := functions.NewFunction(
+		"contains?",
+		registry.CategoryHashMap,
+		2,
+		"Check if collection contains key/index: (contains? coll key) - works with hashmaps, vectors, lists, strings",
+		p.evalContains,
+	)
+	if err := reg.Register(containsFunc); err != nil {
+		return err
+	}
+
+	// keys function (alias for hash-map-keys)
+	keysFunc := functions.NewFunction(
+		"keys",
+		registry.CategoryHashMap,
+		1,
+		"Get all keys from hash map: (keys map)",
+		p.evalHashMapKeys,
+	)
+	if err := reg.Register(keysFunc); err != nil {
+		return err
+	}
+
+	// vals function (alias for hash-map-values)
+	valsFunc := functions.NewFunction(
+		"vals",
+		registry.CategoryHashMap,
+		1,
+		"Get all values from hash map: (vals map)",
+		p.evalHashMapValues,
+	)
+	if err := reg.Register(valsFunc); err != nil {
 		return err
 	}
 
@@ -536,4 +588,137 @@ func (p *HashMapPlugin) evalDissoc(evaluator registry.Evaluator, args []types.Ex
 	}
 
 	return &types.HashMapValue{Elements: newElements}, nil
+}
+
+// evalGet is a polymorphic version that works with hashmaps, vectors, lists, and strings
+func (p *HashMapPlugin) evalGet(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("get requires exactly 2 arguments, got %d", len(args))
+	}
+
+	collValue, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	keyValue, err := evaluator.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	switch coll := collValue.(type) {
+	case *types.HashMapValue:
+		// Handle hashmap case
+		keyStr, err := p.convertKeyToString(keyValue)
+		if err != nil {
+			return nil, err
+		}
+		value, exists := coll.Elements[keyStr]
+		if !exists {
+			return &types.NilValue{}, nil
+		}
+		return value, nil
+
+	case *types.VectorValue:
+		// Handle vector case - key should be an index
+		indexNum, ok := keyValue.(types.NumberValue)
+		if !ok {
+			return nil, fmt.Errorf("get: vector index must be a number, got %T", keyValue)
+		}
+		index := int(indexNum)
+		if index < 0 || index >= len(coll.Elements) {
+			return &types.NilValue{}, nil
+		}
+		return coll.Elements[index], nil
+
+	case *types.ListValue:
+		// Handle list case - key should be an index
+		indexNum, ok := keyValue.(types.NumberValue)
+		if !ok {
+			return nil, fmt.Errorf("get: list index must be a number, got %T", keyValue)
+		}
+		index := int(indexNum)
+		if index < 0 || index >= len(coll.Elements) {
+			return &types.NilValue{}, nil
+		}
+		return coll.Elements[index], nil
+
+	case types.StringValue:
+		// Handle string case - key should be an index
+		indexNum, ok := keyValue.(types.NumberValue)
+		if !ok {
+			return nil, fmt.Errorf("get: string index must be a number, got %T", keyValue)
+		}
+		index := int(indexNum)
+		runes := []rune(string(coll))
+		if index < 0 || index >= len(runes) {
+			return &types.NilValue{}, nil
+		}
+		return types.StringValue(string(runes[index])), nil
+
+	default:
+		return nil, fmt.Errorf("get: cannot get from %T", collValue)
+	}
+}
+
+// evalContains is a polymorphic version that works with hashmaps, vectors, lists, and strings
+func (p *HashMapPlugin) evalContains(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("contains? requires exactly 2 arguments, got %d", len(args))
+	}
+
+	collValue, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	keyValue, err := evaluator.Eval(args[1])
+	if err != nil {
+		return nil, err
+	}
+
+	switch coll := collValue.(type) {
+	case *types.HashMapValue:
+		// Handle hashmap case
+		keyStr, err := p.convertKeyToString(keyValue)
+		if err != nil {
+			return nil, err
+		}
+		_, exists := coll.Elements[keyStr]
+		return types.BooleanValue(exists), nil
+
+	case *types.VectorValue:
+		// Handle vector case - check if index is valid
+		indexNum, ok := keyValue.(types.NumberValue)
+		if !ok {
+			return types.BooleanValue(false), nil
+		}
+		index := int(indexNum)
+		return types.BooleanValue(index >= 0 && index < len(coll.Elements)), nil
+
+	case *types.ListValue:
+		// Handle list case - check if index is valid
+		indexNum, ok := keyValue.(types.NumberValue)
+		if !ok {
+			return types.BooleanValue(false), nil
+		}
+		index := int(indexNum)
+		return types.BooleanValue(index >= 0 && index < len(coll.Elements)), nil
+
+	case types.StringValue:
+		// Handle string case - check if index is valid or if it contains substring
+		if indexNum, ok := keyValue.(types.NumberValue); ok {
+			index := int(indexNum)
+			runes := []rune(string(coll))
+			return types.BooleanValue(index >= 0 && index < len(runes)), nil
+		}
+		// If key is a string, check if it's a substring
+		if keyStr, ok := keyValue.(types.StringValue); ok {
+			return types.BooleanValue(strings.Contains(string(coll), string(keyStr))), nil
+		}
+		return types.BooleanValue(false), nil
+
+	default:
+		return nil, fmt.Errorf("contains?: cannot check containment in %T", collValue)
+	}
 }

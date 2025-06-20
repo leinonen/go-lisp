@@ -83,7 +83,7 @@ func TestArithmeticPlugin_RegisterFunctions(t *testing.T) {
 		t.Fatalf("Failed to register functions: %v", err)
 	}
 
-	expectedFunctions := []string{"+", "-", "*", "/", "%"}
+	expectedFunctions := []string{"+", "-", "*", "/", "%", "inc", "dec"}
 
 	for _, fnName := range expectedFunctions {
 		if !reg.Has(fnName) {
@@ -590,5 +590,192 @@ func TestArithmeticPlugin_PluginInfo(t *testing.T) {
 	deps := plugin.Dependencies()
 	if len(deps) != 0 {
 		t.Errorf("Expected no dependencies, got %v", deps)
+	}
+}
+
+// Tests for Clojure-style inc and dec functions
+func TestArithmeticPlugin_Inc(t *testing.T) {
+	plugin := NewArithmeticPlugin()
+	evaluator := newMockEvaluator()
+
+	tests := []struct {
+		name     string
+		input    float64
+		expected float64
+	}{
+		{"positive number", 5, 6},
+		{"negative number", -3, -2},
+		{"zero", 0, 1},
+		{"decimal", 2.5, 3.5},
+		{"large number", 999, 1000},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := plugin.evalInc(evaluator, []types.Expr{
+				&types.NumberExpr{Value: tt.input},
+			})
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			numVal, ok := result.(types.NumberValue)
+			if !ok {
+				t.Fatalf("Expected NumberValue, got %T", result)
+			}
+
+			if float64(numVal) != tt.expected {
+				t.Errorf("Expected %f, got %f", tt.expected, float64(numVal))
+			}
+		})
+	}
+}
+
+func TestArithmeticPlugin_IncErrors(t *testing.T) {
+	plugin := NewArithmeticPlugin()
+	evaluator := newMockEvaluator()
+
+	// Test wrong number of arguments
+	tests := []struct {
+		name string
+		args []types.Expr
+	}{
+		{"no arguments", []types.Expr{}},
+		{"too many arguments", []types.Expr{
+			&types.NumberExpr{Value: 5},
+			&types.NumberExpr{Value: 10},
+		}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := plugin.evalInc(evaluator, tt.args)
+			if err == nil {
+				t.Error("Expected error for wrong number of arguments")
+			}
+		})
+	}
+
+	// Test non-number argument
+	_, err := plugin.evalInc(evaluator, []types.Expr{
+		&types.StringExpr{Value: "not a number"},
+	})
+	if err == nil {
+		t.Error("Expected error for non-number argument")
+	}
+}
+
+func TestArithmeticPlugin_Dec(t *testing.T) {
+	plugin := NewArithmeticPlugin()
+	evaluator := newMockEvaluator()
+
+	tests := []struct {
+		name     string
+		input    float64
+		expected float64
+	}{
+		{"positive number", 5, 4},
+		{"negative number", -3, -4},
+		{"zero", 0, -1},
+		{"decimal", 2.5, 1.5},
+		{"large number", 1000, 999},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := plugin.evalDec(evaluator, []types.Expr{
+				&types.NumberExpr{Value: tt.input},
+			})
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			numVal, ok := result.(types.NumberValue)
+			if !ok {
+				t.Fatalf("Expected NumberValue, got %T", result)
+			}
+
+			if float64(numVal) != tt.expected {
+				t.Errorf("Expected %f, got %f", tt.expected, float64(numVal))
+			}
+		})
+	}
+}
+
+func TestArithmeticPlugin_DecErrors(t *testing.T) {
+	plugin := NewArithmeticPlugin()
+	evaluator := newMockEvaluator()
+
+	// Test wrong number of arguments
+	tests := []struct {
+		name string
+		args []types.Expr
+	}{
+		{"no arguments", []types.Expr{}},
+		{"too many arguments", []types.Expr{
+			&types.NumberExpr{Value: 5},
+			&types.NumberExpr{Value: 10},
+		}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := plugin.evalDec(evaluator, tt.args)
+			if err == nil {
+				t.Error("Expected error for wrong number of arguments")
+			}
+		})
+	}
+
+	// Test non-number argument
+	_, err := plugin.evalDec(evaluator, []types.Expr{
+		&types.StringExpr{Value: "not a number"},
+	})
+	if err == nil {
+		t.Error("Expected error for non-number argument")
+	}
+}
+
+func TestArithmeticPlugin_IncDecWithBigNumbers(t *testing.T) {
+	plugin := NewArithmeticPlugin()
+	evaluator := newMockEvaluator()
+
+	// Test inc with big number
+	bigNum := types.NewBigNumberFromInt64(9223372036854775807) // Max int64
+	result, err := plugin.evalInc(evaluator, []types.Expr{wrapValue(bigNum)})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	bigResult, ok := result.(*types.BigNumberValue)
+	if !ok {
+		t.Fatalf("Expected BigNumberValue, got %T", result)
+	}
+
+	// The result should be max int64 + 1
+	expected := types.NewBigNumberFromInt64(9223372036854775807)
+	expected.Value.Add(expected.Value, types.NewBigNumberFromInt64(1).Value)
+
+	if bigResult.Value.Cmp(expected.Value) != 0 {
+		t.Errorf("Expected %s, got %s", expected.Value.String(), bigResult.Value.String())
+	}
+
+	// Test dec with big number
+	result, err = plugin.evalDec(evaluator, []types.Expr{wrapValue(bigNum)})
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	bigResult, ok = result.(*types.BigNumberValue)
+	if !ok {
+		t.Fatalf("Expected BigNumberValue, got %T", result)
+	}
+
+	// The result should be max int64 - 1
+	expected = types.NewBigNumberFromInt64(9223372036854775807)
+	expected.Value.Sub(expected.Value, types.NewBigNumberFromInt64(1).Value)
+
+	if bigResult.Value.Cmp(expected.Value) != 0 {
+		t.Errorf("Expected %s, got %s", expected.Value.String(), bigResult.Value.String())
 	}
 }

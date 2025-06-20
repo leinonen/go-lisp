@@ -123,6 +123,18 @@ func (p *CorePlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 		return err
 	}
 
+	// count function (polymorphic - works on all collections)
+	countFunc := functions.NewFunction(
+		"count",
+		registry.CategoryCore,
+		1,
+		"Get count of elements in collection: (count coll) - works on lists, vectors, hash-maps, strings",
+		p.countFunc,
+	)
+	if err := reg.Register(countFunc); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -440,4 +452,32 @@ func (p *CorePlugin) pluginsFunc(evaluator registry.Evaluator, args []types.Expr
 	}
 
 	return types.StringValue(strings.Join(pluginLines, "\n")), nil
+}
+
+// countFunc implements polymorphic count function for all collection types
+func (p *CorePlugin) countFunc(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("count requires exactly 1 argument, got %d", len(args))
+	}
+
+	value, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := value.(type) {
+	case *types.ListValue:
+		return types.NumberValue(float64(len(v.Elements))), nil
+	case *types.VectorValue:
+		return types.NumberValue(float64(len(v.Elements))), nil
+	case *types.HashMapValue:
+		return types.NumberValue(float64(len(v.Elements))), nil
+	case types.StringValue:
+		// Count Unicode characters, not bytes
+		return types.NumberValue(float64(len([]rune(string(v))))), nil
+	case *types.NilValue:
+		return types.NumberValue(0), nil
+	default:
+		return nil, fmt.Errorf("count not supported on type %T", value)
+	}
 }
