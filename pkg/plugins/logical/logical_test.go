@@ -78,7 +78,7 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestLogicalPlugin_NewLogicalPlugin(t *testing.T) {
-	plugin := NewLogicalPlugin()
+	plugin := NewLogicalPluginLegacy()
 	if plugin == nil {
 		t.Fatal("NewLogicalPlugin returned nil")
 	}
@@ -97,7 +97,7 @@ func TestLogicalPlugin_NewLogicalPlugin(t *testing.T) {
 }
 
 func TestLogicalPlugin_And(t *testing.T) {
-	plugin := NewLogicalPlugin()
+	plugin := NewLogicalPluginLegacy()
 	eval := newMockEvaluator()
 
 	tests := []struct {
@@ -220,7 +220,7 @@ func TestLogicalPlugin_And(t *testing.T) {
 }
 
 func TestLogicalPlugin_Or(t *testing.T) {
-	plugin := NewLogicalPlugin()
+	plugin := NewLogicalPluginLegacy()
 	eval := newMockEvaluator()
 
 	tests := []struct {
@@ -343,7 +343,7 @@ func TestLogicalPlugin_Or(t *testing.T) {
 }
 
 func TestLogicalPlugin_Not(t *testing.T) {
-	plugin := NewLogicalPlugin()
+	plugin := NewLogicalPluginLegacy()
 	eval := newMockEvaluator()
 
 	tests := []struct {

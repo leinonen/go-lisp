@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -16,6 +17,7 @@ import (
 // MathPlugin implements mathematical functions
 type MathPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
 // Random number generator (initialize once)
@@ -26,7 +28,7 @@ func init() {
 }
 
 // NewMathPlugin creates a new math plugin
-func NewMathPlugin() *MathPlugin {
+func NewMathPlugin(evaluator interfaces.CoreEvaluator) *MathPlugin {
 	return &MathPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"math",
@@ -34,6 +36,7 @@ func NewMathPlugin() *MathPlugin {
 			"Mathematical functions (sqrt, pow, sin, cos, log, etc.)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
 }
 
@@ -44,7 +47,7 @@ func (p *MathPlugin) Functions() []string {
 		"sin", "cos", "tan", "asin", "acos", "atan", "atan2",
 		"sinh", "cosh", "tanh", "log", "exp", "log10", "log2",
 		"degrees", "radians", "min", "max", "sign", "mod",
-		"pi", "e", "random",
+		"pi", "e", "random", "even?", "odd?",
 	}
 }
 
@@ -388,6 +391,29 @@ func (p *MathPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 		p.evalRandom,
 	)
 	if err := reg.Register(randomFunc); err != nil {
+		return err
+	}
+
+	// Predicate functions
+	evenFunc := functions.NewFunction(
+		"even?",
+		registry.CategoryMath,
+		1,
+		"Check if number is even: (even? 4) => true",
+		p.evalEven,
+	)
+	if err := reg.Register(evenFunc); err != nil {
+		return err
+	}
+
+	oddFunc := functions.NewFunction(
+		"odd?",
+		registry.CategoryMath,
+		1,
+		"Check if number is odd: (odd? 3) => true",
+		p.evalOdd,
+	)
+	if err := reg.Register(oddFunc); err != nil {
 		return err
 	}
 
@@ -1135,4 +1161,54 @@ func (p *MathPlugin) evalRandom(evaluator registry.Evaluator, args []types.Expr)
 	default:
 		return nil, fmt.Errorf("random requires 0, 1, or 2 arguments, got %d", len(args))
 	}
+}
+
+// Even predicate
+func (p *MathPlugin) evalEven(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("even? requires exactly 1 argument, got %d", len(args))
+	}
+
+	val, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	num, err := p.extractFloat64(val)
+	if err != nil {
+		return nil, fmt.Errorf("even?: %v", err)
+	}
+
+	// Check if the number is an integer
+	if num != math.Trunc(num) {
+		return nil, fmt.Errorf("even?: expected integer, got %v", num)
+	}
+
+	// Check if the integer is even
+	return types.BooleanValue(int64(num)%2 == 0), nil
+}
+
+// Odd predicate
+func (p *MathPlugin) evalOdd(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf("odd? requires exactly 1 argument, got %d", len(args))
+	}
+
+	val, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, err
+	}
+
+	num, err := p.extractFloat64(val)
+	if err != nil {
+		return nil, fmt.Errorf("odd?: %v", err)
+	}
+
+	// Check if the number is an integer
+	if num != math.Trunc(num) {
+		return nil, fmt.Errorf("odd?: expected integer, got %v", num)
+	}
+
+	// Check if the integer is odd
+	return types.BooleanValue(int64(num)%2 != 0), nil
 }

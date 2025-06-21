@@ -6,6 +6,7 @@ import (
 
 	"github.com/leinonen/go-lisp/pkg/evaluator"
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -14,11 +15,14 @@ import (
 // EnvironmentPlugin provides proper environment scoping for let bindings
 type EnvironmentPlugin struct {
 	*plugins.BasePlugin
-	env *evaluator.Environment
+	env             interfaces.EnvironmentWriter
+	evaluator       interfaces.CoreEvaluator
+	legacyEnv       *evaluator.Environment
+	legacyEvaluator registry.Evaluator
 }
 
-// NewEnvironmentPlugin creates a new environment plugin
-func NewEnvironmentPlugin(env *evaluator.Environment) *EnvironmentPlugin {
+// NewEnvironmentPlugin creates a new environment plugin with dependency injection
+func NewEnvironmentPlugin(env interfaces.EnvironmentWriter, evaluator interfaces.CoreEvaluator) *EnvironmentPlugin {
 	return &EnvironmentPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"environment",
@@ -26,7 +30,8 @@ func NewEnvironmentPlugin(env *evaluator.Environment) *EnvironmentPlugin {
 			"Enhanced environment scoping (let*, letfn)",
 			[]string{"core", "binding"}, // Depends on core and basic binding
 		),
-		env: env,
+		env:       env,
+		evaluator: evaluator,
 	}
 }
 
@@ -176,17 +181,4 @@ func (p *EnvironmentPlugin) evalLetfn(evaluator registry.Evaluator, args []types
 	}
 
 	return evaluator.Eval(doExpr)
-}
-
-// delegateToLet delegates to the basic let implementation
-func (p *EnvironmentPlugin) delegateToLet(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	// Create (let bindings body) expression
-	letExpr := &types.ListExpr{
-		Elements: []types.Expr{
-			&types.SymbolExpr{Name: "let"},
-			args[0], // bindings
-			args[1], // body
-		},
-	}
-	return evaluator.Eval(letExpr)
 }

@@ -91,7 +91,8 @@ func (me *mockEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]t
 }
 
 func TestBindingPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewBindingPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewBindingPlugin(mockEval)
 	registry := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(registry)
@@ -120,8 +121,8 @@ func TestBindingPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestBindingPlugin_EvalLet_BasicBindings(t *testing.T) {
-	plugin := NewBindingPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewBindingPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -177,8 +178,8 @@ func TestBindingPlugin_EvalLet_BasicBindings(t *testing.T) {
 }
 
 func TestBindingPlugin_EvalLet_Errors(t *testing.T) {
-	plugin := NewBindingPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewBindingPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -225,8 +226,8 @@ func TestBindingPlugin_EvalLet_Errors(t *testing.T) {
 
 func TestBindingPlugin_EvalLet_SequentialBinding(t *testing.T) {
 	// Test that later bindings can reference earlier ones
-	plugin := NewBindingPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewBindingPlugin(evaluator)
 
 	args := []types.Expr{
 		&types.BracketExpr{Elements: []types.Expr{

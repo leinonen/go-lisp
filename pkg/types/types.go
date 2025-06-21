@@ -725,3 +725,40 @@ func NewPositionalError(message string, pos Position, cause error) *PositionalEr
 		Cause:    cause,
 	}
 }
+
+// PartialFunctionValue represents a partially applied function
+type PartialFunctionValue struct {
+	OriginalFunction Value   // The original function
+	PartialArgs      []Value // The partial arguments
+}
+
+func (p *PartialFunctionValue) String() string {
+	return fmt.Sprintf("#<partial-function>")
+}
+
+// ComplementFunctionValue represents a complement of a predicate function
+type ComplementFunctionValue struct {
+	PredicateFunction Value // The original predicate function
+}
+
+func (c *ComplementFunctionValue) String() string {
+	return fmt.Sprintf("#<complement-function>")
+}
+
+// JuxtFunctionValue represents a juxtaposition of multiple functions
+type JuxtFunctionValue struct {
+	Functions []Value // The functions to juxtapose
+}
+
+func (j *JuxtFunctionValue) String() string {
+	return fmt.Sprintf("#<juxt-function>")
+}
+
+// CompFunctionValue represents a composition of multiple functions
+type CompFunctionValue struct {
+	Functions []Value // The functions to compose (applied right to left)
+}
+
+func (c *CompFunctionValue) String() string {
+	return fmt.Sprintf("#<comp-function>")
+}

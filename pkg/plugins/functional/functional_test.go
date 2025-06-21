@@ -163,7 +163,7 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestFunctionalPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewFunctionalPlugin()
+	plugin := NewFunctionalPluginLegacy()
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -181,7 +181,7 @@ func TestFunctionalPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestFunctionalPlugin_MapFunc(t *testing.T) {
-	plugin := NewFunctionalPlugin()
+	plugin := NewFunctionalPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	tests := []struct {
@@ -284,7 +284,7 @@ func TestFunctionalPlugin_MapFunc(t *testing.T) {
 }
 
 func TestFunctionalPlugin_FilterFunc(t *testing.T) {
-	plugin := NewFunctionalPlugin()
+	plugin := NewFunctionalPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	tests := []struct {
@@ -400,7 +400,7 @@ func TestFunctionalPlugin_FilterFunc(t *testing.T) {
 }
 
 func TestFunctionalPlugin_ReduceFunc(t *testing.T) {
-	plugin := NewFunctionalPlugin()
+	plugin := NewFunctionalPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	tests := []struct {
@@ -498,7 +498,7 @@ func TestFunctionalPlugin_ReduceFunc(t *testing.T) {
 }
 
 func TestFunctionalPlugin_ApplyFunc(t *testing.T) {
-	plugin := NewFunctionalPlugin()
+	plugin := NewFunctionalPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	tests := []struct {
@@ -598,7 +598,7 @@ func TestFunctionalPlugin_ApplyFunc(t *testing.T) {
 }
 
 func TestFunctionalPlugin_ValueToExpr(t *testing.T) {
-	plugin := NewFunctionalPlugin()
+	plugin := NewFunctionalPluginLegacy()
 
 	tests := []struct {
 		name     string
@@ -646,7 +646,7 @@ func TestFunctionalPlugin_ValueToExpr(t *testing.T) {
 }
 
 func TestFunctionalPlugin_IsTruthy(t *testing.T) {
-	plugin := NewFunctionalPlugin()
+	plugin := NewFunctionalPluginLegacy()
 
 	tests := []struct {
 		name     string
@@ -711,7 +711,7 @@ func TestFunctionalPlugin_IsTruthy(t *testing.T) {
 }
 
 func TestFunctionalPlugin_PluginInfo(t *testing.T) {
-	plugin := NewFunctionalPlugin()
+	plugin := NewFunctionalPluginLegacy()
 
 	if plugin.Name() != "functional" {
 		t.Errorf("Expected plugin name 'functional', got %s", plugin.Name())

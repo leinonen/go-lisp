@@ -66,7 +66,7 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestJSONPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewJSONPlugin()
+	plugin := NewJSONPluginLegacy()
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -84,7 +84,7 @@ func TestJSONPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestJSONPlugin_JsonParse(t *testing.T) {
-	plugin := NewJSONPlugin()
+	plugin := NewJSONPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	tests := []struct {
@@ -164,7 +164,7 @@ func TestJSONPlugin_JsonParse(t *testing.T) {
 }
 
 func TestJSONPlugin_JsonStringify(t *testing.T) {
-	plugin := NewJSONPlugin()
+	plugin := NewJSONPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	tests := []struct {
@@ -219,7 +219,7 @@ func TestJSONPlugin_JsonStringify(t *testing.T) {
 }
 
 func TestJSONPlugin_JsonStringifyPretty(t *testing.T) {
-	plugin := NewJSONPlugin()
+	plugin := NewJSONPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	// Test with a simple hash map
@@ -245,7 +245,7 @@ func TestJSONPlugin_JsonStringifyPretty(t *testing.T) {
 }
 
 func TestJSONPlugin_JsonPath(t *testing.T) {
-	plugin := NewJSONPlugin()
+	plugin := NewJSONPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	// Create a nested JSON structure
@@ -300,7 +300,7 @@ func TestJSONPlugin_JsonPath(t *testing.T) {
 }
 
 func TestJSONPlugin_ErrorCases(t *testing.T) {
-	plugin := NewJSONPlugin()
+	plugin := NewJSONPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	// Test invalid JSON
@@ -325,7 +325,7 @@ func TestJSONPlugin_ErrorCases(t *testing.T) {
 }
 
 func TestJSONPlugin_ComplexDataStructures(t *testing.T) {
-	plugin := NewJSONPlugin()
+	plugin := NewJSONPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	// Test parsing and then stringifying a complex structure

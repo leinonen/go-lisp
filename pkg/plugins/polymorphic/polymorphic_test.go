@@ -7,8 +7,38 @@ import (
 	"github.com/leinonen/go-lisp/pkg/types"
 )
 
+// Mock evaluator for testing
+type mockEvaluator struct{}
+
+func newMockEvaluator() *mockEvaluator {
+	return &mockEvaluator{}
+}
+
+func (me *mockEvaluator) Eval(expr types.Expr) (types.Value, error) {
+	// Basic implementation for testing
+	switch e := expr.(type) {
+	case *types.NumberExpr:
+		return types.NumberValue(e.Value), nil
+	case *types.StringExpr:
+		return types.StringValue(e.Value), nil
+	case *types.BooleanExpr:
+		return types.BooleanValue(e.Value), nil
+	default:
+		return nil, nil
+	}
+}
+
+func (me *mockEvaluator) CallFunction(funcValue types.Value, args []types.Expr) (types.Value, error) {
+	return nil, nil
+}
+
+func (me *mockEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]types.Value) (types.Value, error) {
+	return me.Eval(expr)
+}
+
 func TestPolymorphicPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewPolymorphicPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewPolymorphicPlugin(mockEval)
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -31,7 +61,8 @@ func TestPolymorphicPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestPolymorphicPlugin_ExtractSequence(t *testing.T) {
-	plugin := NewPolymorphicPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewPolymorphicPlugin(mockEval)
 
 	// Test with list
 	listValue := &types.ListValue{Elements: []types.Value{
@@ -85,7 +116,8 @@ func TestPolymorphicPlugin_ExtractSequence(t *testing.T) {
 }
 
 func TestPolymorphicPlugin_PluginInfo(t *testing.T) {
-	plugin := NewPolymorphicPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewPolymorphicPlugin(mockEval)
 
 	if plugin.Name() != "polymorphic" {
 		t.Errorf("Expected plugin name 'polymorphic', got '%s'", plugin.Name())

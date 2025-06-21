@@ -1,6 +1,13 @@
 package evaluator
 
-import "github.com/leinonen/go-lisp/pkg/types"
+import (
+	"github.com/leinonen/go-lisp/pkg/interfaces"
+	"github.com/leinonen/go-lisp/pkg/types"
+)
+
+// Ensure Environment implements the required interfaces
+var _ interfaces.EnvironmentReader = (*Environment)(nil)
+var _ interfaces.EnvironmentWriter = (*Environment)(nil)
 
 // Environment represents a variable binding environment
 type Environment struct {
@@ -80,13 +87,19 @@ func (e *Environment) Set(name string, value types.Value) {
 }
 
 func (e *Environment) Get(name string) (types.Value, bool) {
-	if value, ok := e.bindings[name]; ok {
+	if value, exists := e.bindings[name]; exists {
 		return value, true
 	}
 	if e.parent != nil {
 		return e.parent.Get(name)
 	}
 	return nil, false
+}
+
+// Has checks if a binding exists in the environment or any parent environment
+func (e *Environment) Has(name string) bool {
+	_, exists := e.Get(name)
+	return exists
 }
 
 // NewChildEnvironment creates a new environment with this environment as parent
@@ -155,4 +168,41 @@ func (e *Environment) GetModules() map[string]*types.ModuleValue {
 		modules[name] = module
 	}
 	return modules
+}
+
+// Interface implementations for EnvironmentReader and EnvironmentWriter
+
+// ListBindings returns a copy of all bindings including parent environments
+func (e *Environment) ListBindings() map[string]types.Value {
+	bindings := make(map[string]types.Value)
+
+	// Start from root and work down
+	environments := []*Environment{}
+	current := e
+	for current != nil {
+		environments = append([]*Environment{current}, environments...)
+		current = current.parent
+	}
+
+	// Apply bindings from root to current (children override parents)
+	for _, env := range environments {
+		for name, value := range env.bindings {
+			bindings[name] = value
+		}
+	}
+
+	return bindings
+}
+
+// Parent returns the parent environment as EnvironmentReader
+func (e *Environment) Parent() interfaces.EnvironmentReader {
+	if e.parent == nil {
+		return nil
+	}
+	return e.parent
+}
+
+// Delete removes a binding from the current environment
+func (e *Environment) Delete(name string) {
+	delete(e.bindings, name)
 }

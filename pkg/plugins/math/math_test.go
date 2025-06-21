@@ -75,7 +75,8 @@ func floatEqual(a, b float64, tolerance float64) bool {
 }
 
 func TestMathPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewMathPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewMathPlugin(mockEval)
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -88,7 +89,7 @@ func TestMathPlugin_RegisterFunctions(t *testing.T) {
 		"sin", "cos", "tan", "asin", "acos", "atan", "atan2",
 		"sinh", "cosh", "tanh", "log", "exp", "log10", "log2",
 		"degrees", "radians", "min", "max", "sign", "mod",
-		"pi", "e", "random",
+		"pi", "e", "random", "even?", "odd?",
 	}
 
 	for _, fnName := range expectedFunctions {
@@ -99,8 +100,8 @@ func TestMathPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestMathPlugin_BasicFunctions(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -211,8 +212,8 @@ func TestMathPlugin_BasicFunctions(t *testing.T) {
 }
 
 func TestMathPlugin_TrigonometricFunctions(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -279,8 +280,8 @@ func TestMathPlugin_TrigonometricFunctions(t *testing.T) {
 }
 
 func TestMathPlugin_InverseTrigonometricFunctions(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -347,8 +348,8 @@ func TestMathPlugin_InverseTrigonometricFunctions(t *testing.T) {
 }
 
 func TestMathPlugin_LogarithmicFunctions(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -427,8 +428,8 @@ func TestMathPlugin_LogarithmicFunctions(t *testing.T) {
 }
 
 func TestMathPlugin_MinMax(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -498,8 +499,8 @@ func TestMathPlugin_MinMax(t *testing.T) {
 }
 
 func TestMathPlugin_AngleConversion(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -554,8 +555,8 @@ func TestMathPlugin_AngleConversion(t *testing.T) {
 }
 
 func TestMathPlugin_SpecialFunctions(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	// Test sign function
 	signTests := []struct {
@@ -637,8 +638,8 @@ func TestMathPlugin_SpecialFunctions(t *testing.T) {
 }
 
 func TestMathPlugin_Random(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	// Test random function returns a value between 0 and 1
 	result, err := plugin.evalRandom(evaluator, []types.Expr{})
@@ -674,8 +675,8 @@ func TestMathPlugin_Random(t *testing.T) {
 }
 
 func TestMathPlugin_ErrorCases(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -720,8 +721,8 @@ func TestMathPlugin_ErrorCases(t *testing.T) {
 }
 
 func TestMathPlugin_InvalidArguments(t *testing.T) {
-	plugin := NewMathPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMathPlugin(evaluator)
 
 	// Test with non-number arguments
 	nonNumber := types.StringValue("not-a-number")

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -15,10 +16,11 @@ import (
 // UtilsPlugin provides utility polymorphic functions
 type UtilsPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewUtilsPlugin creates a new utils plugin
-func NewUtilsPlugin() *UtilsPlugin {
+// NewUtilsPlugin creates a new utils plugin with dependency injection
+func NewUtilsPlugin(evaluator interfaces.CoreEvaluator) *UtilsPlugin {
 	return &UtilsPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"utils",
@@ -26,6 +28,7 @@ func NewUtilsPlugin() *UtilsPlugin {
 			"Utility polymorphic functions (frequencies, group-by, partition, etc.)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
 }
 
@@ -102,10 +105,25 @@ func (p *UtilsPlugin) extractSequence(value types.Value) ([]types.Value, error) 
 
 // Helper function to call a function with arguments
 func (p *UtilsPlugin) callFunction(evaluator registry.Evaluator, fnValue types.Value, args []types.Expr) (types.Value, error) {
-	switch fnValue.(type) {
+	// Use the evaluator's CallFunction method if available
+	if pureEval, ok := evaluator.(interface {
+		CallFunction(types.Value, []types.Expr) (types.Value, error)
+	}); ok {
+		return pureEval.CallFunction(fnValue, args)
+	}
+
+	// Fallback for simple cases
+	switch fn := fnValue.(type) {
 	case *types.FunctionValue:
-		// This would need proper function evaluation - simplified for now
-		return evaluator.Eval(args[0]) // Just return first arg for now
+		// This is a simplified implementation - in reality we'd need full function evaluation
+		if len(args) != len(fn.Params) {
+			return nil, fmt.Errorf("function expects %d arguments, got %d", len(fn.Params), len(args))
+		}
+		// For now, just return the first argument (placeholder)
+		if len(args) > 0 {
+			return evaluator.Eval(args[0])
+		}
+		return &types.NilValue{}, nil
 	default:
 		return nil, fmt.Errorf("not a function: %T", fnValue)
 	}
@@ -377,14 +395,16 @@ func (p *UtilsPlugin) evalRemove(evaluator registry.Evaluator, args []types.Expr
 		return nil, fmt.Errorf("remove requires exactly 2 arguments, got %d", len(args))
 	}
 
-	_, err := evaluator.Eval(args[0])
+	// Evaluate the predicate function argument
+	predVal, err := evaluator.Eval(args[0])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error evaluating predicate in remove: %v", err)
 	}
 
+	// Evaluate the collection argument
 	collValue, err := evaluator.Eval(args[1])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error evaluating collection in remove: %v", err)
 	}
 
 	elements, err := p.extractSequence(collValue)
@@ -394,8 +414,17 @@ func (p *UtilsPlugin) evalRemove(evaluator registry.Evaluator, args []types.Expr
 
 	var result []types.Value
 	for _, elem := range elements {
-		// For now, simplified - just keep all elements
-		result = append(result, elem)
+		// Apply predicate to element
+		elemExpr := p.valueToExpr(elem)
+		predResult, err := p.callFunction(evaluator, predVal, []types.Expr{elemExpr})
+		if err != nil {
+			return nil, fmt.Errorf("error calling predicate in remove: %v", err)
+		}
+
+		// Keep elements where predicate is false (remove those where it's true)
+		if !p.isTruthy(predResult) {
+			result = append(result, elem)
+		}
 	}
 
 	return &types.ListValue{Elements: result}, nil
@@ -403,53 +432,561 @@ func (p *UtilsPlugin) evalRemove(evaluator registry.Evaluator, args []types.Expr
 
 // Stub implementations for the remaining functions
 func (p *UtilsPlugin) evalKeep(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) != 2 {
+		return nil, fmt.Errorf("keep requires exactly 2 arguments, got %d", len(args))
+	}
+
+	// Evaluate the function argument
+	fnVal, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating function in keep: %v", err)
+	}
+
+	// Evaluate the collection argument
+	collValue, err := evaluator.Eval(args[1])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating collection in keep: %v", err)
+	}
+
+	elements, err := p.extractSequence(collValue)
+	if err != nil {
+		return nil, fmt.Errorf("keep: %v", err)
+	}
+
+	var result []types.Value
+	for _, elem := range elements {
+		// Apply function to element
+		elemExpr := p.valueToExpr(elem)
+		fnResult, err := p.callFunction(evaluator, fnVal, []types.Expr{elemExpr})
+		if err != nil {
+			return nil, fmt.Errorf("error calling function in keep: %v", err)
+		}
+
+		// Keep non-nil results
+		if _, isNil := fnResult.(*types.NilValue); !isNil {
+			result = append(result, fnResult)
+		}
+	}
+
+	return &types.ListValue{Elements: result}, nil
 }
 
 func (p *UtilsPlugin) evalMapcat(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) != 2 {
+		return nil, fmt.Errorf("mapcat requires exactly 2 arguments, got %d", len(args))
+	}
+
+	// Evaluate the function argument
+	fnVal, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating function in mapcat: %v", err)
+	}
+
+	// Evaluate the collection argument
+	collValue, err := evaluator.Eval(args[1])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating collection in mapcat: %v", err)
+	}
+
+	elements, err := p.extractSequence(collValue)
+	if err != nil {
+		return nil, fmt.Errorf("mapcat: %v", err)
+	}
+
+	var result []types.Value
+	for _, elem := range elements {
+		// Apply function to element
+		elemExpr := p.valueToExpr(elem)
+		fnResult, err := p.callFunction(evaluator, fnVal, []types.Expr{elemExpr})
+		if err != nil {
+			return nil, fmt.Errorf("error calling function in mapcat: %v", err)
+		}
+
+		// Concatenate the result (flatten one level)
+		resultElements, err := p.extractSequence(fnResult)
+		if err != nil {
+			// If it's not a sequence, treat it as a single element
+			result = append(result, fnResult)
+		} else {
+			result = append(result, resultElements...)
+		}
+	}
+
+	return &types.ListValue{Elements: result}, nil
 }
 
 func (p *UtilsPlugin) evalTakeWhile(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) != 2 {
+		return nil, fmt.Errorf("take-while requires exactly 2 arguments, got %d", len(args))
+	}
+
+	// Evaluate the predicate function argument
+	predVal, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating predicate in take-while: %v", err)
+	}
+
+	// Evaluate the collection argument
+	collValue, err := evaluator.Eval(args[1])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating collection in take-while: %v", err)
+	}
+
+	elements, err := p.extractSequence(collValue)
+	if err != nil {
+		return nil, fmt.Errorf("take-while: %v", err)
+	}
+
+	var result []types.Value
+	for _, elem := range elements {
+		// Apply predicate to element
+		elemExpr := p.valueToExpr(elem)
+		predResult, err := p.callFunction(evaluator, predVal, []types.Expr{elemExpr})
+		if err != nil {
+			return nil, fmt.Errorf("error calling predicate in take-while: %v", err)
+		}
+
+		// Check if predicate is truthy
+		if !p.isTruthy(predResult) {
+			break // Stop taking when predicate becomes false
+		}
+		result = append(result, elem)
+	}
+
+	return &types.ListValue{Elements: result}, nil
 }
 
 func (p *UtilsPlugin) evalDropWhile(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) != 2 {
+		return nil, fmt.Errorf("drop-while requires exactly 2 arguments, got %d", len(args))
+	}
+
+	// Evaluate the predicate function argument
+	predVal, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating predicate in drop-while: %v", err)
+	}
+
+	// Evaluate the collection argument
+	collValue, err := evaluator.Eval(args[1])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating collection in drop-while: %v", err)
+	}
+
+	elements, err := p.extractSequence(collValue)
+	if err != nil {
+		return nil, fmt.Errorf("drop-while: %v", err)
+	}
+
+	// Find the first element where predicate is false
+	dropIndex := len(elements) // Default to dropping all if predicate is always true
+	for i, elem := range elements {
+		// Apply predicate to element
+		elemExpr := p.valueToExpr(elem)
+		predResult, err := p.callFunction(evaluator, predVal, []types.Expr{elemExpr})
+		if err != nil {
+			return nil, fmt.Errorf("error calling predicate in drop-while: %v", err)
+		}
+
+		// Check if predicate is truthy
+		if !p.isTruthy(predResult) {
+			dropIndex = i
+			break
+		}
+	}
+
+	// Return the remaining elements
+	var result []types.Value
+	if dropIndex < len(elements) {
+		result = elements[dropIndex:]
+	}
+
+	return &types.ListValue{Elements: result}, nil
 }
 
 func (p *UtilsPlugin) evalSplitAt(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) != 2 {
+		return nil, fmt.Errorf("split-at requires exactly 2 arguments, got %d", len(args))
+	}
+
+	// Evaluate the index argument
+	nValue, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating index in split-at: %v", err)
+	}
+
+	// Evaluate the collection argument
+	collValue, err := evaluator.Eval(args[1])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating collection in split-at: %v", err)
+	}
+
+	nNum, ok := nValue.(types.NumberValue)
+	if !ok {
+		return nil, fmt.Errorf("split-at: first argument must be a number, got %T", nValue)
+	}
+	n := int(nNum)
+
+	elements, err := p.extractSequence(collValue)
+	if err != nil {
+		return nil, fmt.Errorf("split-at: %v", err)
+	}
+
+	// Ensure n is within bounds
+	if n < 0 {
+		n = 0
+	}
+	if n > len(elements) {
+		n = len(elements)
+	}
+
+	// Split the collection
+	firstPart := &types.ListValue{Elements: elements[:n]}
+	secondPart := &types.ListValue{Elements: elements[n:]}
+
+	// Return as a vector of two parts
+	return &types.VectorValue{Elements: []types.Value{firstPart, secondPart}}, nil
 }
 
 func (p *UtilsPlugin) evalSplitWith(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) != 2 {
+		return nil, fmt.Errorf("split-with requires exactly 2 arguments, got %d", len(args))
+	}
+
+	// Evaluate the predicate function argument
+	predVal, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating predicate in split-with: %v", err)
+	}
+
+	// Evaluate the collection argument
+	collValue, err := evaluator.Eval(args[1])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating collection in split-with: %v", err)
+	}
+
+	elements, err := p.extractSequence(collValue)
+	if err != nil {
+		return nil, fmt.Errorf("split-with: %v", err)
+	}
+
+	// Find the first element where predicate is false
+	splitIndex := len(elements) // Default to splitting at end if predicate is always true
+	for i, elem := range elements {
+		// Apply predicate to element
+		elemExpr := p.valueToExpr(elem)
+		predResult, err := p.callFunction(evaluator, predVal, []types.Expr{elemExpr})
+		if err != nil {
+			return nil, fmt.Errorf("error calling predicate in split-with: %v", err)
+		}
+
+		// Check if predicate is truthy
+		if !p.isTruthy(predResult) {
+			splitIndex = i
+			break
+		}
+	}
+
+	// Split the collection
+	firstPart := &types.ListValue{Elements: elements[:splitIndex]}
+	secondPart := &types.ListValue{Elements: elements[splitIndex:]}
+
+	// Return as a vector of two parts
+	return &types.VectorValue{Elements: []types.Value{firstPart, secondPart}}, nil
 }
 
 func (p *UtilsPlugin) evalComp(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) < 1 {
+		return nil, fmt.Errorf("comp requires at least 1 argument (function), got %d", len(args))
+	}
+
+	// Evaluate all function arguments
+	functions := make([]types.Value, len(args))
+	for i, arg := range args {
+		fnVal, err := evaluator.Eval(arg)
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating function %d in comp: %v", i, err)
+		}
+		functions[i] = fnVal
+	}
+
+	// Create a comp function value
+	compFn := &types.CompFunctionValue{
+		Functions: functions,
+	}
+
+	return compFn, nil
 }
 
 func (p *UtilsPlugin) evalPartial(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) < 1 {
+		return nil, fmt.Errorf("partial requires at least 1 argument (function), got %d", len(args))
+	}
+
+	// Evaluate the function argument
+	fnVal, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating function in partial: %v", err)
+	}
+
+	// Evaluate the partial arguments
+	partialArgs := make([]types.Value, 0, len(args)-1)
+	for i := 1; i < len(args); i++ {
+		arg, err := evaluator.Eval(args[i])
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating partial argument %d: %v", i, err)
+		}
+		partialArgs = append(partialArgs, arg)
+	}
+
+	// Create a partially applied function value
+	partialBuiltin := &types.PartialFunctionValue{
+		OriginalFunction: fnVal,
+		PartialArgs:      partialArgs,
+	}
+
+	return partialBuiltin, nil
 }
 
 func (p *UtilsPlugin) evalComplement(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) != 1 {
+		return nil, fmt.Errorf("complement requires exactly 1 argument (predicate function), got %d", len(args))
+	}
+
+	// Evaluate the predicate function argument
+	predVal, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating predicate in complement: %v", err)
+	}
+
+	// Create a complement function value
+	complementFn := &types.ComplementFunctionValue{
+		PredicateFunction: predVal,
+	}
+
+	return complementFn, nil
 }
 
 func (p *UtilsPlugin) evalJuxt(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) < 1 {
+		return nil, fmt.Errorf("juxt requires at least 1 argument (function), got %d", len(args))
+	}
+
+	// Evaluate all function arguments
+	functions := make([]types.Value, len(args))
+	for i, arg := range args {
+		fnVal, err := evaluator.Eval(arg)
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating function %d in juxt: %v", i, err)
+		}
+		functions[i] = fnVal
+	}
+
+	// Create a juxt function value
+	juxtFn := &types.JuxtFunctionValue{
+		Functions: functions,
+	}
+
+	return juxtFn, nil
 }
 
 func (p *UtilsPlugin) evalUnion(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) < 1 {
+		return nil, fmt.Errorf("union requires at least 1 argument, got %d", len(args))
+	}
+
+	// Use a map to track unique elements
+	seen := make(map[string]bool)
+	var result []types.Value
+
+	for i, arg := range args {
+		// Evaluate the collection argument
+		collValue, err := evaluator.Eval(arg)
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating collection %d in union: %v", i, err)
+		}
+
+		elements, err := p.extractSequence(collValue)
+		if err != nil {
+			return nil, fmt.Errorf("union: collection %d: %v", i, err)
+		}
+
+		// Add unique elements to result
+		for _, elem := range elements {
+			key := elem.String()
+			if !seen[key] {
+				seen[key] = true
+				result = append(result, elem)
+			}
+		}
+	}
+
+	return &types.ListValue{Elements: result}, nil
 }
 
 func (p *UtilsPlugin) evalIntersection(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) < 1 {
+		return nil, fmt.Errorf("intersection requires at least 1 argument, got %d", len(args))
+	}
+
+	if len(args) == 1 {
+		// Single collection - return it as-is (unique elements)
+		collValue, err := evaluator.Eval(args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating collection in intersection: %v", err)
+		}
+
+		elements, err := p.extractSequence(collValue)
+		if err != nil {
+			return nil, fmt.Errorf("intersection: %v", err)
+		}
+
+		// Return unique elements
+		seen := make(map[string]bool)
+		var result []types.Value
+		for _, elem := range elements {
+			key := elem.String()
+			if !seen[key] {
+				seen[key] = true
+				result = append(result, elem)
+			}
+		}
+
+		return &types.ListValue{Elements: result}, nil
+	}
+
+	// Multiple collections - find intersection
+	// Start with the first collection
+	collValue, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating first collection in intersection: %v", err)
+	}
+
+	elements, err := p.extractSequence(collValue)
+	if err != nil {
+		return nil, fmt.Errorf("intersection: first collection: %v", err)
+	}
+
+	// Create a map of candidates from the first collection
+	candidates := make(map[string]types.Value)
+	for _, elem := range elements {
+		key := elem.String()
+		candidates[key] = elem
+	}
+
+	// Check each subsequent collection
+	for i := 1; i < len(args); i++ {
+		collValue, err := evaluator.Eval(args[i])
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating collection %d in intersection: %v", i, err)
+		}
+
+		elements, err := p.extractSequence(collValue)
+		if err != nil {
+			return nil, fmt.Errorf("intersection: collection %d: %v", i, err)
+		}
+
+		// Create a set of elements in this collection
+		currentSet := make(map[string]bool)
+		for _, elem := range elements {
+			key := elem.String()
+			currentSet[key] = true
+		}
+
+		// Keep only candidates that are in this collection
+		newCandidates := make(map[string]types.Value)
+		for key, val := range candidates {
+			if currentSet[key] {
+				newCandidates[key] = val
+			}
+		}
+		candidates = newCandidates
+	}
+
+	// Convert map back to list
+	var result []types.Value
+	for _, val := range candidates {
+		result = append(result, val)
+	}
+
+	return &types.ListValue{Elements: result}, nil
 }
 
 func (p *UtilsPlugin) evalDifference(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	return &types.ListValue{Elements: []types.Value{}}, nil
+	if len(args) != 2 {
+		return nil, fmt.Errorf("difference requires exactly 2 arguments, got %d", len(args))
+	}
+
+	// Evaluate the first collection
+	coll1Value, err := evaluator.Eval(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating first collection in difference: %v", err)
+	}
+
+	// Evaluate the second collection
+	coll2Value, err := evaluator.Eval(args[1])
+	if err != nil {
+		return nil, fmt.Errorf("error evaluating second collection in difference: %v", err)
+	}
+
+	elements1, err := p.extractSequence(coll1Value)
+	if err != nil {
+		return nil, fmt.Errorf("difference: first collection: %v", err)
+	}
+
+	elements2, err := p.extractSequence(coll2Value)
+	if err != nil {
+		return nil, fmt.Errorf("difference: second collection: %v", err)
+	}
+
+	// Create a set of elements in the second collection
+	excludeSet := make(map[string]bool)
+	for _, elem := range elements2 {
+		key := elem.String()
+		excludeSet[key] = true
+	}
+
+	// Keep only elements from first collection that are not in second collection
+	var result []types.Value
+	seen := make(map[string]bool) // To avoid duplicates
+	for _, elem := range elements1 {
+		key := elem.String()
+		if !excludeSet[key] && !seen[key] {
+			seen[key] = true
+			result = append(result, elem)
+		}
+	}
+
+	return &types.ListValue{Elements: result}, nil
+}
+
+// valueToExpr converts a value back to an expression (helper for function calls)
+func (p *UtilsPlugin) valueToExpr(val types.Value) types.Expr {
+	switch v := val.(type) {
+	case types.NumberValue:
+		return &types.NumberExpr{Value: float64(v)}
+	case *types.BigNumberValue:
+		return &types.BigNumberExpr{Value: v.Value.String()}
+	case types.StringValue:
+		return &types.StringExpr{Value: string(v)}
+	case types.BooleanValue:
+		return &types.BooleanExpr{Value: bool(v)}
+	case types.KeywordValue:
+		return &types.KeywordExpr{Value: string(v)}
+	case *types.ListValue:
+		exprs := make([]types.Expr, len(v.Elements))
+		for i, elem := range v.Elements {
+			exprs[i] = p.valueToExpr(elem)
+		}
+		return &types.ListExpr{Elements: exprs}
+	case *types.VectorValue:
+		exprs := make([]types.Expr, len(v.Elements))
+		for i, elem := range v.Elements {
+			exprs[i] = p.valueToExpr(elem)
+		}
+		return &types.BracketExpr{Elements: exprs}
+	default:
+		// For complex types, we'll create a symbol that can be resolved later
+		return &types.SymbolExpr{Name: fmt.Sprintf("#<value:%s>", val.String())}
+	}
 }

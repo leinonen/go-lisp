@@ -41,7 +41,8 @@ func (me *mockEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]t
 }
 
 func TestKeywordPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewKeywordPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewKeywordPlugin(mockEval)
 	registry := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(registry)
@@ -58,8 +59,8 @@ func TestKeywordPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestKeywordPlugin_EvalKeyword(t *testing.T) {
-	plugin := NewKeywordPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewKeywordPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -93,8 +94,8 @@ func TestKeywordPlugin_EvalKeyword(t *testing.T) {
 }
 
 func TestKeywordPlugin_EvalKeyword_Errors(t *testing.T) {
-	plugin := NewKeywordPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewKeywordPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -127,8 +128,8 @@ func TestKeywordPlugin_EvalKeyword_Errors(t *testing.T) {
 }
 
 func TestKeywordPlugin_EvalKeywordPredicate(t *testing.T) {
-	plugin := NewKeywordPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewKeywordPlugin(evaluator)
 
 	tests := []struct {
 		name     string

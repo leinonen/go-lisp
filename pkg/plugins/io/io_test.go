@@ -64,9 +64,9 @@ func (me *mockEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]t
 }
 
 // Helper function to wrap values as expressions
-func wrapValue(value types.Value) types.Expr {
-	return valueExpr{value}
-}
+// func wrapValue(value types.Value) types.Expr {
+// 	return valueExpr{value}
+// }
 
 type valueExpr struct {
 	value types.Value
@@ -97,7 +97,8 @@ func captureOutput(f func()) string {
 }
 
 func TestIOPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewIOPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewIOPlugin(mockEval)
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -115,8 +116,8 @@ func TestIOPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestIOPlugin_Print(t *testing.T) {
-	plugin := NewIOPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewIOPlugin(evaluator)
 
 	tests := []struct {
 		name           string
@@ -181,8 +182,8 @@ func TestIOPlugin_Print(t *testing.T) {
 }
 
 func TestIOPlugin_Println(t *testing.T) {
-	plugin := NewIOPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewIOPlugin(evaluator)
 
 	tests := []struct {
 		name           string
@@ -239,8 +240,8 @@ func TestIOPlugin_Println(t *testing.T) {
 }
 
 func TestIOPlugin_ReadFile(t *testing.T) {
-	plugin := NewIOPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewIOPlugin(evaluator)
 
 	// Create a temporary test file
 	tempFile := "test_read_file.txt"
@@ -301,8 +302,8 @@ func TestIOPlugin_ReadFile(t *testing.T) {
 }
 
 func TestIOPlugin_WriteFile(t *testing.T) {
-	plugin := NewIOPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewIOPlugin(evaluator)
 
 	tempFile := "test_write_file.txt"
 	defer os.Remove(tempFile)
@@ -387,8 +388,8 @@ func TestIOPlugin_WriteFile(t *testing.T) {
 }
 
 func TestIOPlugin_FileExists(t *testing.T) {
-	plugin := NewIOPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewIOPlugin(evaluator)
 
 	// Create a temporary test file
 	tempFile := "test_file_exists.txt"
@@ -448,7 +449,8 @@ func TestIOPlugin_FileExists(t *testing.T) {
 }
 
 func TestIOPlugin_ValueToString(t *testing.T) {
-	plugin := NewIOPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewIOPlugin(mockEval)
 
 	tests := []struct {
 		name     string
@@ -550,8 +552,8 @@ func TestIOPlugin_ValueToString(t *testing.T) {
 }
 
 func TestIOPlugin_ErrorHandling(t *testing.T) {
-	plugin := NewIOPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewIOPlugin(evaluator)
 
 	// Test read-file with wrong number of arguments
 	t.Run("read-file wrong arity", func(t *testing.T) {
@@ -585,7 +587,8 @@ func TestIOPlugin_ErrorHandling(t *testing.T) {
 }
 
 func TestIOPlugin_PluginInfo(t *testing.T) {
-	plugin := NewIOPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewIOPlugin(mockEval)
 
 	if plugin.Name() != "io" {
 		t.Errorf("Expected plugin name 'io', got %s", plugin.Name())

@@ -65,7 +65,8 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestConcurrencyPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewConcurrencyPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewConcurrencyPlugin(mockEval)
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -86,8 +87,8 @@ func TestConcurrencyPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestConcurrencyPlugin_GoFunction(t *testing.T) {
-	plugin := NewConcurrencyPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewConcurrencyPlugin(evaluator)
 
 	// Test go function with a simple expression
 	args := []types.Expr{&types.NumberExpr{Value: 42}}
@@ -115,8 +116,8 @@ func TestConcurrencyPlugin_GoFunction(t *testing.T) {
 }
 
 func TestConcurrencyPlugin_GoWait(t *testing.T) {
-	plugin := NewConcurrencyPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewConcurrencyPlugin(evaluator)
 
 	// Create a future first
 	goArgs := []types.Expr{&types.NumberExpr{Value: 100}}
@@ -139,8 +140,8 @@ func TestConcurrencyPlugin_GoWait(t *testing.T) {
 }
 
 func TestConcurrencyPlugin_ChannelCreation(t *testing.T) {
-	plugin := NewConcurrencyPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewConcurrencyPlugin(evaluator)
 
 	// Create an unbuffered channel
 	chanResult, err := plugin.chan_(evaluator, []types.Expr{})
@@ -166,8 +167,8 @@ func TestConcurrencyPlugin_ChannelCreation(t *testing.T) {
 }
 
 func TestConcurrencyPlugin_ErrorCases(t *testing.T) {
-	plugin := NewConcurrencyPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewConcurrencyPlugin(evaluator)
 
 	// Test go function with no arguments
 	_, err := plugin.goFunc(evaluator, []types.Expr{})

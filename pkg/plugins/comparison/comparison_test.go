@@ -69,7 +69,8 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestComparisonPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewComparisonPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewComparisonPlugin(mockEval)
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -87,8 +88,8 @@ func TestComparisonPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestComparisonPlugin_Equality(t *testing.T) {
-	plugin := NewComparisonPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewComparisonPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -185,8 +186,8 @@ func TestComparisonPlugin_Equality(t *testing.T) {
 }
 
 func TestComparisonPlugin_EqualityWithBigNumbers(t *testing.T) {
-	plugin := NewComparisonPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewComparisonPlugin(evaluator)
 
 	// Test equality with big numbers
 	bigNum1 := types.NewBigNumberFromInt64(1000000000000000000)
@@ -240,8 +241,8 @@ func TestComparisonPlugin_EqualityWithBigNumbers(t *testing.T) {
 }
 
 func TestComparisonPlugin_LessThan(t *testing.T) {
-	plugin := NewComparisonPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewComparisonPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -323,8 +324,8 @@ func TestComparisonPlugin_LessThan(t *testing.T) {
 }
 
 func TestComparisonPlugin_GreaterThan(t *testing.T) {
-	plugin := NewComparisonPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewComparisonPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -406,8 +407,8 @@ func TestComparisonPlugin_GreaterThan(t *testing.T) {
 }
 
 func TestComparisonPlugin_LessThanOrEqual(t *testing.T) {
-	plugin := NewComparisonPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewComparisonPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -494,8 +495,8 @@ func TestComparisonPlugin_LessThanOrEqual(t *testing.T) {
 }
 
 func TestComparisonPlugin_GreaterThanOrEqual(t *testing.T) {
-	plugin := NewComparisonPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewComparisonPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -582,7 +583,8 @@ func TestComparisonPlugin_GreaterThanOrEqual(t *testing.T) {
 }
 
 func TestComparisonPlugin_ValueComparison(t *testing.T) {
-	plugin := NewComparisonPlugin()
+	evaluator := newMockEvaluator()
+	plugin := NewComparisonPlugin(evaluator)
 
 	// Test valuesEqual method
 	t.Run("valuesEqual", func(t *testing.T) {
@@ -745,7 +747,8 @@ func TestComparisonPlugin_ValueComparison(t *testing.T) {
 }
 
 func TestComparisonPlugin_PluginInfo(t *testing.T) {
-	plugin := NewComparisonPlugin()
+	evaluator := newMockEvaluator()
+	plugin := NewComparisonPlugin(evaluator)
 
 	if plugin.Name() != "comparison" {
 		t.Errorf("Expected plugin name 'comparison', got %s", plugin.Name())

@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -14,10 +15,11 @@ import (
 // ArithmeticPlugin provides basic arithmetic operations
 type ArithmeticPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator // Only needs basic evaluation
 }
 
 // NewArithmeticPlugin creates a new arithmetic plugin
-func NewArithmeticPlugin() *ArithmeticPlugin {
+func NewArithmeticPlugin(evaluator interfaces.CoreEvaluator) *ArithmeticPlugin {
 	return &ArithmeticPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"arithmetic",
@@ -25,6 +27,7 @@ func NewArithmeticPlugin() *ArithmeticPlugin {
 			"Basic arithmetic operations (+, -, *, /, %)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
 }
 
@@ -119,7 +122,14 @@ func (ap *ArithmeticPlugin) evalAdd(evaluator registry.Evaluator, args []types.E
 		return types.NumberValue(0), nil
 	}
 
-	values, err := functions.EvalArgs(evaluator, args)
+	// Use injected evaluator if available, otherwise use the passed one
+	var values []types.Value
+	var err error
+	if ap.evaluator != nil {
+		values, err = functions.EvalArgsWithCore(ap.evaluator, args)
+	} else {
+		values, err = functions.EvalArgs(evaluator, args)
+	}
 	if err != nil {
 		return nil, err
 	}

@@ -65,7 +65,8 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestHashMapPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewHashMapPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewHashMapPlugin(mockEval)
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -89,8 +90,8 @@ func TestHashMapPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestHashMapPlugin_BasicOperations(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Test creating a hash map
 	hashMapArgs := []types.Expr{
@@ -181,8 +182,8 @@ func TestHashMapPlugin_BasicOperations(t *testing.T) {
 }
 
 func TestHashMapPlugin_EmptyHashMap(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Test creating empty hash map
 	result, err := plugin.evalHashMap(evaluator, []types.Expr{})
@@ -219,8 +220,8 @@ func TestHashMapPlugin_EmptyHashMap(t *testing.T) {
 }
 
 func TestHashMapPlugin_ErrorCases(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Test hash-map with odd number of arguments
 	_, err := plugin.evalHashMap(evaluator, []types.Expr{
@@ -245,8 +246,8 @@ func TestHashMapPlugin_ErrorCases(t *testing.T) {
 }
 
 func TestHashMapPlugin_Assoc(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Create initial hash map
 	initialHashMap := &types.HashMapValue{
@@ -333,8 +334,8 @@ func TestHashMapPlugin_Assoc(t *testing.T) {
 }
 
 func TestHashMapPlugin_AssocErrors(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Test assoc with too few arguments
 	_, err := plugin.evalAssoc(evaluator, []types.Expr{
@@ -370,8 +371,8 @@ func TestHashMapPlugin_AssocErrors(t *testing.T) {
 }
 
 func TestHashMapPlugin_Dissoc(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Create initial hash map
 	initialHashMap := &types.HashMapValue{
@@ -464,8 +465,8 @@ func TestHashMapPlugin_Dissoc(t *testing.T) {
 }
 
 func TestHashMapPlugin_DissocErrors(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Test dissoc with too few arguments
 	_, err := plugin.evalDissoc(evaluator, []types.Expr{
@@ -488,8 +489,8 @@ func TestHashMapPlugin_DissocErrors(t *testing.T) {
 
 // Tests for Clojure-style aliases
 func TestHashMapPlugin_ClojureGet(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Create a hash map
 	hashMap := &types.HashMapValue{
@@ -532,8 +533,8 @@ func TestHashMapPlugin_ClojureGet(t *testing.T) {
 }
 
 func TestHashMapPlugin_ClojureContains(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Create a hash map
 	hashMap := &types.HashMapValue{
@@ -581,8 +582,8 @@ func TestHashMapPlugin_ClojureContains(t *testing.T) {
 }
 
 func TestHashMapPlugin_ClojureKeys(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Create a hash map
 	hashMap := &types.HashMapValue{
@@ -628,8 +629,8 @@ func TestHashMapPlugin_ClojureKeys(t *testing.T) {
 }
 
 func TestHashMapPlugin_ClojureVals(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Create a hash map
 	hashMap := &types.HashMapValue{
@@ -677,8 +678,8 @@ func TestHashMapPlugin_ClojureVals(t *testing.T) {
 }
 
 func TestHashMapPlugin_ClojureCount(t *testing.T) {
-	plugin := NewHashMapPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewHashMapPlugin(evaluator)
 
 	// Create a hash map
 	hashMap := &types.HashMapValue{

@@ -6,15 +6,13 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/types"
 )
 
 // Evaluator interface for plugin functions to call back to the evaluator
-type Evaluator interface {
-	Eval(expr types.Expr) (types.Value, error)
-	CallFunction(funcValue types.Value, args []types.Expr) (types.Value, error)
-	EvalWithBindings(expr types.Expr, bindings map[string]types.Value) (types.Value, error)
-}
+// This is an alias for backward compatibility
+type Evaluator = interfaces.Evaluator
 
 // BuiltinFunction represents a built-in function that can be registered
 type BuiltinFunction interface {

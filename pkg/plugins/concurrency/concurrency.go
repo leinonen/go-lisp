@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -21,10 +22,11 @@ type InterpreterDependency interface {
 type ConcurrencyPlugin struct {
 	*plugins.BasePlugin
 	interpreter InterpreterDependency // Optional interpreter reference
+	evaluator   interfaces.CoreEvaluator
 }
 
-// NewConcurrencyPlugin creates a new concurrency plugin
-func NewConcurrencyPlugin() *ConcurrencyPlugin {
+// NewConcurrencyPlugin creates a new concurrency plugin with dependency injection
+func NewConcurrencyPlugin(evaluator interfaces.CoreEvaluator) *ConcurrencyPlugin {
 	return &ConcurrencyPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"concurrency",
@@ -33,6 +35,7 @@ func NewConcurrencyPlugin() *ConcurrencyPlugin {
 			[]string{}, // No dependencies
 		),
 		interpreter: nil, // Will be set later if needed
+		evaluator:   evaluator,
 	}
 }
 

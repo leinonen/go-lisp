@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,11 @@ import (
 // BindingPlugin provides let binding functionality
 type BindingPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewBindingPlugin creates a new binding plugin
-func NewBindingPlugin() *BindingPlugin {
+// NewBindingPlugin creates a new binding plugin with dependencies
+func NewBindingPlugin(evaluator interfaces.CoreEvaluator) *BindingPlugin {
 	return &BindingPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"binding",
@@ -24,6 +26,7 @@ func NewBindingPlugin() *BindingPlugin {
 			"Local variable bindings (let)",
 			[]string{"core"}, // Depends on core
 		),
+		evaluator: evaluator,
 	}
 }
 
@@ -87,5 +90,14 @@ func (p *BindingPlugin) evalLet(evaluator registry.Evaluator, args []types.Expr)
 		Elements: append([]types.Expr{&types.SymbolExpr{Name: "do"}}, doArgs...),
 	}
 
-	return evaluator.Eval(doExpr)
+	// Use helper method instead
+	return p.eval(evaluator, doExpr)
+}
+
+// Use injected evaluator when available
+func (p *BindingPlugin) eval(evaluator registry.Evaluator, expr types.Expr) (types.Value, error) {
+	if p.evaluator != nil {
+		return p.evaluator.Eval(expr)
+	}
+	return evaluator.Eval(expr)
 }

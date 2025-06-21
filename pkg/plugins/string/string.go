@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -16,10 +17,24 @@ import (
 // StringPlugin implements string manipulation functions
 type StringPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewStringPlugin creates a new string plugin
-func NewStringPlugin() *StringPlugin {
+// NewStringPlugin creates a new string plugin with dependency injection
+func NewStringPlugin(evaluator interfaces.CoreEvaluator) *StringPlugin {
+	return &StringPlugin{
+		BasePlugin: plugins.NewBasePlugin(
+			"string",
+			"1.0.0",
+			"String manipulation and processing functions",
+			[]string{}, // No dependencies
+		),
+		evaluator: evaluator,
+	}
+}
+
+// NewStringPluginLegacy creates a new string plugin with legacy evaluator (for backward compatibility)
+func NewStringPluginLegacy() *StringPlugin {
 	return &StringPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"string",
@@ -28,6 +43,15 @@ func NewStringPlugin() *StringPlugin {
 			[]string{}, // No dependencies
 		),
 	}
+}
+
+// getCoreEvaluator returns the core evaluator, preferring injected interface over fallback
+func (p *StringPlugin) getCoreEvaluator(fallback registry.Evaluator) interfaces.CoreEvaluator {
+	if p.evaluator != nil {
+		return p.evaluator
+	}
+	// Fallback to the passed evaluator which should implement CoreEvaluator
+	return fallback
 }
 
 // Functions returns the list of functions provided by this plugin

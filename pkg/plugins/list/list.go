@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,11 @@ import (
 // ListPlugin provides list operations
 type ListPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewListPlugin creates a new list plugin
-func NewListPlugin() *ListPlugin {
+// NewListPlugin creates a new list plugin with dependency injection
+func NewListPlugin(evaluator interfaces.CoreEvaluator) *ListPlugin {
 	return &ListPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"list",
@@ -24,7 +26,20 @@ func NewListPlugin() *ListPlugin {
 			"List creation and manipulation functions (list, cons, length, append)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
+}
+
+// getCoreEvaluator returns the core evaluator, preferring injected interface over fallback
+func (lp *ListPlugin) getCoreEvaluator(fallback registry.Evaluator) interfaces.CoreEvaluator {
+	if lp.evaluator != nil {
+		return lp.evaluator
+	}
+	// Fallback to the passed evaluator which should implement CoreEvaluator
+	if coreEval, ok := fallback.(interfaces.CoreEvaluator); ok {
+		return coreEval
+	}
+	return nil
 }
 
 // RegisterFunctions registers list functions
@@ -55,6 +70,15 @@ func (lp *ListPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 
 // evalList creates a new list from arguments
 func (lp *ListPlugin) evalList(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	eval := lp.getCoreEvaluator(evaluator)
+	if eval != nil {
+		values, err := functions.EvalArgsWithCore(eval, args)
+		if err != nil {
+			return nil, err
+		}
+		return &types.ListValue{Elements: values}, nil
+	}
+
 	values, err := functions.EvalArgs(evaluator, args)
 	if err != nil {
 		return nil, err
@@ -64,7 +88,15 @@ func (lp *ListPlugin) evalList(evaluator registry.Evaluator, args []types.Expr) 
 
 // evalCons prepends an element to a list
 func (lp *ListPlugin) evalCons(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	values, err := functions.EvalArgs(evaluator, args)
+	eval := lp.getCoreEvaluator(evaluator)
+	var values []types.Value
+	var err error
+
+	if eval != nil {
+		values, err = functions.EvalArgsWithCore(eval, args)
+	} else {
+		values, err = functions.EvalArgs(evaluator, args)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +116,15 @@ func (lp *ListPlugin) evalCons(evaluator registry.Evaluator, args []types.Expr) 
 
 // evalLength returns the length of a list
 func (lp *ListPlugin) evalLength(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
-	values, err := functions.EvalArgs(evaluator, args)
+	eval := lp.getCoreEvaluator(evaluator)
+	var values []types.Value
+	var err error
+
+	if eval != nil {
+		values, err = functions.EvalArgsWithCore(eval, args)
+	} else {
+		values, err = functions.EvalArgs(evaluator, args)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +143,15 @@ func (lp *ListPlugin) evalAppend(evaluator registry.Evaluator, args []types.Expr
 		return &types.ListValue{Elements: []types.Value{}}, nil
 	}
 
-	values, err := functions.EvalArgs(evaluator, args)
+	eval := lp.getCoreEvaluator(evaluator)
+	var values []types.Value
+	var err error
+
+	if eval != nil {
+		values, err = functions.EvalArgsWithCore(eval, args)
+	} else {
+		values, err = functions.EvalArgs(evaluator, args)
+	}
 	if err != nil {
 		return nil, err
 	}

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -16,10 +17,24 @@ import (
 // JSONPlugin implements JSON functions
 type JSONPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewJSONPlugin creates a new JSON plugin
-func NewJSONPlugin() *JSONPlugin {
+// NewJSONPlugin creates a new JSON plugin with dependency injection
+func NewJSONPlugin(evaluator interfaces.CoreEvaluator) *JSONPlugin {
+	return &JSONPlugin{
+		BasePlugin: plugins.NewBasePlugin(
+			"json",
+			"1.0.0",
+			"JSON processing functions (json-parse, json-stringify, json-path, etc.)",
+			[]string{}, // No dependencies
+		),
+		evaluator: evaluator,
+	}
+}
+
+// NewJSONPluginLegacy creates a new JSON plugin with legacy evaluator (for backward compatibility)
+func NewJSONPluginLegacy() *JSONPlugin {
 	return &JSONPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"json",
@@ -28,6 +43,15 @@ func NewJSONPlugin() *JSONPlugin {
 			[]string{}, // No dependencies
 		),
 	}
+}
+
+// getCoreEvaluator returns the core evaluator, preferring injected interface over fallback
+func (p *JSONPlugin) getCoreEvaluator(fallback registry.Evaluator) interfaces.CoreEvaluator {
+	if p.evaluator != nil {
+		return p.evaluator
+	}
+	// Fallback to the passed evaluator which should implement CoreEvaluator
+	return fallback
 }
 
 // Functions returns the list of functions provided by this plugin

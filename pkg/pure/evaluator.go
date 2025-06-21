@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/leinonen/go-lisp/pkg/evaluator"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/plugins/arithmetic"
 	"github.com/leinonen/go-lisp/pkg/plugins/atom"
@@ -31,6 +32,10 @@ import (
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
 )
+
+// Ensure PureEvaluator implements the required interfaces
+var _ interfaces.Evaluator = (*PureEvaluator)(nil)
+var _ interfaces.EnvironmentProvider = (*PureEvaluator)(nil)
 
 // PureEvaluator is a fully plugin-based evaluator with no legacy fallback
 type PureEvaluator struct {
@@ -64,129 +69,129 @@ func NewPureEvaluator(env *evaluator.Environment) (*PureEvaluator, error) {
 
 // loadAllPlugins loads all plugins for complete functionality
 func (pe *PureEvaluator) loadAllPlugins() error {
-	// Load core plugin first (def, fn, quote, etc.)
+	// Load core plugin first (def, fn, quote, etc.) with dependency injection
 	corePlugin := core.NewCorePlugin(pe.env)
 	if err := pe.pluginManager.LoadPlugin(corePlugin); err != nil {
 		return fmt.Errorf("failed to load core plugin: %v", err)
 	}
 
-	// Load arithmetic plugin
-	arithmeticPlugin := arithmetic.NewArithmeticPlugin()
+	// Load arithmetic plugin with dependency injection
+	arithmeticPlugin := arithmetic.NewArithmeticPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(arithmeticPlugin); err != nil {
 		return fmt.Errorf("failed to load arithmetic plugin: %v", err)
 	}
 
-	// Load comparison plugin
-	comparisonPlugin := comparison.NewComparisonPlugin()
+	// Load comparison plugin with dependency injection
+	comparisonPlugin := comparison.NewComparisonPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(comparisonPlugin); err != nil {
 		return fmt.Errorf("failed to load comparison plugin: %v", err)
 	}
 
-	// Load logical plugin
-	logicalPlugin := logical.NewLogicalPlugin()
+	// Load logical plugin with dependency injection
+	logicalPlugin := logical.NewLogicalPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(logicalPlugin); err != nil {
 		return fmt.Errorf("failed to load logical plugin: %v", err)
 	}
 
-	// Load polymorphic plugin for advanced features
-	polymorphicPlugin := polymorphic.NewPolymorphicPlugin()
+	// Load polymorphic plugin for advanced features with dependency injection
+	polymorphicPlugin := polymorphic.NewPolymorphicPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(polymorphicPlugin); err != nil {
 		return fmt.Errorf("failed to load polymorphic plugin: %v", err)
 	}
 
-	// Load list plugin
-	listPlugin := list.NewListPlugin()
+	// Load list plugin with dependency injection
+	listPlugin := list.NewListPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(listPlugin); err != nil {
 		return fmt.Errorf("failed to load list plugin: %v", err)
 	}
 
-	// Load control plugin (depends on logical)
-	controlPlugin := control.NewControlPlugin()
+	// Load control plugin (depends on logical) with dependency injection
+	controlPlugin := control.NewControlPlugin(pe, pe)
 	if err := pe.pluginManager.LoadPlugin(controlPlugin); err != nil {
 		return fmt.Errorf("failed to load control plugin: %v", err)
 	}
 
 	// Load essential new plugins
-	// Load keyword plugin
-	keywordPlugin := keyword.NewKeywordPlugin()
+	// Load keyword plugin with dependency injection
+	keywordPlugin := keyword.NewKeywordPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(keywordPlugin); err != nil {
 		return fmt.Errorf("failed to load keyword plugin: %v", err)
 	}
 
-	// Load binding plugin (let)
-	bindingPlugin := binding.NewBindingPlugin()
+	// Load binding plugin (let bindings) with dependency injection
+	bindingPlugin := binding.NewBindingPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(bindingPlugin); err != nil {
 		return fmt.Errorf("failed to load binding plugin: %v", err)
 	}
 
-	// Load sequence plugin (vector)
-	sequencePlugin := sequence.NewSequencePlugin()
+	// Load sequence plugin with dependency injection
+	sequencePlugin := sequence.NewSequencePlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(sequencePlugin); err != nil {
 		return fmt.Errorf("failed to load sequence plugin: %v", err)
 	}
 
-	// Load macro plugin
-	macroPlugin := macro.NewMacroPlugin()
+	// Load macro plugin with dependency injection
+	macroPlugin := macro.NewMacroPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(macroPlugin); err != nil {
 		return fmt.Errorf("failed to load macro plugin: %v", err)
 	}
 
-	// Load string plugin
-	stringPlugin := stringplugin.NewStringPlugin()
+	// Load string plugin with dependency injection
+	stringPlugin := stringplugin.NewStringPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(stringPlugin); err != nil {
 		return fmt.Errorf("failed to load string plugin: %v", err)
 	}
 
-	// Load utils plugin
-	utilsPlugin := utils.NewUtilsPlugin()
+	// Load utils plugin with dependency injection
+	utilsPlugin := utils.NewUtilsPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(utilsPlugin); err != nil {
 		return fmt.Errorf("failed to load utils plugin: %v", err)
 	}
 
-	// Load functional plugin (map, filter, reduce, etc.)
-	functionalPlugin := functional.NewFunctionalPlugin()
+	// Load functional plugin (map, filter, reduce, etc.) with dependency injection
+	functionalPlugin := functional.NewFunctionalPlugin(pe, pe)
 	if err := pe.pluginManager.LoadPlugin(functionalPlugin); err != nil {
 		return fmt.Errorf("failed to load functional plugin: %v", err)
 	}
 
-	// Load math plugin
-	mathPlugin := math.NewMathPlugin()
+	// Load math plugin with dependency injection
+	mathPlugin := math.NewMathPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(mathPlugin); err != nil {
 		return fmt.Errorf("failed to load math plugin: %v", err)
 	}
 
-	// Load hashmap plugin
-	hashmapPlugin := hashmap.NewHashMapPlugin()
+	// Load hashmap plugin with dependency injection
+	hashmapPlugin := hashmap.NewHashMapPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(hashmapPlugin); err != nil {
 		return fmt.Errorf("failed to load hashmap plugin: %v", err)
 	}
 
-	// Load atom plugin
-	atomPlugin := atom.NewAtomPlugin()
+	// Load atom plugin with dependency injection
+	atomPlugin := atom.NewAtomPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(atomPlugin); err != nil {
 		return fmt.Errorf("failed to load atom plugin: %v", err)
 	}
 
-	// Load HTTP plugin
-	httpPlugin := http.NewHTTPPlugin()
+	// Load HTTP plugin with dependency injection
+	httpPlugin := http.NewHTTPPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(httpPlugin); err != nil {
 		return fmt.Errorf("failed to load HTTP plugin: %v", err)
 	}
 
-	// Load JSON plugin
-	jsonPlugin := json.NewJSONPlugin()
+	// Load JSON plugin with dependency injection
+	jsonPlugin := json.NewJSONPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(jsonPlugin); err != nil {
 		return fmt.Errorf("failed to load JSON plugin: %v", err)
 	}
 
-	// Load I/O plugin
-	ioPlugin := io.NewIOPlugin()
+	// Load I/O plugin with dependency injection
+	ioPlugin := io.NewIOPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(ioPlugin); err != nil {
 		return fmt.Errorf("failed to load I/O plugin: %v", err)
 	}
 
-	// Load concurrency plugin
-	concurrencyPlugin := concurrency.NewConcurrencyPlugin()
+	// Load concurrency plugin with dependency injection
+	concurrencyPlugin := concurrency.NewConcurrencyPlugin(pe)
 	if err := pe.pluginManager.LoadPlugin(concurrencyPlugin); err != nil {
 		return fmt.Errorf("failed to load concurrency plugin: %v", err)
 	}
@@ -331,6 +336,18 @@ func (pe *PureEvaluator) CallFunction(funcValue types.Value, args []types.Expr) 
 			return regFn.Call(pe, args)
 		}
 		return nil, fmt.Errorf("undefined arithmetic function: %s", fn.Operation)
+	case *types.PartialFunctionValue:
+		// Handle partial functions by combining partial args with new args
+		return pe.callPartialFunction(fn, args)
+	case *types.ComplementFunctionValue:
+		// Handle complement functions by negating the result
+		return pe.callComplementFunction(fn, args)
+	case *types.JuxtFunctionValue:
+		// Handle juxt functions by calling all functions and collecting results
+		return pe.callJuxtFunction(fn, args)
+	case *types.CompFunctionValue:
+		// Handle comp functions by composing functions (right to left)
+		return pe.callCompFunction(fn, args)
 	default:
 		return nil, fmt.Errorf("cannot call non-function value: %T", funcValue)
 	}
@@ -383,6 +400,66 @@ func (pe *PureEvaluator) callUserFunctionWithTCO(fn *types.FunctionValue, args [
 
 		// Evaluate function body
 		return fnEvaluator.Eval(currentFn.Body)
+	}
+}
+
+// callPartialFunction handles calling a partially applied function
+func (pe *PureEvaluator) callPartialFunction(partialFn *types.PartialFunctionValue, args []types.Expr) (types.Value, error) {
+	// Convert the new arguments to values
+	newArgs := make([]types.Value, len(args))
+	for i, arg := range args {
+		val, err := pe.Eval(arg)
+		if err != nil {
+			return nil, err
+		}
+		newArgs[i] = val
+	}
+
+	// Combine partial arguments with new arguments
+	allArgs := make([]types.Value, 0, len(partialFn.PartialArgs)+len(newArgs))
+	allArgs = append(allArgs, partialFn.PartialArgs...)
+	allArgs = append(allArgs, newArgs...)
+
+	// Convert values back to expressions for the function call
+	// This is a bit of a hack - we need to create expressions from values
+	argExprs := make([]types.Expr, len(allArgs))
+	for i, val := range allArgs {
+		argExprs[i] = pe.valueToExpr(val)
+	}
+
+	// Call the original function with combined arguments
+	return pe.CallFunction(partialFn.OriginalFunction, argExprs)
+}
+
+// valueToExpr converts a value back to an expression (helper for partial function calls)
+func (pe *PureEvaluator) valueToExpr(val types.Value) types.Expr {
+	switch v := val.(type) {
+	case types.NumberValue:
+		return &types.NumberExpr{Value: float64(v)}
+	case *types.BigNumberValue:
+		return &types.BigNumberExpr{Value: v.Value.String()}
+	case types.StringValue:
+		return &types.StringExpr{Value: string(v)}
+	case types.BooleanValue:
+		return &types.BooleanExpr{Value: bool(v)}
+	case types.KeywordValue:
+		return &types.KeywordExpr{Value: string(v)}
+	case *types.ListValue:
+		exprs := make([]types.Expr, len(v.Elements))
+		for i, elem := range v.Elements {
+			exprs[i] = pe.valueToExpr(elem)
+		}
+		return &types.ListExpr{Elements: exprs}
+	case *types.VectorValue:
+		exprs := make([]types.Expr, len(v.Elements))
+		for i, elem := range v.Elements {
+			exprs[i] = pe.valueToExpr(elem)
+		}
+		return &types.BracketExpr{Elements: exprs}
+	default:
+		// For complex types, we'll create a symbol that can be resolved later
+		// This is not ideal but works for most cases
+		return &types.SymbolExpr{Name: fmt.Sprintf("#<value:%s>", val.String())}
 	}
 }
 
@@ -502,4 +579,81 @@ func (pe *PureEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]t
 
 	// Evaluate the expression with the temporary evaluator
 	return tempEvaluator.Eval(expr)
+}
+
+// callComplementFunction handles calling a complement function (negates the result)
+func (pe *PureEvaluator) callComplementFunction(complementFn *types.ComplementFunctionValue, args []types.Expr) (types.Value, error) {
+	// Call the original predicate function
+	result, err := pe.CallFunction(complementFn.PredicateFunction, args)
+	if err != nil {
+		return nil, err
+	}
+
+	// Negate the result (convert to boolean first)
+	switch r := result.(type) {
+	case types.BooleanValue:
+		return !r, nil
+	case *types.NilValue:
+		return types.BooleanValue(true), nil // nil is falsy, so complement is true
+	default:
+		// In Lisp, everything except nil and false is truthy
+		// so the complement would be false
+		return types.BooleanValue(false), nil
+	}
+}
+
+// callJuxtFunction handles calling a juxt function (applies all functions to same args)
+func (pe *PureEvaluator) callJuxtFunction(juxtFn *types.JuxtFunctionValue, args []types.Expr) (types.Value, error) {
+	// Apply each function to the same arguments and collect results
+	results := make([]types.Value, len(juxtFn.Functions))
+
+	for i, fn := range juxtFn.Functions {
+		result, err := pe.CallFunction(fn, args)
+		if err != nil {
+			return nil, fmt.Errorf("error calling function %d in juxt: %v", i, err)
+		}
+		results[i] = result
+	}
+
+	// Return the results as a vector
+	return &types.VectorValue{Elements: results}, nil
+}
+
+// callCompFunction handles calling a comp function (function composition, right to left)
+func (pe *PureEvaluator) callCompFunction(compFn *types.CompFunctionValue, args []types.Expr) (types.Value, error) {
+	if len(compFn.Functions) == 0 {
+		return &types.NilValue{}, nil
+	}
+
+	// Apply functions from right to left (composition)
+	// Start with the rightmost function
+	result, err := pe.CallFunction(compFn.Functions[len(compFn.Functions)-1], args)
+	if err != nil {
+		return nil, fmt.Errorf("error calling rightmost function in comp: %v", err)
+	}
+
+	// Apply remaining functions from right to left, each taking the result as a single argument
+	for i := len(compFn.Functions) - 2; i >= 0; i-- {
+		// Convert the result back to an expression for the next function call
+		resultExpr := pe.valueToExpr(result)
+		result, err = pe.CallFunction(compFn.Functions[i], []types.Expr{resultExpr})
+		if err != nil {
+			return nil, fmt.Errorf("error calling function %d in comp: %v", i, err)
+		}
+	}
+
+	return result, nil
+}
+
+// EnvironmentProvider interface implementation
+
+// GetEnvironment returns the current environment as EnvironmentReader
+func (pe *PureEvaluator) GetEnvironment() interfaces.EnvironmentReader {
+	return pe.env
+}
+
+// CreateChildEnvironment creates a new child environment
+func (pe *PureEvaluator) CreateChildEnvironment() interfaces.EnvironmentWriter {
+	childEnv := pe.env.NewChildEnvironment()
+	return childEnv.(*evaluator.Environment)
 }

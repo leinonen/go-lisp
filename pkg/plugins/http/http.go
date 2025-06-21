@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -17,11 +18,28 @@ import (
 // HTTPPlugin implements HTTP functions
 type HTTPPlugin struct {
 	*plugins.BasePlugin
-	client *http.Client
+	client    *http.Client
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewHTTPPlugin creates a new HTTP plugin
-func NewHTTPPlugin() *HTTPPlugin {
+// NewHTTPPlugin creates a new HTTP plugin with dependency injection
+func NewHTTPPlugin(evaluator interfaces.CoreEvaluator) *HTTPPlugin {
+	return &HTTPPlugin{
+		BasePlugin: plugins.NewBasePlugin(
+			"http",
+			"1.0.0",
+			"HTTP client functions (http-get, http-post, http-put, http-delete)",
+			[]string{}, // No dependencies
+		),
+		client: &http.Client{
+			Timeout: 30 * time.Second,
+		},
+		evaluator: evaluator,
+	}
+}
+
+// NewHTTPPluginLegacy creates a new HTTP plugin with legacy evaluator (for backward compatibility)
+func NewHTTPPluginLegacy() *HTTPPlugin {
 	return &HTTPPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"http",
@@ -33,6 +51,18 @@ func NewHTTPPlugin() *HTTPPlugin {
 			Timeout: 30 * time.Second,
 		},
 	}
+}
+
+// getCoreEvaluator returns the core evaluator, preferring injected interface over fallback
+func (p *HTTPPlugin) getCoreEvaluator(fallback registry.Evaluator) interfaces.CoreEvaluator {
+	if p.evaluator != nil {
+		return p.evaluator
+	}
+	// Fallback to the passed evaluator which should implement CoreEvaluator
+	if coreEval, ok := fallback.(interfaces.CoreEvaluator); ok {
+		return coreEval
+	}
+	return nil
 }
 
 // Functions returns the list of functions provided by this plugin
@@ -171,7 +201,15 @@ func (p *HTTPPlugin) evalHttpGet(evaluator registry.Evaluator, args []types.Expr
 		return nil, fmt.Errorf("http-get requires exactly 1 argument, got %d", len(args))
 	}
 
-	urlValue, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var urlValue types.Value
+	var err error
+
+	if eval != nil {
+		urlValue, err = eval.Eval(args[0])
+	} else {
+		urlValue, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +228,15 @@ func (p *HTTPPlugin) evalHttpPost(evaluator registry.Evaluator, args []types.Exp
 		return nil, fmt.Errorf("http-post requires 2 or 3 arguments, got %d", len(args))
 	}
 
-	urlValue, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var urlValue, bodyValue types.Value
+	var err error
+
+	if eval != nil {
+		urlValue, err = eval.Eval(args[0])
+	} else {
+		urlValue, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +246,11 @@ func (p *HTTPPlugin) evalHttpPost(evaluator registry.Evaluator, args []types.Exp
 		return nil, fmt.Errorf("http-post URL must be a string, got %T", urlValue)
 	}
 
-	bodyValue, err := evaluator.Eval(args[1])
+	if eval != nil {
+		bodyValue, err = eval.Eval(args[1])
+	} else {
+		bodyValue, err = evaluator.Eval(args[1])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +262,12 @@ func (p *HTTPPlugin) evalHttpPost(evaluator registry.Evaluator, args []types.Exp
 
 	var headers map[string]string
 	if len(args) == 3 {
-		headersValue, err := evaluator.Eval(args[2])
+		var headersValue types.Value
+		if eval != nil {
+			headersValue, err = eval.Eval(args[2])
+		} else {
+			headersValue, err = evaluator.Eval(args[2])
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -232,7 +287,15 @@ func (p *HTTPPlugin) evalHttpPut(evaluator registry.Evaluator, args []types.Expr
 		return nil, fmt.Errorf("http-put requires 2 or 3 arguments, got %d", len(args))
 	}
 
-	urlValue, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var urlValue, bodyValue types.Value
+	var err error
+
+	if eval != nil {
+		urlValue, err = eval.Eval(args[0])
+	} else {
+		urlValue, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +305,11 @@ func (p *HTTPPlugin) evalHttpPut(evaluator registry.Evaluator, args []types.Expr
 		return nil, fmt.Errorf("http-put URL must be a string, got %T", urlValue)
 	}
 
-	bodyValue, err := evaluator.Eval(args[1])
+	if eval != nil {
+		bodyValue, err = eval.Eval(args[1])
+	} else {
+		bodyValue, err = evaluator.Eval(args[1])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -254,7 +321,12 @@ func (p *HTTPPlugin) evalHttpPut(evaluator registry.Evaluator, args []types.Expr
 
 	var headers map[string]string
 	if len(args) == 3 {
-		headersValue, err := evaluator.Eval(args[2])
+		var headersValue types.Value
+		if eval != nil {
+			headersValue, err = eval.Eval(args[2])
+		} else {
+			headersValue, err = evaluator.Eval(args[2])
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -274,7 +346,15 @@ func (p *HTTPPlugin) evalHttpDelete(evaluator registry.Evaluator, args []types.E
 		return nil, fmt.Errorf("http-delete requires 1 or 2 arguments, got %d", len(args))
 	}
 
-	urlValue, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var urlValue types.Value
+	var err error
+
+	if eval != nil {
+		urlValue, err = eval.Eval(args[0])
+	} else {
+		urlValue, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +366,12 @@ func (p *HTTPPlugin) evalHttpDelete(evaluator registry.Evaluator, args []types.E
 
 	var headers map[string]string
 	if len(args) == 2 {
-		headersValue, err := evaluator.Eval(args[1])
+		var headersValue types.Value
+		if eval != nil {
+			headersValue, err = eval.Eval(args[1])
+		} else {
+			headersValue, err = evaluator.Eval(args[1])
+		}
 		if err != nil {
 			return nil, err
 		}

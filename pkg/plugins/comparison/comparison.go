@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,11 @@ import (
 // ComparisonPlugin provides comparison operations
 type ComparisonPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewComparisonPlugin creates a new comparison plugin
-func NewComparisonPlugin() *ComparisonPlugin {
+// NewComparisonPlugin creates a new comparison plugin with dependencies
+func NewComparisonPlugin(evaluator interfaces.CoreEvaluator) *ComparisonPlugin {
 	return &ComparisonPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"comparison",
@@ -24,6 +26,7 @@ func NewComparisonPlugin() *ComparisonPlugin {
 			"Comparison operations (=, <, >, <=, >=)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
 }
 
@@ -94,7 +97,7 @@ func (cp *ComparisonPlugin) evalEquality(evaluator registry.Evaluator, args []ty
 		return nil, fmt.Errorf("= requires at least 2 arguments")
 	}
 
-	values, err := functions.EvalArgs(evaluator, args)
+	values, err := cp.evalArgs(evaluator, args)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +118,7 @@ func (cp *ComparisonPlugin) evalLessThan(evaluator registry.Evaluator, args []ty
 		return nil, fmt.Errorf("< requires at least 2 arguments")
 	}
 
-	values, err := functions.EvalArgs(evaluator, args)
+	values, err := cp.evalArgs(evaluator, args)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +138,7 @@ func (cp *ComparisonPlugin) evalGreaterThan(evaluator registry.Evaluator, args [
 		return nil, fmt.Errorf("> requires at least 2 arguments")
 	}
 
-	values, err := functions.EvalArgs(evaluator, args)
+	values, err := cp.evalArgs(evaluator, args)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +158,7 @@ func (cp *ComparisonPlugin) evalLessThanOrEqual(evaluator registry.Evaluator, ar
 		return nil, fmt.Errorf("<= requires at least 2 arguments")
 	}
 
-	values, err := functions.EvalArgs(evaluator, args)
+	values, err := cp.evalArgs(evaluator, args)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +178,7 @@ func (cp *ComparisonPlugin) evalGreaterThanOrEqual(evaluator registry.Evaluator,
 		return nil, fmt.Errorf(">= requires at least 2 arguments")
 	}
 
-	values, err := functions.EvalArgs(evaluator, args)
+	values, err := cp.evalArgs(evaluator, args)
 	if err != nil {
 		return nil, err
 	}
@@ -187,6 +190,14 @@ func (cp *ComparisonPlugin) evalGreaterThanOrEqual(evaluator registry.Evaluator,
 		}
 	}
 	return types.BooleanValue(true), nil
+}
+
+// Helper method to use injected evaluator when available
+func (cp *ComparisonPlugin) evalArgs(evaluator registry.Evaluator, args []types.Expr) ([]types.Value, error) {
+	if cp.evaluator != nil {
+		return functions.EvalArgsWithCore(cp.evaluator, args)
+	}
+	return functions.EvalArgs(evaluator, args)
 }
 
 // Helper functions for value comparison

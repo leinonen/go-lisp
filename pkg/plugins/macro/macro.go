@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,11 @@ import (
 // MacroPlugin provides macro functionality
 type MacroPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewMacroPlugin creates a new macro plugin
-func NewMacroPlugin() *MacroPlugin {
+// NewMacroPlugin creates a new macro plugin with dependency injection
+func NewMacroPlugin(evaluator interfaces.CoreEvaluator) *MacroPlugin {
 	return &MacroPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"macro",
@@ -24,7 +26,17 @@ func NewMacroPlugin() *MacroPlugin {
 			"Macro support (defmacro, macroexpand)",
 			[]string{"core"}, // Depends on core
 		),
+		evaluator: evaluator,
 	}
+}
+
+// getCoreEvaluator returns the core evaluator, preferring injected interface over fallback
+func (p *MacroPlugin) getCoreEvaluator(fallback registry.Evaluator) interfaces.CoreEvaluator {
+	if p.evaluator != nil {
+		return p.evaluator
+	}
+	// Fallback to the passed evaluator which should implement CoreEvaluator
+	return fallback
 }
 
 // RegisterFunctions registers macro functions
@@ -158,12 +170,13 @@ func (p *MacroPlugin) evalMacroexpand(evaluator registry.Evaluator, args []types
 
 // evalUnquote evaluates an expression (opposite of quote)
 func (p *MacroPlugin) evalUnquote(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	eval := p.getCoreEvaluator(evaluator)
 	if len(args) != 1 {
 		return nil, fmt.Errorf("unquote requires exactly 1 argument, got %d", len(args))
 	}
 
 	// Unquote evaluates the expression
-	return evaluator.Eval(args[0])
+	return eval.Eval(args[0])
 }
 
 // expandMacro expands a macro call with given arguments

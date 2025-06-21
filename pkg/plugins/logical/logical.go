@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,11 @@ import (
 // LogicalPlugin provides logical operations
 type LogicalPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewLogicalPlugin creates a new logical plugin
-func NewLogicalPlugin() *LogicalPlugin {
+// NewLogicalPlugin creates a new logical plugin with dependencies
+func NewLogicalPlugin(evaluator interfaces.CoreEvaluator) *LogicalPlugin {
 	return &LogicalPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"logical",
@@ -24,6 +26,20 @@ func NewLogicalPlugin() *LogicalPlugin {
 			"Logical operations (and, or, not)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
+	}
+}
+
+// NewLogicalPluginLegacy creates a new logical plugin without dependencies (backward compatibility)
+func NewLogicalPluginLegacy() *LogicalPlugin {
+	return &LogicalPlugin{
+		BasePlugin: plugins.NewBasePlugin(
+			"logical",
+			"1.0.0",
+			"Logical operations (and, or, not)",
+			[]string{}, // No dependencies
+		),
+		evaluator: nil,
 	}
 }
 
@@ -112,10 +128,18 @@ func (lp *LogicalPlugin) evalNot(evaluator registry.Evaluator, args []types.Expr
 		return nil, fmt.Errorf("not requires exactly 1 argument, got %d", len(args))
 	}
 
-	values, err := functions.EvalArgs(evaluator, args)
+	values, err := lp.evalArgs(evaluator, args)
 	if err != nil {
 		return nil, err
 	}
 
 	return types.BooleanValue(!functions.IsTruthy(values[0])), nil
+}
+
+// Helper method to use injected evaluator when available
+func (lp *LogicalPlugin) evalArgs(evaluator registry.Evaluator, args []types.Expr) ([]types.Value, error) {
+	if lp.evaluator != nil {
+		return functions.EvalArgsWithCore(lp.evaluator, args)
+	}
+	return functions.EvalArgs(evaluator, args)
 }

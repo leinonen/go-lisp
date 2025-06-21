@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -14,10 +15,11 @@ import (
 // IOPlugin provides I/O functions
 type IOPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewIOPlugin creates a new I/O plugin
-func NewIOPlugin() *IOPlugin {
+// NewIOPlugin creates a new I/O plugin with dependency injection
+func NewIOPlugin(evaluator interfaces.CoreEvaluator) *IOPlugin {
 	return &IOPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"io",
@@ -25,8 +27,18 @@ func NewIOPlugin() *IOPlugin {
 			"I/O operations (print, file operations)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
 }
+
+// getCoreEvaluator returns the core evaluator, preferring injected interface over fallback
+// func (p *IOPlugin) getCoreEvaluator(fallback registry.Evaluator) interfaces.CoreEvaluator {
+// 	if p.evaluator != nil {
+// 		return p.evaluator
+// 	}
+// 	// Fallback to the passed evaluator which should implement CoreEvaluator
+// 	return fallback
+// }
 
 // RegisterFunctions registers I/O functions
 func (p *IOPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
@@ -261,9 +273,7 @@ func (p *IOPlugin) valueToString(value types.Value) string {
 		return result
 	case *types.FunctionValue:
 		paramNames := make([]string, len(v.Params))
-		for i, param := range v.Params {
-			paramNames[i] = param
-		}
+		copy(paramNames, v.Params)
 		return fmt.Sprintf("#<function([%s])>", fmt.Sprintf("%v", paramNames))
 	case *types.HashMapValue:
 		result := "{"

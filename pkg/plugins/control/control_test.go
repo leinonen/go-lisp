@@ -79,7 +79,8 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestControlPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewControlPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewControlPlugin(mockEval, mockEval)
 	registry := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(registry)
@@ -107,8 +108,8 @@ func TestControlPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestControlPlugin_evalIf(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	tests := []struct {
 		name        string
@@ -228,8 +229,8 @@ func TestControlPlugin_evalIf(t *testing.T) {
 }
 
 func TestControlPlugin_evalDo(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	tests := []struct {
 		name        string
@@ -293,8 +294,8 @@ func TestControlPlugin_evalDo(t *testing.T) {
 }
 
 func TestControlPlugin_IfWithComplexConditions(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	// Test with non-empty list (should be truthy)
 	listValue := &types.ListValue{Elements: []types.Value{types.NumberValue(1)}}
@@ -360,8 +361,8 @@ func valuesEqual(a, b types.Value) bool {
 }
 
 func TestControlPlugin_DoSequentialEvaluation(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	// Create a more complex test where we simulate side effects
 	// by having expressions that would typically modify state
@@ -384,8 +385,8 @@ func TestControlPlugin_DoSequentialEvaluation(t *testing.T) {
 }
 
 func TestControlPlugin_EvalCond(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	tests := []struct {
 		name     string
@@ -466,8 +467,8 @@ func TestControlPlugin_EvalCond(t *testing.T) {
 }
 
 func TestControlPlugin_EvalWhen(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	tests := []struct {
 		name     string
@@ -537,8 +538,8 @@ func TestControlPlugin_EvalWhen(t *testing.T) {
 }
 
 func TestControlPlugin_EvalWhenNot(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	tests := []struct {
 		name     string

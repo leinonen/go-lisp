@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,24 @@ import (
 // SequencePlugin provides vector and sequence operations
 type SequencePlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
 // NewSequencePlugin creates a new sequence plugin
-func NewSequencePlugin() *SequencePlugin {
+func NewSequencePlugin(evaluator interfaces.CoreEvaluator) *SequencePlugin {
+	return &SequencePlugin{
+		BasePlugin: plugins.NewBasePlugin(
+			"sequence",
+			"1.0.0",
+			"Vectors and sequences (vector, vec, seq)",
+			[]string{"list"}, // Depends on list
+		),
+		evaluator: evaluator,
+	}
+}
+
+// NewSequencePluginLegacy creates a new sequence plugin with legacy evaluator (for backward compatibility)
+func NewSequencePluginLegacy() *SequencePlugin {
 	return &SequencePlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"sequence",

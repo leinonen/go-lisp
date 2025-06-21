@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,11 @@ import (
 // AtomPlugin implements atom functions
 type AtomPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewAtomPlugin creates a new atom plugin
-func NewAtomPlugin() *AtomPlugin {
+// NewAtomPlugin creates a new atom plugin with dependency injection
+func NewAtomPlugin(evaluator interfaces.CoreEvaluator) *AtomPlugin {
 	return &AtomPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"atom",
@@ -24,7 +26,17 @@ func NewAtomPlugin() *AtomPlugin {
 			"Atom functions for thread-safe mutable state (atom, deref, swap!, reset!)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
+}
+
+// getCoreEvaluator returns the core evaluator, preferring injected interface over fallback
+func (p *AtomPlugin) getCoreEvaluator(fallback registry.Evaluator) interfaces.CoreEvaluator {
+	if p.evaluator != nil {
+		return p.evaluator
+	}
+	// Fallback to the passed evaluator which should implement CoreEvaluator
+	return fallback
 }
 
 // Functions returns the list of functions provided by this plugin
@@ -89,11 +101,12 @@ func (p *AtomPlugin) RegisterFunctions(reg registry.FunctionRegistry) error {
 
 // evalAtom creates a new atom with the given initial value
 func (p *AtomPlugin) evalAtom(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	eval := p.getCoreEvaluator(evaluator)
 	if len(args) != 1 {
 		return nil, fmt.Errorf("atom requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	value, err := eval.Eval(args[0])
 	if err != nil {
 		return nil, err
 	}
@@ -103,11 +116,12 @@ func (p *AtomPlugin) evalAtom(evaluator registry.Evaluator, args []types.Expr) (
 
 // evalDeref gets the current value of an atom
 func (p *AtomPlugin) evalDeref(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	eval := p.getCoreEvaluator(evaluator)
 	if len(args) != 1 {
 		return nil, fmt.Errorf("deref requires exactly 1 argument, got %d", len(args))
 	}
 
-	atomValue, err := evaluator.Eval(args[0])
+	atomValue, err := eval.Eval(args[0])
 	if err != nil {
 		return nil, err
 	}
@@ -122,12 +136,13 @@ func (p *AtomPlugin) evalDeref(evaluator registry.Evaluator, args []types.Expr) 
 
 // evalSwap atomically updates an atom by applying a function to its current value
 func (p *AtomPlugin) evalSwap(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	eval := p.getCoreEvaluator(evaluator)
 	if len(args) < 2 {
 		return nil, fmt.Errorf("swap! requires at least 2 arguments (atom and function), got %d", len(args))
 	}
 
 	// Evaluate the atom
-	atomValue, err := evaluator.Eval(args[0])
+	atomValue, err := eval.Eval(args[0])
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +153,7 @@ func (p *AtomPlugin) evalSwap(evaluator registry.Evaluator, args []types.Expr) (
 	}
 
 	// Evaluate the function
-	fnValue, err := evaluator.Eval(args[1])
+	fnValue, err := eval.Eval(args[1])
 	if err != nil {
 		return nil, err
 	}
@@ -202,11 +217,12 @@ func (p *AtomPlugin) valueToExpr(value types.Value) types.Expr {
 
 // evalReset sets an atom to a new value
 func (p *AtomPlugin) evalReset(evaluator registry.Evaluator, args []types.Expr) (types.Value, error) {
+	eval := p.getCoreEvaluator(evaluator)
 	if len(args) != 2 {
 		return nil, fmt.Errorf("reset! requires exactly 2 arguments, got %d", len(args))
 	}
 
-	atomValue, err := evaluator.Eval(args[0])
+	atomValue, err := eval.Eval(args[0])
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +232,7 @@ func (p *AtomPlugin) evalReset(evaluator registry.Evaluator, args []types.Expr) 
 		return nil, fmt.Errorf("reset! first argument must be an atom, got %T", atomValue)
 	}
 
-	newValue, err := evaluator.Eval(args[1])
+	newValue, err := eval.Eval(args[1])
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,12 @@ import (
 // FunctionalPlugin provides higher-order functions
 type FunctionalPlugin struct {
 	*plugins.BasePlugin
+	evaluator  interfaces.CoreEvaluator
+	funcCaller interfaces.FunctionCaller
 }
 
-// NewFunctionalPlugin creates a new functional plugin
-func NewFunctionalPlugin() *FunctionalPlugin {
+// NewFunctionalPlugin creates a new functional plugin with dependencies
+func NewFunctionalPlugin(evaluator interfaces.CoreEvaluator, funcCaller interfaces.FunctionCaller) *FunctionalPlugin {
 	return &FunctionalPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"functional",
@@ -24,6 +27,22 @@ func NewFunctionalPlugin() *FunctionalPlugin {
 			"Higher-order functions (map, filter, reduce, etc.)",
 			[]string{}, // No dependencies
 		),
+		evaluator:  evaluator,
+		funcCaller: funcCaller,
+	}
+}
+
+// NewFunctionalPluginLegacy creates a new functional plugin without dependencies (backward compatibility)
+func NewFunctionalPluginLegacy() *FunctionalPlugin {
+	return &FunctionalPlugin{
+		BasePlugin: plugins.NewBasePlugin(
+			"functional",
+			"1.0.0",
+			"Higher-order functions (map, filter, reduce, etc.)",
+			[]string{}, // No dependencies
+		),
+		evaluator:  nil,
+		funcCaller: nil,
 	}
 }
 
@@ -257,15 +276,20 @@ func (p *FunctionalPlugin) applyFunc(evaluator registry.Evaluator, args []types.
 		return nil, err
 	}
 
-	// Check if it's a list
-	argsList, ok := argsValue.(*types.ListValue)
-	if !ok {
-		return nil, fmt.Errorf("apply requires a list as second argument, got %T", argsValue)
+	// Extract elements from list or vector
+	var argElements []types.Value
+	switch v := argsValue.(type) {
+	case *types.ListValue:
+		argElements = v.Elements
+	case *types.VectorValue:
+		argElements = v.Elements
+	default:
+		return nil, fmt.Errorf("apply requires a list or vector as second argument, got %T", argsValue)
 	}
 
 	// Convert values to expressions
 	var argExprs []types.Expr
-	for _, val := range argsList.Elements {
+	for _, val := range argElements {
 		argExprs = append(argExprs, p.valueToExpr(val))
 	}
 
@@ -275,7 +299,11 @@ func (p *FunctionalPlugin) applyFunc(evaluator registry.Evaluator, args []types.
 
 // callFunction calls a function with given arguments
 func (p *FunctionalPlugin) callFunction(evaluator registry.Evaluator, fnValue types.Value, args []types.Expr) (types.Value, error) {
-	// Use the evaluator's CallFunction method
+	// Use injected function caller if available, otherwise use the passed evaluator
+	if p.funcCaller != nil {
+		return p.funcCaller.CallFunction(fnValue, args)
+	}
+	// Fallback to passed evaluator for backward compatibility
 	return evaluator.CallFunction(fnValue, args)
 }
 

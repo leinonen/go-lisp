@@ -75,7 +75,8 @@ func floatEqual(a, b float64, tolerance float64) bool {
 }
 
 func TestArithmeticPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewArithmeticPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewArithmeticPlugin(mockEval)
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -93,8 +94,8 @@ func TestArithmeticPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestArithmeticPlugin_Addition(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -153,8 +154,8 @@ func TestArithmeticPlugin_Addition(t *testing.T) {
 }
 
 func TestArithmeticPlugin_AdditionWithBigNumbers(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	// Test with big numbers
 	bigNum := types.NewBigNumberFromInt64(1000000000000000000)
@@ -182,8 +183,8 @@ func TestArithmeticPlugin_AdditionWithBigNumbers(t *testing.T) {
 }
 
 func TestArithmeticPlugin_Subtraction(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -250,8 +251,8 @@ func TestArithmeticPlugin_Subtraction(t *testing.T) {
 }
 
 func TestArithmeticPlugin_SubtractionWithBigNumbers(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	// Test unary minus with big number
 	bigNum := types.NewBigNumberFromInt64(1000000000000000000)
@@ -274,8 +275,8 @@ func TestArithmeticPlugin_SubtractionWithBigNumbers(t *testing.T) {
 }
 
 func TestArithmeticPlugin_Multiplication(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -339,8 +340,8 @@ func TestArithmeticPlugin_Multiplication(t *testing.T) {
 }
 
 func TestArithmeticPlugin_MultiplicationWithBigNumbers(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	// Test with big numbers
 	bigNum := types.NewBigNumberFromInt64(1000000000)
@@ -369,8 +370,8 @@ func TestArithmeticPlugin_MultiplicationWithBigNumbers(t *testing.T) {
 }
 
 func TestArithmeticPlugin_Division(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -447,8 +448,8 @@ func TestArithmeticPlugin_Division(t *testing.T) {
 }
 
 func TestArithmeticPlugin_Modulo(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -530,8 +531,8 @@ func TestArithmeticPlugin_Modulo(t *testing.T) {
 }
 
 func TestArithmeticPlugin_ErrorHandling(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	// Test with invalid argument types
 	stringArg := &types.StringExpr{Value: "not a number"}
@@ -573,7 +574,8 @@ func TestArithmeticPlugin_ErrorHandling(t *testing.T) {
 }
 
 func TestArithmeticPlugin_PluginInfo(t *testing.T) {
-	plugin := NewArithmeticPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewArithmeticPlugin(mockEval)
 
 	if plugin.Name() != "arithmetic" {
 		t.Errorf("Expected plugin name 'arithmetic', got %s", plugin.Name())
@@ -595,8 +597,8 @@ func TestArithmeticPlugin_PluginInfo(t *testing.T) {
 
 // Tests for Clojure-style inc and dec functions
 func TestArithmeticPlugin_Inc(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -632,8 +634,8 @@ func TestArithmeticPlugin_Inc(t *testing.T) {
 }
 
 func TestArithmeticPlugin_IncErrors(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	// Test wrong number of arguments
 	tests := []struct {
@@ -666,8 +668,8 @@ func TestArithmeticPlugin_IncErrors(t *testing.T) {
 }
 
 func TestArithmeticPlugin_Dec(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -703,8 +705,8 @@ func TestArithmeticPlugin_Dec(t *testing.T) {
 }
 
 func TestArithmeticPlugin_DecErrors(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	// Test wrong number of arguments
 	tests := []struct {
@@ -737,8 +739,8 @@ func TestArithmeticPlugin_DecErrors(t *testing.T) {
 }
 
 func TestArithmeticPlugin_IncDecWithBigNumbers(t *testing.T) {
-	plugin := NewArithmeticPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewArithmeticPlugin(evaluator)
 
 	// Test inc with big number
 	bigNum := types.NewBigNumberFromInt64(9223372036854775807) // Max int64

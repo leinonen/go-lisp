@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,11 @@ import (
 // KeywordPlugin provides keyword utility functions
 type KeywordPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
 // NewKeywordPlugin creates a new keyword plugin
-func NewKeywordPlugin() *KeywordPlugin {
+func NewKeywordPlugin(evaluator interfaces.CoreEvaluator) *KeywordPlugin {
 	return &KeywordPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"keyword",
@@ -24,6 +26,7 @@ func NewKeywordPlugin() *KeywordPlugin {
 			"Keyword utility functions (keyword, keyword?)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
 }
 

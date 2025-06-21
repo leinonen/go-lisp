@@ -65,7 +65,7 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestStringPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewStringPlugin()
+	plugin := NewStringPluginLegacy()
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -89,7 +89,7 @@ func TestStringPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestStringPlugin_BasicStringOperations(t *testing.T) {
-	plugin := NewStringPlugin()
+	plugin := NewStringPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	// Test string-concat
@@ -175,7 +175,7 @@ func TestStringPlugin_BasicStringOperations(t *testing.T) {
 }
 
 func TestStringPlugin_StringPredicates(t *testing.T) {
-	plugin := NewStringPlugin()
+	plugin := NewStringPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	// Test string-contains?
@@ -259,7 +259,7 @@ func TestStringPlugin_StringPredicates(t *testing.T) {
 }
 
 func TestStringPlugin_StringConversion(t *testing.T) {
-	plugin := NewStringPlugin()
+	plugin := NewStringPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	// Test string->number
@@ -284,7 +284,7 @@ func TestStringPlugin_StringConversion(t *testing.T) {
 }
 
 func TestStringPlugin_StringManipulation(t *testing.T) {
-	plugin := NewStringPlugin()
+	plugin := NewStringPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	// Test string-replace
@@ -329,7 +329,7 @@ func TestStringPlugin_StringManipulation(t *testing.T) {
 }
 
 func TestStringPlugin_ErrorCases(t *testing.T) {
-	plugin := NewStringPlugin()
+	plugin := NewStringPluginLegacy()
 	evaluator := newMockEvaluator()
 
 	// Test string-substring with invalid indices

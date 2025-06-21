@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -14,10 +15,12 @@ import (
 // HashMapPlugin implements hash map functions
 type HashMapPlugin struct {
 	*plugins.BasePlugin
+	evaluator       interfaces.CoreEvaluator
+	legacyEvaluator registry.Evaluator
 }
 
-// NewHashMapPlugin creates a new hash map plugin
-func NewHashMapPlugin() *HashMapPlugin {
+// NewHashMapPlugin creates a new hash map plugin with dependency injection
+func NewHashMapPlugin(evaluator interfaces.CoreEvaluator) *HashMapPlugin {
 	return &HashMapPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"hashmap",
@@ -25,8 +28,18 @@ func NewHashMapPlugin() *HashMapPlugin {
 			"Hash map functions (hash-map, hash-map-get, hash-map-put, etc.)",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
 }
+
+// getCoreEvaluator returns the core evaluator, preferring injected interface over fallback
+// func (p *HashMapPlugin) getCoreEvaluator(fallback registry.Evaluator) interfaces.CoreEvaluator {
+// 	if p.evaluator != nil {
+// 		return p.evaluator
+// 	}
+// 	// Fallback to the passed evaluator which should implement CoreEvaluator
+// 	return fallback
+// }
 
 // Functions returns the list of functions provided by this plugin
 func (p *HashMapPlugin) Functions() []string {

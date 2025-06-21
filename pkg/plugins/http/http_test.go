@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,15 +11,14 @@ import (
 	"github.com/leinonen/go-lisp/pkg/types"
 )
 
-// Mock evaluator for testing
+// Mock evaluator for testing that implements both CoreEvaluator and registry.Evaluator
 type mockEvaluator struct {
 	env *evaluator.Environment
 }
 
 func newMockEvaluator() *mockEvaluator {
-	return &mockEvaluator{
-		env: evaluator.NewEnvironment(),
-	}
+	env := evaluator.NewEnvironment()
+	return &mockEvaluator{env: env}
 }
 
 func (me *mockEvaluator) Eval(expr types.Expr) (types.Value, error) {
@@ -29,19 +29,23 @@ func (me *mockEvaluator) Eval(expr types.Expr) (types.Value, error) {
 		return types.StringValue(e.Value), nil
 	case *types.BooleanExpr:
 		return types.BooleanValue(e.Value), nil
-	default:
-		if ve, ok := expr.(valueExpr); ok {
-			return ve.value, nil
-		}
-		if val, ok := expr.(types.Value); ok {
+	case *types.KeywordExpr:
+		return types.KeywordValue(e.Value), nil
+	case *types.SymbolExpr:
+		if val, exists := me.env.Get(e.Name); exists {
 			return val, nil
 		}
-		return nil, nil
+		return nil, fmt.Errorf("undefined symbol: %s", e.Name)
+	case valueExpr:
+		return e.value, nil
+	default:
+		return nil, fmt.Errorf("unsupported expression type: %T", expr)
 	}
 }
 
+// CallFunction implements registry.Evaluator interface
 func (me *mockEvaluator) CallFunction(funcValue types.Value, args []types.Expr) (types.Value, error) {
-	return nil, nil // Not needed for HTTP tests
+	return nil, fmt.Errorf("CallFunction not implemented in mock")
 }
 
 func (me *mockEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]types.Value) (types.Value, error) {
@@ -67,7 +71,7 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestHTTPPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewHTTPPlugin()
+	plugin := NewHTTPPluginLegacy()
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -85,8 +89,7 @@ func TestHTTPPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestHTTPPlugin_HttpGet(t *testing.T) {
-	plugin := NewHTTPPlugin()
-	evaluator := newMockEvaluator()
+	plugin := NewHTTPPluginLegacy()
 
 	// Create a test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -102,7 +105,8 @@ func TestHTTPPlugin_HttpGet(t *testing.T) {
 
 	// Test GET request
 	args := []types.Expr{&types.StringExpr{Value: server.URL}}
-	result, err := plugin.evalHttpGet(evaluator, args)
+	mockEval := newMockEvaluator()
+	result, err := plugin.evalHttpGet(mockEval, args)
 	if err != nil {
 		t.Fatalf("evalHttpGet failed: %v", err)
 	}
@@ -134,8 +138,7 @@ func TestHTTPPlugin_HttpGet(t *testing.T) {
 }
 
 func TestHTTPPlugin_HttpPost(t *testing.T) {
-	plugin := NewHTTPPlugin()
-	evaluator := newMockEvaluator()
+	plugin := NewHTTPPluginLegacy()
 
 	// Create a test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +156,8 @@ func TestHTTPPlugin_HttpPost(t *testing.T) {
 		&types.StringExpr{Value: server.URL},
 		&types.StringExpr{Value: "test data"},
 	}
-	result, err := plugin.evalHttpPost(evaluator, args)
+	mockEval := newMockEvaluator()
+	result, err := plugin.evalHttpPost(mockEval, args)
 	if err != nil {
 		t.Fatalf("evalHttpPost failed: %v", err)
 	}
@@ -175,8 +179,7 @@ func TestHTTPPlugin_HttpPost(t *testing.T) {
 }
 
 func TestHTTPPlugin_HttpPut(t *testing.T) {
-	plugin := NewHTTPPlugin()
-	evaluator := newMockEvaluator()
+	plugin := NewHTTPPluginLegacy()
 
 	// Create a test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -194,7 +197,8 @@ func TestHTTPPlugin_HttpPut(t *testing.T) {
 		&types.StringExpr{Value: server.URL},
 		&types.StringExpr{Value: "updated data"},
 	}
-	result, err := plugin.evalHttpPut(evaluator, args)
+	mockEval := newMockEvaluator()
+	result, err := plugin.evalHttpPut(mockEval, args)
 	if err != nil {
 		t.Fatalf("evalHttpPut failed: %v", err)
 	}
@@ -216,8 +220,7 @@ func TestHTTPPlugin_HttpPut(t *testing.T) {
 }
 
 func TestHTTPPlugin_HttpDelete(t *testing.T) {
-	plugin := NewHTTPPlugin()
-	evaluator := newMockEvaluator()
+	plugin := NewHTTPPluginLegacy()
 
 	// Create a test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -231,7 +234,8 @@ func TestHTTPPlugin_HttpDelete(t *testing.T) {
 
 	// Test DELETE request
 	args := []types.Expr{&types.StringExpr{Value: server.URL}}
-	result, err := plugin.evalHttpDelete(evaluator, args)
+	mockEval := newMockEvaluator()
+	result, err := plugin.evalHttpDelete(mockEval, args)
 	if err != nil {
 		t.Fatalf("evalHttpDelete failed: %v", err)
 	}
@@ -253,8 +257,7 @@ func TestHTTPPlugin_HttpDelete(t *testing.T) {
 }
 
 func TestHTTPPlugin_WithHeaders(t *testing.T) {
-	plugin := NewHTTPPlugin()
-	evaluator := newMockEvaluator()
+	plugin := NewHTTPPluginLegacy()
 
 	// Create a test server that checks headers
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -277,7 +280,8 @@ func TestHTTPPlugin_WithHeaders(t *testing.T) {
 		&types.StringExpr{Value: "test data"},
 		wrapValue(headers),
 	}
-	result, err := plugin.evalHttpPost(evaluator, args)
+	mockEval := newMockEvaluator()
+	result, err := plugin.evalHttpPost(mockEval, args)
 	if err != nil {
 		t.Fatalf("evalHttpPost with headers failed: %v", err)
 	}
@@ -299,33 +303,32 @@ func TestHTTPPlugin_WithHeaders(t *testing.T) {
 }
 
 func TestHTTPPlugin_ErrorCases(t *testing.T) {
-	plugin := NewHTTPPlugin()
-	evaluator := newMockEvaluator()
+	plugin := NewHTTPPluginLegacy()
+	mockEval := newMockEvaluator()
 
 	// Test with invalid URL
 	args := []types.Expr{&types.StringExpr{Value: "invalid-url"}}
-	_, err := plugin.evalHttpGet(evaluator, args)
+	_, err := plugin.evalHttpGet(mockEval, args)
 	if err == nil {
 		t.Error("Expected error for invalid URL")
 	}
 
 	// Test with wrong argument count
-	_, err = plugin.evalHttpGet(evaluator, []types.Expr{})
+	_, err = plugin.evalHttpGet(mockEval, []types.Expr{})
 	if err == nil {
 		t.Error("Expected error for missing arguments")
 	}
 
 	// Test with wrong argument type
 	args = []types.Expr{&types.NumberExpr{Value: 42}}
-	_, err = plugin.evalHttpGet(evaluator, args)
+	_, err = plugin.evalHttpGet(mockEval, args)
 	if err == nil {
 		t.Error("Expected error for non-string URL")
 	}
 }
 
 func TestHTTPPlugin_ResponseStructure(t *testing.T) {
-	plugin := NewHTTPPlugin()
-	evaluator := newMockEvaluator()
+	plugin := NewHTTPPluginLegacy()
 
 	// Create a test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -338,7 +341,8 @@ func TestHTTPPlugin_ResponseStructure(t *testing.T) {
 
 	// Test GET request
 	args := []types.Expr{&types.StringExpr{Value: server.URL}}
-	result, err := plugin.evalHttpGet(evaluator, args)
+	mockEval := newMockEvaluator()
+	result, err := plugin.evalHttpGet(mockEval, args)
 	if err != nil {
 		t.Fatalf("evalHttpGet failed: %v", err)
 	}

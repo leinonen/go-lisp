@@ -112,7 +112,8 @@ func valuesEqual(a, b types.Value) bool {
 }
 
 func TestListPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewListPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewListPlugin(mockEval)
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -134,8 +135,8 @@ func TestListPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestListPlugin_evalList(t *testing.T) {
-	plugin := NewListPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewListPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -208,8 +209,8 @@ func TestListPlugin_evalList(t *testing.T) {
 }
 
 func TestListPlugin_evalCons(t *testing.T) {
-	plugin := NewListPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewListPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -268,8 +269,8 @@ func TestListPlugin_evalCons(t *testing.T) {
 }
 
 func TestListPlugin_evalLength(t *testing.T) {
-	plugin := NewListPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewListPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -320,8 +321,8 @@ func TestListPlugin_evalLength(t *testing.T) {
 }
 
 func TestListPlugin_evalAppend(t *testing.T) {
-	plugin := NewListPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewListPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -397,8 +398,8 @@ func TestListPlugin_evalAppend(t *testing.T) {
 }
 
 func TestListPlugin_InvalidArguments(t *testing.T) {
-	plugin := NewListPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewListPlugin(evaluator)
 
 	// Test with non-list arguments
 	nonList := types.NumberValue(42)
@@ -439,8 +440,8 @@ func TestListPlugin_InvalidArguments(t *testing.T) {
 }
 
 func TestListPlugin_ClojureConcatAlias(t *testing.T) {
-	plugin := NewListPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewListPlugin(evaluator)
 
 	// Test that concat is an alias for append
 	list1 := &types.ListValue{Elements: []types.Value{types.NumberValue(1), types.NumberValue(2)}}

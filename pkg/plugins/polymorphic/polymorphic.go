@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,11 @@ import (
 // PolymorphicPlugin provides polymorphic functions that work across data types
 type PolymorphicPlugin struct {
 	*plugins.BasePlugin
+	evaluator interfaces.CoreEvaluator
 }
 
-// NewPolymorphicPlugin creates a new polymorphic plugin
-func NewPolymorphicPlugin() *PolymorphicPlugin {
+// NewPolymorphicPlugin creates a new polymorphic plugin with dependency injection
+func NewPolymorphicPlugin(evaluator interfaces.CoreEvaluator) *PolymorphicPlugin {
 	return &PolymorphicPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"polymorphic",
@@ -24,7 +26,17 @@ func NewPolymorphicPlugin() *PolymorphicPlugin {
 			"Polymorphic functions that work across multiple data types",
 			[]string{}, // No dependencies
 		),
+		evaluator: evaluator,
 	}
+}
+
+// getCoreEvaluator returns the core evaluator, preferring injected interface over fallback
+func (p *PolymorphicPlugin) getCoreEvaluator(fallback registry.Evaluator) interfaces.CoreEvaluator {
+	if p.evaluator != nil {
+		return p.evaluator
+	}
+	// Fallback to the passed evaluator which should implement CoreEvaluator
+	return fallback
 }
 
 // RegisterFunctions registers polymorphic functions
@@ -124,7 +136,15 @@ func (p *PolymorphicPlugin) evalFirst(evaluator registry.Evaluator, args []types
 		return nil, fmt.Errorf("first requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = evaluator.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +167,15 @@ func (p *PolymorphicPlugin) evalRest(evaluator registry.Evaluator, args []types.
 		return nil, fmt.Errorf("rest requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +199,15 @@ func (p *PolymorphicPlugin) evalLast(evaluator registry.Evaluator, args []types.
 		return nil, fmt.Errorf("last requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +230,15 @@ func (p *PolymorphicPlugin) evalNth(evaluator registry.Evaluator, args []types.E
 		return nil, fmt.Errorf("nth requires exactly 2 arguments, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +273,15 @@ func (p *PolymorphicPlugin) evalSecond(evaluator registry.Evaluator, args []type
 		return nil, fmt.Errorf("second requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +304,15 @@ func (p *PolymorphicPlugin) evalEmpty(evaluator registry.Evaluator, args []types
 		return nil, fmt.Errorf("empty? requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +339,15 @@ func (p *PolymorphicPlugin) evalSeq(evaluator registry.Evaluator, args []types.E
 		return nil, fmt.Errorf("seq requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +448,15 @@ func (p *PolymorphicPlugin) evalReverse(evaluator registry.Evaluator, args []typ
 		return nil, fmt.Errorf("reverse requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -404,7 +480,15 @@ func (p *PolymorphicPlugin) evalDistinct(evaluator registry.Evaluator, args []ty
 		return nil, fmt.Errorf("distinct requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -434,7 +518,15 @@ func (p *PolymorphicPlugin) evalSort(evaluator registry.Evaluator, args []types.
 		return nil, fmt.Errorf("sort requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -500,7 +592,15 @@ func (p *PolymorphicPlugin) evalSeqPredicate(evaluator registry.Evaluator, args 
 		return nil, fmt.Errorf("seq? requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -518,7 +618,15 @@ func (p *PolymorphicPlugin) evalCollPredicate(evaluator registry.Evaluator, args
 		return nil, fmt.Errorf("coll? requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -536,7 +644,15 @@ func (p *PolymorphicPlugin) evalSequentialPredicate(evaluator registry.Evaluator
 		return nil, fmt.Errorf("sequential? requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -554,7 +670,15 @@ func (p *PolymorphicPlugin) evalIndexedPredicate(evaluator registry.Evaluator, a
 		return nil, fmt.Errorf("indexed? requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -581,7 +705,15 @@ func (p *PolymorphicPlugin) evalConstantly(evaluator registry.Evaluator, args []
 		return nil, fmt.Errorf("constantly requires exactly 1 argument, got %d", len(args))
 	}
 
-	value, err := evaluator.Eval(args[0])
+	eval := p.getCoreEvaluator(evaluator)
+	var value types.Value
+	var err error
+
+	if eval != nil {
+		value, err = eval.Eval(args[0])
+	} else {
+		value, err = evaluator.Eval(args[0])
+	}
 	if err != nil {
 		return nil, err
 	}

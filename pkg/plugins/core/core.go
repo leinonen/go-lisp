@@ -8,6 +8,7 @@ import (
 
 	"github.com/leinonen/go-lisp/pkg/evaluator"
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -16,12 +17,13 @@ import (
 // CorePlugin provides core language functionality
 type CorePlugin struct {
 	*plugins.BasePlugin
-	env      *evaluator.Environment
-	registry registry.FunctionRegistry
+	env       interfaces.EnvironmentWriter // Use interface instead of concrete type
+	legacyEnv *evaluator.Environment       // Keep for backward compatibility
+	registry  registry.FunctionRegistry
 }
 
-// NewCorePlugin creates a new core plugin
-func NewCorePlugin(env *evaluator.Environment) *CorePlugin {
+// NewCorePlugin creates a new core plugin with interface-based environment
+func NewCorePlugin(env interfaces.EnvironmentWriter) *CorePlugin {
 	return &CorePlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"core",
@@ -29,8 +31,24 @@ func NewCorePlugin(env *evaluator.Environment) *CorePlugin {
 			"Core language functionality (def, fn, quote, variables)",
 			[]string{}, // No dependencies
 		),
-		env:      env,
-		registry: nil, // Will be set during registration
+		env:       env,
+		legacyEnv: nil,
+		registry:  nil, // Will be set during registration
+	}
+}
+
+// NewCorePluginLegacy creates a new core plugin with legacy environment (backward compatibility)
+func NewCorePluginLegacy(env *evaluator.Environment) *CorePlugin {
+	return &CorePlugin{
+		BasePlugin: plugins.NewBasePlugin(
+			"core",
+			"1.0.0",
+			"Core language functionality (def, fn, quote, variables)",
+			[]string{}, // No dependencies
+		),
+		env:       env, // *evaluator.Environment implements EnvironmentWriter
+		legacyEnv: env,
+		registry:  nil, // Will be set during registration
 	}
 }
 
@@ -196,10 +214,15 @@ func (p *CorePlugin) fnFunc(evaluator registry.Evaluator, args []types.Expr) (ty
 	body := args[1]
 
 	// Create function value
+	concreteEnv := p.getConcreteEnv()
+	if concreteEnv == nil {
+		return nil, fmt.Errorf("cannot create function: environment type not supported")
+	}
+
 	fn := &types.FunctionValue{
 		Params: params,
 		Body:   body,
-		Env:    p.env, // Capture current environment
+		Env:    concreteEnv, // Use concrete environment
 	}
 
 	return fn, nil
@@ -360,17 +383,17 @@ func (p *CorePlugin) envFunc(evaluator registry.Evaluator, args []types.Expr) (t
 	// Get bindings from the current environment
 	bindings := p.env.GetBindings()
 
-	// Separate variables and functions
+	// Separate variables and functions (exclude built-ins)
 	var variables []string
 	var functions []string
-	var builtins []string
 
 	for name, value := range bindings {
 		switch value.(type) {
 		case *types.FunctionValue:
 			functions = append(functions, name)
 		case *types.ArithmeticFunctionValue, *types.BuiltinFunctionValue:
-			builtins = append(builtins, name)
+			// Skip built-in functions - don't display them in env output
+			continue
 		default:
 			variables = append(variables, fmt.Sprintf("%s = %s", name, value.String()))
 		}
@@ -379,7 +402,6 @@ func (p *CorePlugin) envFunc(evaluator registry.Evaluator, args []types.Expr) (t
 	// Sort the slices for consistent output
 	sort.Strings(variables)
 	sort.Strings(functions)
-	sort.Strings(builtins)
 
 	// Display user-defined variables
 	if len(variables) > 0 {
@@ -409,22 +431,6 @@ func (p *CorePlugin) envFunc(evaluator registry.Evaluator, args []types.Expr) (t
 	} else {
 		result.WriteString("=== User-defined Functions ===\n")
 		result.WriteString("  (none)\n\n")
-	}
-
-	// Display some built-in functions (limit to avoid clutter)
-	if len(builtins) > 0 {
-		result.WriteString("=== Built-in Functions (sample) ===\n")
-		count := 0
-		for _, builtin := range builtins {
-			if count < 10 { // Show only first 10 to avoid clutter
-				result.WriteString("  " + builtin + "\n")
-				count++
-			}
-		}
-		if len(builtins) > 10 {
-			result.WriteString(fmt.Sprintf("  ... and %d more (use 'help' to see all)\n", len(builtins)-10))
-		}
-		result.WriteString("\n")
 	}
 
 	result.WriteString("Use (help) to see all available functions.")
@@ -480,4 +486,16 @@ func (p *CorePlugin) countFunc(evaluator registry.Evaluator, args []types.Expr) 
 	default:
 		return nil, fmt.Errorf("count not supported on type %T", value)
 	}
+}
+
+// getConcreteEnv returns the concrete environment for types that need it
+func (p *CorePlugin) getConcreteEnv() *evaluator.Environment {
+	if p.legacyEnv != nil {
+		return p.legacyEnv
+	}
+	// Try type assertion
+	if concreteEnv, ok := p.env.(*evaluator.Environment); ok {
+		return concreteEnv
+	}
+	return nil
 }

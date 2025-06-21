@@ -8,7 +8,8 @@ import (
 )
 
 func TestLoopRecur_SimpleLoop(t *testing.T) {
-	plugin := NewControlPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewControlPlugin(mockEval, mockEval)
 	registry := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(registry)
@@ -26,8 +27,8 @@ func TestLoopRecur_SimpleLoop(t *testing.T) {
 }
 
 func TestLoopRecur_BasicFunctionality(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	// Test a simple loop that counts down from 3 to 0
 	// (loop [i 3] (if (= i 0) i (recur (- i 1))))
@@ -63,8 +64,8 @@ func TestLoopRecur_BasicFunctionality(t *testing.T) {
 }
 
 func TestRecur_ThrowsException(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	// Test that recur throws a RecurException
 	args := []types.Expr{
@@ -90,8 +91,8 @@ func TestRecur_ThrowsException(t *testing.T) {
 }
 
 func TestLoop_InvalidBindingVector(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	// Test with invalid binding vector (not a BracketExpr)
 	args := []types.Expr{
@@ -106,8 +107,8 @@ func TestLoop_InvalidBindingVector(t *testing.T) {
 }
 
 func TestLoop_OddBindingElements(t *testing.T) {
-	plugin := NewControlPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewControlPlugin(evaluator, evaluator)
 
 	// Test with odd number of binding elements
 	bindingVector := &types.BracketExpr{

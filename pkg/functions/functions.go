@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
 )
@@ -64,6 +65,19 @@ func (bf *BaseFunction) Call(evaluator registry.Evaluator, args []types.Expr) (t
 
 // EvalArgs evaluates all arguments
 func EvalArgs(evaluator registry.Evaluator, args []types.Expr) ([]types.Value, error) {
+	values := make([]types.Value, len(args))
+	for i, arg := range args {
+		val, err := evaluator.Eval(arg)
+		if err != nil {
+			return nil, err
+		}
+		values[i] = val
+	}
+	return values, nil
+}
+
+// EvalArgsWithCore evaluates arguments using CoreEvaluator interface
+func EvalArgsWithCore(evaluator interfaces.CoreEvaluator, args []types.Expr) ([]types.Value, error) {
 	values := make([]types.Value, len(args))
 	for i, arg := range args {
 		val, err := evaluator.Eval(arg)

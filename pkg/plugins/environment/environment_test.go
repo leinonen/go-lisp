@@ -122,8 +122,8 @@ func (me *mockEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]t
 }
 
 func TestEnvironmentPlugin_RegisterFunctions(t *testing.T) {
-	env := evaluator.NewEnvironment()
-	plugin := NewEnvironmentPlugin(env)
+	mockEval := newMockEvaluator()
+	plugin := NewEnvironmentPlugin(mockEval.env, mockEval)
 	registry := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(registry)
@@ -171,9 +171,8 @@ func TestEnvironmentPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestEnvironmentPlugin_EvalLetStar_BasicBindings(t *testing.T) {
-	env := evaluator.NewEnvironment()
-	plugin := NewEnvironmentPlugin(env)
 	evaluator := newMockEvaluator()
+	plugin := NewEnvironmentPlugin(evaluator.env, evaluator)
 
 	tests := []struct {
 		name     string
@@ -229,9 +228,8 @@ func TestEnvironmentPlugin_EvalLetStar_BasicBindings(t *testing.T) {
 }
 
 func TestEnvironmentPlugin_EvalLetStar_Errors(t *testing.T) {
-	env := evaluator.NewEnvironment()
-	plugin := NewEnvironmentPlugin(env)
 	evaluator := newMockEvaluator()
+	plugin := NewEnvironmentPlugin(evaluator.env, evaluator)
 
 	tests := []struct {
 		name        string
@@ -277,9 +275,8 @@ func TestEnvironmentPlugin_EvalLetStar_Errors(t *testing.T) {
 }
 
 func TestEnvironmentPlugin_EvalLetfn_BasicFunctions(t *testing.T) {
-	env := evaluator.NewEnvironment()
-	plugin := NewEnvironmentPlugin(env)
 	evaluator := newMockEvaluator()
+	plugin := NewEnvironmentPlugin(evaluator.env, evaluator)
 
 	tests := []struct {
 		name      string
@@ -330,9 +327,8 @@ func TestEnvironmentPlugin_EvalLetfn_BasicFunctions(t *testing.T) {
 }
 
 func TestEnvironmentPlugin_EvalLetfn_Errors(t *testing.T) {
-	env := evaluator.NewEnvironment()
-	plugin := NewEnvironmentPlugin(env)
 	evaluator := newMockEvaluator()
+	plugin := NewEnvironmentPlugin(evaluator.env, evaluator)
 
 	tests := []struct {
 		name        string
@@ -382,9 +378,8 @@ func TestEnvironmentPlugin_EvalLetfn_Errors(t *testing.T) {
 func TestEnvironmentPlugin_SequentialScoping(t *testing.T) {
 	// This test would verify that let* allows later bindings to reference earlier ones
 	// in a sequential manner, unlike let which evaluates all bindings in parallel
-	env := evaluator.NewEnvironment()
-	plugin := NewEnvironmentPlugin(env)
 	evaluator := newMockEvaluator()
+	plugin := NewEnvironmentPlugin(evaluator.env, evaluator)
 
 	// Test that let* properly sequences bindings
 	args := []types.Expr{
@@ -419,14 +414,8 @@ func TestEnvironmentPlugin_LetStar_vs_Let_Sequential(t *testing.T) {
 	// let evaluates all bindings in parallel (they can't reference each other)
 	// let* evaluates bindings sequentially (later bindings can reference earlier ones)
 
-	env := evaluator.NewEnvironment()
-	plugin := NewEnvironmentPlugin(env)
-
-	// Enhanced mock evaluator that tracks nested evaluations
-	evaluator := &mockEvaluator{
-		env:         evaluator.NewEnvironment(),
-		callHistory: make([]string, 0),
-	}
+	evaluator := newMockEvaluator()
+	plugin := NewEnvironmentPlugin(evaluator.env, evaluator)
 
 	// Test case where let* should work but let might not
 	args := []types.Expr{
@@ -467,9 +456,8 @@ func TestEnvironmentPlugin_LetStar_vs_Let_Sequential(t *testing.T) {
 }
 
 func TestEnvironmentPlugin_LetStar_EmptyBindings(t *testing.T) {
-	env := evaluator.NewEnvironment()
-	plugin := NewEnvironmentPlugin(env)
 	evaluator := newMockEvaluator()
+	plugin := NewEnvironmentPlugin(evaluator.env, evaluator)
 
 	// Test let* with no bindings - should just evaluate body
 	args := []types.Expr{
@@ -489,9 +477,8 @@ func TestEnvironmentPlugin_LetStar_EmptyBindings(t *testing.T) {
 }
 
 func TestEnvironmentPlugin_LetStar_SingleBinding(t *testing.T) {
-	env := evaluator.NewEnvironment()
-	plugin := NewEnvironmentPlugin(env)
 	evaluator := newMockEvaluator()
+	plugin := NewEnvironmentPlugin(evaluator.env, evaluator)
 
 	// Test let* with single binding
 	args := []types.Expr{

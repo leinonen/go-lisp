@@ -49,7 +49,8 @@ func (me *mockEvaluator) EvalWithBindings(expr types.Expr, bindings map[string]t
 }
 
 func TestMacroPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewMacroPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewMacroPlugin(mockEval)
 	registry := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(registry)
@@ -102,8 +103,8 @@ func TestMacroPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestMacroPlugin_EvalDefmacro_BasicMacros(t *testing.T) {
-	plugin := NewMacroPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMacroPlugin(evaluator)
 
 	tests := []struct {
 		name       string
@@ -180,8 +181,8 @@ func TestMacroPlugin_EvalDefmacro_BasicMacros(t *testing.T) {
 }
 
 func TestMacroPlugin_EvalDefmacro_Errors(t *testing.T) {
-	plugin := NewMacroPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMacroPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -238,8 +239,8 @@ func TestMacroPlugin_EvalDefmacro_Errors(t *testing.T) {
 }
 
 func TestMacroPlugin_EvalMacroexpand_Basic(t *testing.T) {
-	plugin := NewMacroPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMacroPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -287,8 +288,8 @@ func TestMacroPlugin_EvalMacroexpand_Basic(t *testing.T) {
 }
 
 func TestMacroPlugin_EvalMacroexpand_Errors(t *testing.T) {
-	plugin := NewMacroPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMacroPlugin(evaluator)
 
 	tests := []struct {
 		name        string
@@ -325,8 +326,8 @@ func TestMacroPlugin_EvalMacroexpand_Errors(t *testing.T) {
 
 func TestMacroPlugin_MacroIntegration(t *testing.T) {
 	// This test shows how macros would work in practice
-	plugin := NewMacroPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMacroPlugin(evaluator)
 
 	// Define a simple "when" macro: (defmacro when [condition body] (if condition body))
 	defmacroArgs := []types.Expr{
@@ -380,8 +381,8 @@ func TestMacroPlugin_MacroIntegration(t *testing.T) {
 }
 
 func TestMacroPlugin_EvalUnquote(t *testing.T) {
-	plugin := NewMacroPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMacroPlugin(evaluator)
 
 	// Test unquote with a simple expression
 	args := []types.Expr{
@@ -401,7 +402,8 @@ func TestMacroPlugin_EvalUnquote(t *testing.T) {
 }
 
 func TestMacroPlugin_ExpandMacro(t *testing.T) {
-	plugin := NewMacroPlugin()
+	evaluator := newMockEvaluator()
+	plugin := NewMacroPlugin(evaluator)
 
 	// Create a simple macro: (defmacro inc [x] (+ x 1))
 	macro := &types.MacroValue{
@@ -449,7 +451,8 @@ func TestMacroPlugin_ExpandMacro(t *testing.T) {
 }
 
 func TestMacroPlugin_SubstituteInExpr(t *testing.T) {
-	plugin := NewMacroPlugin()
+	evaluator := newMockEvaluator()
+	plugin := NewMacroPlugin(evaluator)
 
 	tests := []struct {
 		name     string
@@ -520,8 +523,8 @@ func TestMacroPlugin_SubstituteInExpr(t *testing.T) {
 }
 
 func TestMacroPlugin_EvalMacroexpand_BuiltinMacros(t *testing.T) {
-	plugin := NewMacroPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewMacroPlugin(evaluator)
 
 	tests := []struct {
 		name     string

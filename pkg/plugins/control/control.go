@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leinonen/go-lisp/pkg/functions"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/plugins"
 	"github.com/leinonen/go-lisp/pkg/registry"
 	"github.com/leinonen/go-lisp/pkg/types"
@@ -13,10 +14,12 @@ import (
 // ControlPlugin provides control flow operations
 type ControlPlugin struct {
 	*plugins.BasePlugin
+	evaluator        interfaces.CoreEvaluator
+	bindingEvaluator interfaces.BindingEvaluator
 }
 
-// NewControlPlugin creates a new control plugin
-func NewControlPlugin() *ControlPlugin {
+// NewControlPlugin creates a new control plugin with dependencies
+func NewControlPlugin(evaluator interfaces.CoreEvaluator, bindingEvaluator interfaces.BindingEvaluator) *ControlPlugin {
 	return &ControlPlugin{
 		BasePlugin: plugins.NewBasePlugin(
 			"control",
@@ -24,6 +27,8 @@ func NewControlPlugin() *ControlPlugin {
 			"Control flow operations (if, do, cond, when, when-not, loop, recur)",
 			[]string{"logical"}, // Depends on logical for truthiness
 		),
+		evaluator:        evaluator,
+		bindingEvaluator: bindingEvaluator,
 	}
 }
 
@@ -144,7 +149,7 @@ func (cp *ControlPlugin) evalLoop(evaluator registry.Evaluator, args []types.Exp
 		bindingNames = append(bindingNames, nameExpr.Name)
 
 		// Evaluate the initial value
-		value, err := evaluator.Eval(bindings.Elements[i+1])
+		value, err := cp.eval(evaluator, bindings.Elements[i+1])
 		if err != nil {
 			return nil, fmt.Errorf("loop binding value evaluation failed: %v", err)
 		}
@@ -168,7 +173,7 @@ func (cp *ControlPlugin) evalLoop(evaluator registry.Evaluator, args []types.Exp
 
 		// Evaluate each body expression with the current bindings
 		for _, expr := range body {
-			result, err = evaluator.EvalWithBindings(expr, currentBindings)
+			result, err = cp.evalWithBindings(evaluator, expr, currentBindings)
 			if err != nil {
 				// Check if it's a recur exception
 				if recurErr, ok := err.(*types.RecurException); ok {
@@ -206,7 +211,7 @@ func (cp *ControlPlugin) evalRecur(evaluator registry.Evaluator, args []types.Ex
 	// Evaluate all arguments
 	var values []types.Value
 	for _, arg := range args {
-		value, err := evaluator.Eval(arg)
+		value, err := cp.eval(evaluator, arg)
 		if err != nil {
 			return nil, fmt.Errorf("recur argument evaluation failed: %v", err)
 		}
@@ -225,7 +230,7 @@ func (cp *ControlPlugin) evalIf(evaluator registry.Evaluator, args []types.Expr)
 	}
 
 	// Evaluate condition
-	condition, err := evaluator.Eval(args[0])
+	condition, err := cp.eval(evaluator, args[0])
 	if err != nil {
 		return nil, fmt.Errorf("if condition evaluation failed: %v", err)
 	}
@@ -233,10 +238,10 @@ func (cp *ControlPlugin) evalIf(evaluator registry.Evaluator, args []types.Expr)
 	// Check if condition is truthy
 	if functions.IsTruthy(condition) {
 		// Evaluate then branch
-		return evaluator.Eval(args[1])
+		return cp.eval(evaluator, args[1])
 	} else if len(args) == 3 {
 		// Evaluate else branch if provided
-		return evaluator.Eval(args[2])
+		return cp.eval(evaluator, args[2])
 	}
 
 	// No else branch and condition is false
@@ -254,7 +259,7 @@ func (cp *ControlPlugin) evalDo(evaluator registry.Evaluator, args []types.Expr)
 	// Evaluate each expression in sequence
 	for _, expr := range args {
 		var err error
-		result, err = evaluator.Eval(expr)
+		result, err = cp.eval(evaluator, expr)
 		if err != nil {
 			return nil, err
 		}
@@ -278,18 +283,18 @@ func (cp *ControlPlugin) evalCond(evaluator registry.Evaluator, args []types.Exp
 
 		// Check for :else keyword
 		if symbol, ok := args[i].(*types.SymbolExpr); ok && symbol.Name == ":else" {
-			return evaluator.Eval(args[i+1])
+			return cp.eval(evaluator, args[i+1])
 		}
 
 		// Evaluate condition
-		condition, err := evaluator.Eval(args[i])
+		condition, err := cp.eval(evaluator, args[i])
 		if err != nil {
 			return nil, fmt.Errorf("cond condition evaluation failed: %v", err)
 		}
 
 		// If condition is truthy, evaluate and return the expression
 		if functions.IsTruthy(condition) {
-			return evaluator.Eval(args[i+1])
+			return cp.eval(evaluator, args[i+1])
 		}
 	}
 
@@ -304,7 +309,7 @@ func (cp *ControlPlugin) evalWhen(evaluator registry.Evaluator, args []types.Exp
 	}
 
 	// Evaluate condition
-	condition, err := evaluator.Eval(args[0])
+	condition, err := cp.eval(evaluator, args[0])
 	if err != nil {
 		return nil, fmt.Errorf("when condition evaluation failed: %v", err)
 	}
@@ -313,7 +318,7 @@ func (cp *ControlPlugin) evalWhen(evaluator registry.Evaluator, args []types.Exp
 	if functions.IsTruthy(condition) {
 		var result types.Value = types.BooleanValue(true)
 		for _, expr := range args[1:] {
-			result, err = evaluator.Eval(expr)
+			result, err = cp.eval(evaluator, expr)
 			if err != nil {
 				return nil, err
 			}
@@ -332,7 +337,7 @@ func (cp *ControlPlugin) evalWhenNot(evaluator registry.Evaluator, args []types.
 	}
 
 	// Evaluate condition
-	condition, err := evaluator.Eval(args[0])
+	condition, err := cp.eval(evaluator, args[0])
 	if err != nil {
 		return nil, fmt.Errorf("when-not condition evaluation failed: %v", err)
 	}
@@ -341,7 +346,7 @@ func (cp *ControlPlugin) evalWhenNot(evaluator registry.Evaluator, args []types.
 	if !functions.IsTruthy(condition) {
 		var result types.Value = types.BooleanValue(true)
 		for _, expr := range args[1:] {
-			result, err = evaluator.Eval(expr)
+			result, err = cp.eval(evaluator, expr)
 			if err != nil {
 				return nil, err
 			}
@@ -351,4 +356,21 @@ func (cp *ControlPlugin) evalWhenNot(evaluator registry.Evaluator, args []types.
 
 	// Condition is true
 	return types.BooleanValue(false), nil
+}
+
+// Helper methods to use injected dependencies when available
+
+func (cp *ControlPlugin) eval(evaluator registry.Evaluator, expr types.Expr) (types.Value, error) {
+	if cp.evaluator != nil {
+		return cp.evaluator.Eval(expr)
+	}
+	return evaluator.Eval(expr)
+}
+
+func (cp *ControlPlugin) evalWithBindings(evaluator registry.Evaluator, expr types.Expr, bindings map[string]types.Value) (types.Value, error) {
+	if cp.bindingEvaluator != nil {
+		return cp.bindingEvaluator.EvalWithBindings(expr, bindings)
+	}
+	// Fallback: just evaluate without bindings - this is not ideal but prevents infinite recursion
+	return evaluator.Eval(expr)
 }

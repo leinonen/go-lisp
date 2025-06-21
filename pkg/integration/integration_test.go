@@ -7,7 +7,6 @@ import (
 	"github.com/leinonen/go-lisp/pkg/plugins/advanced"
 	"github.com/leinonen/go-lisp/pkg/plugins/binding"
 	"github.com/leinonen/go-lisp/pkg/plugins/control"
-	"github.com/leinonen/go-lisp/pkg/plugins/environment"
 	"github.com/leinonen/go-lisp/pkg/plugins/keyword"
 	"github.com/leinonen/go-lisp/pkg/plugins/macro"
 	"github.com/leinonen/go-lisp/pkg/plugins/sequence"
@@ -21,29 +20,28 @@ func TestIntegrationSuite(t *testing.T) {
 	reg := registry.NewRegistry()
 	env := evaluator.NewEnvironment()
 
-	// Register all new plugins
-	plugins := []interface {
-		RegisterFunctions(registry.FunctionRegistry) error
-	}{
-		binding.NewBindingPlugin(),
-		keyword.NewKeywordPlugin(),
-		control.NewControlPlugin(),
-		sequence.NewSequencePlugin(),
-		environment.NewEnvironmentPlugin(env),
-		advanced.NewAdvancedPlugin(),
-		macro.NewMacroPlugin(),
-	}
-
-	for _, plugin := range plugins {
-		if err := plugin.RegisterFunctions(reg); err != nil {
-			t.Fatalf("Failed to register plugin: %v", err)
-		}
-	}
-
 	// Create a mock evaluator that uses the registry
 	evaluator := &integrationEvaluator{
 		env:      env,
 		registry: reg,
+	}
+
+	// Register all new plugins
+	plugins := []interface {
+		RegisterFunctions(registry.FunctionRegistry) error
+	}{
+		binding.NewBindingPlugin(evaluator),
+		keyword.NewKeywordPlugin(evaluator),
+		control.NewControlPlugin(evaluator, evaluator),
+		sequence.NewSequencePlugin(evaluator),
+		advanced.NewAdvancedPlugin(),
+		macro.NewMacroPlugin(evaluator),
+	}
+
+	for i, plugin := range plugins {
+		if err := plugin.RegisterFunctions(reg); err != nil {
+			t.Fatalf("Failed to register plugin %d: %v", i, err)
+		}
 	}
 
 	t.Run("Keywords", func(t *testing.T) {
@@ -333,13 +331,18 @@ func BenchmarkIntegrationFeatures(b *testing.B) {
 	reg := registry.NewRegistry()
 	env := evaluator.NewEnvironment()
 
+	mockEvaluator := &integrationEvaluator{
+		env:      env,
+		registry: reg,
+	}
+
 	plugins := []interface {
 		RegisterFunctions(registry.FunctionRegistry) error
 	}{
-		binding.NewBindingPlugin(),
-		keyword.NewKeywordPlugin(),
-		control.NewControlPlugin(),
-		sequence.NewSequencePlugin(),
+		binding.NewBindingPlugin(mockEvaluator),
+		keyword.NewKeywordPlugin(mockEvaluator),
+		control.NewControlPlugin(mockEvaluator, mockEvaluator),
+		sequence.NewSequencePlugin(mockEvaluator),
 	}
 
 	for _, plugin := range plugins {
@@ -348,18 +351,13 @@ func BenchmarkIntegrationFeatures(b *testing.B) {
 		}
 	}
 
-	evaluator := &integrationEvaluator{
-		env:      env,
-		registry: reg,
-	}
-
 	b.Run("KeywordCreation", func(b *testing.B) {
 		keywordFunc, _ := reg.Get("keyword")
 		args := []types.Expr{&types.StringExpr{Value: "test"}}
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = keywordFunc.Call(evaluator, args)
+			_, _ = keywordFunc.Call(mockEvaluator, args)
 		}
 	})
 
@@ -375,7 +373,7 @@ func BenchmarkIntegrationFeatures(b *testing.B) {
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = letFunc.Call(evaluator, args)
+			_, _ = letFunc.Call(mockEvaluator, args)
 		}
 	})
 
@@ -389,7 +387,7 @@ func BenchmarkIntegrationFeatures(b *testing.B) {
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = vectorFunc.Call(evaluator, args)
+			_, _ = vectorFunc.Call(mockEvaluator, args)
 		}
 	})
 }

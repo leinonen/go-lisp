@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"github.com/leinonen/go-lisp/pkg/evaluator"
+	"github.com/leinonen/go-lisp/pkg/interfaces"
 	"github.com/leinonen/go-lisp/pkg/parser"
 	concurrencyplugin "github.com/leinonen/go-lisp/pkg/plugins/concurrency"
 	"github.com/leinonen/go-lisp/pkg/pure"
@@ -12,8 +13,9 @@ import (
 
 // Interpreter combines tokenizer, parser, and evaluator
 type Interpreter struct {
-	env       *evaluator.Environment
-	evaluator registry.Evaluator
+	env       interfaces.EnvironmentWriter
+	evaluator interfaces.Evaluator
+	provider  interfaces.EnvironmentProvider
 }
 
 // Ensure Interpreter implements the InterpreterDependency interface
@@ -35,6 +37,7 @@ func NewModularInterpreter() (*Interpreter, error) {
 	interp := &Interpreter{
 		env:       env,
 		evaluator: pureEval,
+		provider:  pureEval, // PureEvaluator implements EnvironmentProvider
 	}
 
 	// Set the interpreter as a dependency for plugins that need it
@@ -69,7 +72,21 @@ func (i *Interpreter) GetEnvironment() interface{} {
 
 // GetEnvironmentTyped returns the strongly typed environment
 func (i *Interpreter) GetEnvironmentTyped() *evaluator.Environment {
+	// Type assertion to get the concrete type for backward compatibility
+	if env, ok := i.env.(*evaluator.Environment); ok {
+		return env
+	}
+	return nil
+}
+
+// GetEnvironmentWriter returns the environment as EnvironmentWriter
+func (i *Interpreter) GetEnvironmentWriter() interfaces.EnvironmentWriter {
 	return i.env
+}
+
+// GetEnvironmentProvider returns the environment provider
+func (i *Interpreter) GetEnvironmentProvider() interfaces.EnvironmentProvider {
+	return i.provider
 }
 
 // GetRegistry returns the function registry for completion support

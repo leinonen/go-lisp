@@ -81,7 +81,8 @@ func (ve valueExpr) GetPosition() types.Position {
 }
 
 func TestAtomPlugin_RegisterFunctions(t *testing.T) {
-	plugin := NewAtomPlugin()
+	mockEval := newMockEvaluator()
+	plugin := NewAtomPlugin(mockEval)
 	reg := registry.NewRegistry()
 
 	err := plugin.RegisterFunctions(reg)
@@ -99,8 +100,8 @@ func TestAtomPlugin_RegisterFunctions(t *testing.T) {
 }
 
 func TestAtomPlugin_BasicAtomOperations(t *testing.T) {
-	plugin := NewAtomPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewAtomPlugin(evaluator)
 
 	// Test creating an atom
 	atomArgs := []types.Expr{&types.NumberExpr{Value: 42}}
@@ -151,8 +152,8 @@ func TestAtomPlugin_BasicAtomOperations(t *testing.T) {
 }
 
 func TestAtomPlugin_SwapOperation(t *testing.T) {
-	plugin := NewAtomPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewAtomPlugin(evaluator)
 
 	// Create an atom with initial value
 	atomArgs := []types.Expr{&types.NumberExpr{Value: 5}}
@@ -200,8 +201,8 @@ func TestAtomPlugin_SwapOperation(t *testing.T) {
 }
 
 func TestAtomPlugin_AtomWithDifferentTypes(t *testing.T) {
-	plugin := NewAtomPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewAtomPlugin(evaluator)
 
 	tests := []struct {
 		name  string
@@ -241,8 +242,8 @@ func TestAtomPlugin_AtomWithDifferentTypes(t *testing.T) {
 }
 
 func TestAtomPlugin_ErrorCases(t *testing.T) {
-	plugin := NewAtomPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewAtomPlugin(evaluator)
 
 	// Test deref with non-atom
 	nonAtom := types.NumberValue(42)
@@ -292,8 +293,8 @@ func TestAtomPlugin_ErrorCases(t *testing.T) {
 }
 
 func TestAtomPlugin_ConcurrentAccess(t *testing.T) {
-	plugin := NewAtomPlugin()
 	evaluator := newMockEvaluator()
+	plugin := NewAtomPlugin(evaluator)
 
 	// Create an atom
 	atomArgs := []types.Expr{&types.NumberExpr{Value: 0}}
