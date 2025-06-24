@@ -1,6 +1,7 @@
 package minimal
 
 import (
+	"os"
 	"testing"
 )
 
@@ -207,5 +208,109 @@ func TestMacroSystemAdvanced(t *testing.T) {
 
 	if _, ok := result.(Nil); !ok {
 		t.Errorf("Expected macro result to be nil, got %v", result)
+	}
+}
+
+func TestAdvancedDataStructures(t *testing.T) {
+	repl := NewREPL()
+	env := repl.Env
+	Bootstrap(env)
+
+	// Test Vector operations
+	vec := NewVector(Number(1), Number(2), Number(3))
+
+	// Test vector-get
+	result := vec.Get(1)
+	if num, ok := result.(Number); !ok || float64(num) != 2.0 {
+		t.Errorf("Expected vector-get to return 2, got %v", result)
+	}
+
+	// Test vector-append
+	newVec := vec.Append(Number(4))
+	if newVec.Length() != 4 {
+		t.Errorf("Expected appended vector length 4, got %d", newVec.Length())
+	}
+
+	// Test vector-update
+	updatedVec := vec.Update(1, Number(99))
+	result = updatedVec.Get(1)
+	if num, ok := result.(Number); !ok || float64(num) != 99.0 {
+		t.Errorf("Expected updated vector element to be 99, got %v", result)
+	}
+
+	// Test HashMap operations
+	hm := NewHashMap()
+	hm = hm.Put("name", String("Alice"))
+	hm = hm.Put("age", Number(30))
+
+	// Test hash-map-get
+	result = hm.Get("name")
+	if str, ok := result.(String); !ok || string(str) != "Alice" {
+		t.Errorf("Expected hash-map get to return 'Alice', got %v", result)
+	}
+
+	// Test hash-map-keys
+	keys := hm.Keys()
+	if keys.Length() != 2 {
+		t.Errorf("Expected 2 keys, got %d", keys.Length())
+	}
+
+	// Test Set operations
+	set := NewSet()
+	set = set.Add(Number(1))
+	set = set.Add(Number(2))
+	set = set.Add(Number(1)) // Duplicate should be ignored
+
+	if set.Length() != 2 {
+		t.Errorf("Expected set length 2, got %d", set.Length())
+	}
+
+	if !set.Contains(Number(1)) {
+		t.Error("Expected set to contain 1")
+	}
+
+	if set.Contains(Number(3)) {
+		t.Error("Expected set to not contain 3")
+	}
+}
+
+func TestFileLoading(t *testing.T) {
+	repl := NewREPL()
+	env := repl.Env
+	Bootstrap(env)
+
+	// Create a temporary test file
+	testContent := `(define test-var 42)
+(define test-fn (fn [x] (* x 2)))`
+
+	err := os.WriteFile("test-temp.lisp", []byte(testContent), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+	defer os.Remove("test-temp.lisp")
+
+	// Test loading the file
+	_, err = LoadFile("test-temp.lisp", env)
+	if err != nil {
+		t.Fatalf("Failed to load file: %v", err)
+	}
+
+	// Verify the definitions were loaded
+	testVar, err := env.Get(Intern("test-var"))
+	if err != nil {
+		t.Fatalf("Failed to get test-var: %v", err)
+	}
+
+	if num, ok := testVar.(Number); !ok || float64(num) != 42.0 {
+		t.Errorf("Expected test-var to be 42, got %v", testVar)
+	}
+
+	testFn, err := env.Get(Intern("test-fn"))
+	if err != nil {
+		t.Fatalf("Failed to get test-fn: %v", err)
+	}
+
+	if _, ok := testFn.(*UserFunction); !ok {
+		t.Errorf("Expected test-fn to be a function, got %T", testFn)
 	}
 }

@@ -128,6 +128,198 @@ func Bootstrap(env *Environment) error {
 		},
 	})
 
+	// Vector operations
+	env.Set(Intern("vector-get"), &BuiltinFunction{
+		Name: "vector-get",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("vector-get expects 2 arguments, got %d", len(args))
+			}
+
+			vec, ok := args[0].(*Vector)
+			if !ok {
+				return nil, fmt.Errorf("first argument to vector-get must be a vector, got %T", args[0])
+			}
+
+			indexVal, ok := args[1].(Number)
+			if !ok {
+				return nil, fmt.Errorf("second argument to vector-get must be a number, got %T", args[1])
+			}
+
+			return vec.Get(int(indexVal)), nil
+		},
+	})
+
+	env.Set(Intern("vector-append"), &BuiltinFunction{
+		Name: "vector-append",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("vector-append expects 2 arguments, got %d", len(args))
+			}
+
+			vec, ok := args[0].(*Vector)
+			if !ok {
+				return nil, fmt.Errorf("first argument to vector-append must be a vector, got %T", args[0])
+			}
+
+			return vec.Append(args[1]), nil
+		},
+	})
+
+	env.Set(Intern("vector-update"), &BuiltinFunction{
+		Name: "vector-update",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 3 {
+				return nil, fmt.Errorf("vector-update expects 3 arguments, got %d", len(args))
+			}
+
+			vec, ok := args[0].(*Vector)
+			if !ok {
+				return nil, fmt.Errorf("first argument to vector-update must be a vector, got %T", args[0])
+			}
+
+			indexVal, ok := args[1].(Number)
+			if !ok {
+				return nil, fmt.Errorf("second argument to vector-update must be a number, got %T", args[1])
+			}
+
+			return vec.Update(int(indexVal), args[2]), nil
+		},
+	})
+
+	// HashMap operations
+	env.Set(Intern("hash-map"), &BuiltinFunction{
+		Name: "hash-map",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args)%2 != 0 {
+				return nil, fmt.Errorf("hash-map expects even number of arguments (key-value pairs), got %d", len(args))
+			}
+
+			hm := NewHashMap()
+			for i := 0; i < len(args); i += 2 {
+				key := args[i].String()
+				val := args[i+1]
+				hm = hm.Put(key, val)
+			}
+
+			return hm, nil
+		},
+	})
+
+	env.Set(Intern("hash-map-get"), &BuiltinFunction{
+		Name: "hash-map-get",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("hash-map-get expects 2 arguments, got %d", len(args))
+			}
+
+			hm, ok := args[0].(*HashMap)
+			if !ok {
+				return nil, fmt.Errorf("first argument to hash-map-get must be a hash-map, got %T", args[0])
+			}
+
+			key := args[1].String()
+			return hm.Get(key), nil
+		},
+	})
+
+	env.Set(Intern("hash-map-put"), &BuiltinFunction{
+		Name: "hash-map-put",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 3 {
+				return nil, fmt.Errorf("hash-map-put expects 3 arguments, got %d", len(args))
+			}
+
+			hm, ok := args[0].(*HashMap)
+			if !ok {
+				return nil, fmt.Errorf("first argument to hash-map-put must be a hash-map, got %T", args[0])
+			}
+
+			key := args[1].String()
+			val := args[2]
+			return hm.Put(key, val), nil
+		},
+	})
+
+	env.Set(Intern("hash-map-keys"), &BuiltinFunction{
+		Name: "hash-map-keys",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("hash-map-keys expects 1 argument, got %d", len(args))
+			}
+
+			hm, ok := args[0].(*HashMap)
+			if !ok {
+				return nil, fmt.Errorf("argument to hash-map-keys must be a hash-map, got %T", args[0])
+			}
+
+			return hm.Keys(), nil
+		},
+	})
+
+	// Set operations
+	env.Set(Intern("set"), &BuiltinFunction{
+		Name: "set",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			s := NewSet()
+			for _, arg := range args {
+				s = s.Add(arg)
+			}
+			return s, nil
+		},
+	})
+
+	env.Set(Intern("set-add"), &BuiltinFunction{
+		Name: "set-add",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("set-add expects 2 arguments, got %d", len(args))
+			}
+
+			s, ok := args[0].(*Set)
+			if !ok {
+				return nil, fmt.Errorf("first argument to set-add must be a set, got %T", args[0])
+			}
+
+			return s.Add(args[1]), nil
+		},
+	})
+
+	env.Set(Intern("set-contains?"), &BuiltinFunction{
+		Name: "set-contains?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("set-contains? expects 2 arguments, got %d", len(args))
+			}
+
+			s, ok := args[0].(*Set)
+			if !ok {
+				return nil, fmt.Errorf("first argument to set-contains? must be a set, got %T", args[0])
+			}
+
+			return Boolean(s.Contains(args[1])), nil
+		},
+	})
+
+	// Define 'cons' function to construct lists
+	env.Set(Intern("cons"), &BuiltinFunction{
+		Name: "cons",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("cons requires exactly 2 arguments")
+			}
+
+			// cons creates a new list with the first argument as head
+			// and the second argument as tail
+			if list, ok := args[1].(*List); ok {
+				return NewList(append([]Value{args[0]}, list.elements...)...), nil
+			}
+
+			// If second arg is not a list, create a dotted pair (simple list)
+			return NewList(args[0], args[1]), nil
+		},
+	})
+
 	return nil
 }
 

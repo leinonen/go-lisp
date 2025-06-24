@@ -2,7 +2,11 @@ package minimal
 
 // Core evaluation logic for the minimal Lisp kernel
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"strings"
+)
 
 // Eval evaluates a Lisp expression in the given environment
 func Eval(expr Value, env *Environment) (Value, error) {
@@ -103,6 +107,8 @@ func evalSpecialForm(name Symbol, args *List, env *Environment) (Value, error) {
 		return specialDefine(args, env)
 	case Intern("defmacro"):
 		return specialDefmacro(args, env)
+	case Intern("load"):
+		return specialLoad(args, env)
 	case Intern("do"):
 		return specialDo(args, env)
 	default:
@@ -188,8 +194,8 @@ func isTruthy(v Value) bool {
 }
 
 func specialFn(args *List, env *Environment) (Value, error) {
-	if args.Length() != 2 {
-		return nil, fmt.Errorf("fn requires exactly 2 arguments: (fn [params] body)")
+	if args.Length() < 2 {
+		return nil, fmt.Errorf("fn requires at least 2 arguments: (fn [params] body...)")
 	}
 
 	// Get parameter list - accept either vector or list
@@ -204,8 +210,20 @@ func specialFn(args *List, env *Environment) (Value, error) {
 		return nil, fmt.Errorf("fn parameter list must be a vector [params] or list (params)")
 	}
 
-	// Get function body
-	body := args.Rest().First()
+	// Get function body - if multiple expressions, wrap in 'do'
+	var body Value
+	bodyArgs := args.Rest()
+	if bodyArgs.Length() == 1 {
+		body = bodyArgs.First()
+	} else {
+		// Multiple body expressions - wrap in 'do'
+		bodyElements := make([]Value, 0, bodyArgs.Length()+1)
+		bodyElements = append(bodyElements, Intern("do"))
+		for current := bodyArgs; !current.IsEmpty(); current = current.Rest() {
+			bodyElements = append(bodyElements, current.First())
+		}
+		body = NewList(bodyElements...)
+	}
 
 	// Create user function (closure)
 	return &UserFunction{
@@ -363,4 +381,94 @@ func (m *Macro) Call(args []Value, callEnv *Environment) (Value, error) {
 
 func (m *Macro) String() string {
 	return "<macro>"
+}
+
+// specialLoad implements file loading
+func specialLoad(args *List, env *Environment) (Value, error) {
+	if args.Length() != 1 {
+		return nil, fmt.Errorf("load requires exactly 1 argument (filename)")
+	}
+
+	filename, ok := args.First().(String)
+	if !ok {
+		return nil, fmt.Errorf("load argument must be a string, got %T", args.First())
+	}
+
+	return LoadFile(string(filename), env)
+}
+
+// LoadFile loads and evaluates a Lisp file
+func LoadFile(filename string, env *Environment) (Value, error) {
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file %s: %v", filename, err)
+	}
+
+	// Create a temporary REPL for parsing
+	repl := &REPL{Env: env}
+
+	// Remove comments and clean up the content
+	cleanContent := removeComments(string(content))
+
+	// Parse the entire content as a sequence of expressions
+	tokens := repl.tokenize(cleanContent)
+	var lastResult Value = Nil{}
+	pos := 0
+
+	for pos < len(tokens) {
+		// Skip empty tokens
+		if tokens[pos] == "" {
+			pos++
+			continue
+		}
+
+		expr, newPos, err := repl.parseExpression(tokens, pos)
+		if err != nil {
+			return nil, fmt.Errorf("parse error in %s: %v", filename, err)
+		}
+
+		result, err := Eval(expr, env)
+		if err != nil {
+			return nil, fmt.Errorf("eval error in %s: %v", filename, err)
+		}
+
+		lastResult = result
+		pos = newPos
+	}
+
+	return lastResult, nil
+}
+
+// removeComments removes Lisp comments from source code
+func removeComments(content string) string {
+	lines := strings.Split(content, "\n")
+	var cleanLines []string
+
+	for _, line := range lines {
+		// Find comment start, but be careful about strings
+		cleanLine := ""
+		inString := false
+		i := 0
+
+		for i < len(line) {
+			char := line[i]
+			if char == '"' && (i == 0 || line[i-1] != '\\') {
+				inString = !inString
+				cleanLine += string(char)
+			} else if char == ';' && !inString {
+				// Found comment start outside of string
+				break
+			} else {
+				cleanLine += string(char)
+			}
+			i++
+		}
+
+		cleanLine = strings.TrimSpace(cleanLine)
+		if cleanLine != "" {
+			cleanLines = append(cleanLines, cleanLine)
+		}
+	}
+
+	return strings.Join(cleanLines, " ")
 }

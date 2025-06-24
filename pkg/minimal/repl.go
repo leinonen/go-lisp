@@ -160,25 +160,47 @@ func (r *REPL) parseVectorElements(tokens []string, pos int) ([]Value, int, erro
 }
 
 func (r *REPL) tokenize(input string) []string {
-	// Simple tokenizer - splits on whitespace and handles special characters
+	// Enhanced tokenizer that properly handles string literals
 	var tokens []string
 	var current strings.Builder
+	inString := false
 
-	for _, char := range input {
-		switch char {
-		case '(', ')', '[', ']', '`', '~':
-			if current.Len() > 0 {
-				tokens = append(tokens, current.String())
-				current.Reset()
-			}
-			tokens = append(tokens, string(char))
-		case ' ', '\t', '\n', '\r':
-			if current.Len() > 0 {
-				tokens = append(tokens, current.String())
-				current.Reset()
-			}
-		default:
+	for i, char := range input {
+		if char == '"' {
+			// Handle string start/end
 			current.WriteRune(char)
+			if !inString {
+				// Starting a string
+				inString = true
+			} else {
+				// Ending a string (check for escape)
+				if i > 0 && rune(input[i-1]) != '\\' {
+					inString = false
+					// Complete string token
+					tokens = append(tokens, current.String())
+					current.Reset()
+				}
+			}
+		} else if inString {
+			// Inside string - add everything including spaces
+			current.WriteRune(char)
+		} else {
+			// Outside string - normal tokenization
+			switch char {
+			case '(', ')', '[', ']', '`', '~':
+				if current.Len() > 0 {
+					tokens = append(tokens, current.String())
+					current.Reset()
+				}
+				tokens = append(tokens, string(char))
+			case ' ', '\t', '\n', '\r':
+				if current.Len() > 0 {
+					tokens = append(tokens, current.String())
+					current.Reset()
+				}
+			default:
+				current.WriteRune(char)
+			}
 		}
 	}
 

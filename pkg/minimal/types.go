@@ -169,3 +169,145 @@ func (v *Vector) Length() int {
 func (v *Vector) ToList() *List {
 	return NewList(v.elements...)
 }
+
+// Enhanced Vector operations
+func (v *Vector) Get(index int) Value {
+	if index < 0 || index >= len(v.elements) {
+		return Nil{}
+	}
+	return v.elements[index]
+}
+
+func (v *Vector) Append(val Value) *Vector {
+	newElements := make([]Value, len(v.elements)+1)
+	copy(newElements, v.elements)
+	newElements[len(v.elements)] = val
+	return &Vector{elements: newElements}
+}
+
+func (v *Vector) Update(index int, val Value) *Vector {
+	if index < 0 || index >= len(v.elements) {
+		return v // Return unchanged if index out of bounds
+	}
+	newElements := make([]Value, len(v.elements))
+	copy(newElements, v.elements)
+	newElements[index] = val
+	return &Vector{elements: newElements}
+}
+
+// HashMap implementation
+type HashMap struct {
+	elements map[string]Value
+}
+
+func NewHashMap() *HashMap {
+	return &HashMap{elements: make(map[string]Value)}
+}
+
+func (h *HashMap) String() string {
+	if len(h.elements) == 0 {
+		return "{}"
+	}
+
+	result := "{"
+	first := true
+	for k, v := range h.elements {
+		if !first {
+			result += " "
+		}
+		result += k + " " + v.String()
+		first = false
+	}
+	result += "}"
+	return result
+}
+
+func (h *HashMap) Get(key string) Value {
+	if val, exists := h.elements[key]; exists {
+		return val
+	}
+	return Nil{}
+}
+
+func (h *HashMap) Put(key string, val Value) *HashMap {
+	newElements := make(map[string]Value)
+	for k, v := range h.elements {
+		newElements[k] = v
+	}
+	newElements[key] = val
+	return &HashMap{elements: newElements}
+}
+
+func (h *HashMap) Keys() *Vector {
+	keys := make([]Value, 0, len(h.elements))
+	for k := range h.elements {
+		keys = append(keys, String(k))
+	}
+	return &Vector{elements: keys}
+}
+
+func (h *HashMap) Values() *Vector {
+	vals := make([]Value, 0, len(h.elements))
+	for _, v := range h.elements {
+		vals = append(vals, v)
+	}
+	return &Vector{elements: vals}
+}
+
+func (h *HashMap) Length() int {
+	return len(h.elements)
+}
+
+// Set implementation (built on HashMap)
+type Set struct {
+	elements *HashMap
+}
+
+func NewSet() *Set {
+	return &Set{elements: NewHashMap()}
+}
+
+func (s *Set) String() string {
+	if s.elements.Length() == 0 {
+		return "#{}"
+	}
+
+	result := "#{"
+	keys := s.elements.Keys()
+	for i := 0; i < keys.Length(); i++ {
+		if i > 0 {
+			result += " "
+		}
+		result += keys.elements[i].String()
+	}
+	result += "}"
+	return result
+}
+
+func (s *Set) Add(val Value) *Set {
+	key := val.String() // Simple string-based hashing for now
+	newElements := s.elements.Put(key, Boolean(true))
+	return &Set{elements: newElements}
+}
+
+func (s *Set) Contains(val Value) bool {
+	key := val.String()
+	result := s.elements.Get(key)
+	_, isNil := result.(Nil)
+	return !isNil
+}
+
+func (s *Set) Remove(val Value) *Set {
+	newElements := make(map[string]Value)
+	key := val.String()
+	for k, v := range s.elements.elements {
+		if k != key {
+			newElements[k] = v
+		}
+	}
+	return &Set{elements: &HashMap{elements: newElements}}
+}
+
+func (s *Set) Length() int {
+	return s.elements.Length()
+}
