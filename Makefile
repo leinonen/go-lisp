@@ -22,3 +22,6 @@ test-nocache: ## Run all tests without cache
 
 fmt: ## Format all Go source files
 	go fmt ./...
+
+micro:
+	go run ./cmd/minimal-lisp/main.go

@@ -24,20 +24,62 @@ func NewREPL() *REPL {
 // Run starts the REPL
 func (r *REPL) Run() {
 	fmt.Println("Minimal Lisp REPL - Type 'exit' to quit")
+	fmt.Println("Multi-line input supported - expressions are evaluated when parentheses are balanced")
+	fmt.Println("Use ':reset' or ':clear' to discard incomplete input")
 	scanner := bufio.NewScanner(os.Stdin)
 
+	var inputBuffer strings.Builder
+
 	for {
-		fmt.Print("minimal> ")
+		// Determine the prompt based on whether we're continuing input
+		prompt := "minimal> "
+		if inputBuffer.Len() > 0 {
+			prompt = "      ... "
+		}
+
+		fmt.Print(prompt)
 		if !scanner.Scan() {
 			break
 		}
 
-		input := strings.TrimSpace(scanner.Text())
-		if input == "exit" || input == "quit" {
+		line := scanner.Text()
+
+		// Check for exit commands
+		if strings.TrimSpace(line) == "exit" || strings.TrimSpace(line) == "quit" {
+			if inputBuffer.Len() > 0 {
+				fmt.Println("Discarding incomplete input")
+				inputBuffer.Reset()
+				continue
+			}
 			break
 		}
 
-		if input == "" {
+		// Check for reset command to clear incomplete input
+		if strings.TrimSpace(line) == ":reset" || strings.TrimSpace(line) == ":clear" {
+			if inputBuffer.Len() > 0 {
+				fmt.Println("Input buffer cleared")
+				inputBuffer.Reset()
+			}
+			continue
+		}
+
+		// Add line to buffer
+		if inputBuffer.Len() > 0 {
+			inputBuffer.WriteString("\n")
+		}
+		inputBuffer.WriteString(line)
+
+		input := inputBuffer.String()
+
+		// Skip empty input
+		if strings.TrimSpace(input) == "" {
+			inputBuffer.Reset()
+			continue
+		}
+
+		// Check if parentheses are balanced
+		if !r.isBalanced(input) {
+			// Continue reading more input
 			continue
 		}
 
@@ -45,16 +87,19 @@ func (r *REPL) Run() {
 		expr, err := r.parse(input)
 		if err != nil {
 			fmt.Printf("Parse error: %v\n", err)
+			inputBuffer.Reset()
 			continue
 		}
 
 		result, err := Eval(expr, r.Env)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
+			inputBuffer.Reset()
 			continue
 		}
 
 		fmt.Printf("=> %s\n", result.String())
+		inputBuffer.Reset()
 	}
 }
 
@@ -466,4 +511,45 @@ func (bf *BuiltinFunction) Call(args []Value, env *Environment) (Value, error) {
 
 func (bf *BuiltinFunction) String() string {
 	return fmt.Sprintf("<builtin:%s>", bf.Name)
+}
+
+// isBalanced checks if parentheses and brackets are balanced in the input
+func (r *REPL) isBalanced(input string) bool {
+	stack := make([]rune, 0)
+	inString := false
+
+	for i, char := range input {
+		if char == '"' {
+			// Handle string start/end (check for escape)
+			if !inString {
+				inString = true
+			} else if i == 0 || rune(input[i-1]) != '\\' {
+				inString = false
+			}
+			continue
+		}
+
+		if inString {
+			// Skip characters inside strings
+			continue
+		}
+
+		switch char {
+		case '(', '[':
+			stack = append(stack, char)
+		case ')':
+			if len(stack) == 0 || stack[len(stack)-1] != '(' {
+				return false // Unmatched closing paren
+			}
+			stack = stack[:len(stack)-1]
+		case ']':
+			if len(stack) == 0 || stack[len(stack)-1] != '[' {
+				return false // Unmatched closing bracket
+			}
+			stack = stack[:len(stack)-1]
+		}
+	}
+
+	// All parentheses and brackets should be matched
+	return len(stack) == 0 && !inString
 }

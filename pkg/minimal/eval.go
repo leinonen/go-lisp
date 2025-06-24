@@ -253,7 +253,7 @@ func specialDefine(args *List, env *Environment) (Value, error) {
 	// Define in current environment
 	env.Set(name, value)
 
-	return value, nil
+	return DefinedValue{}, nil
 }
 
 // specialDefmacro implements defmacro functionality

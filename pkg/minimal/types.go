@@ -119,6 +119,13 @@ type Vector struct {
 	elements []Value
 }
 
+// DefinedValue represents the result of a successful define operation
+type DefinedValue struct{}
+
+func (d DefinedValue) String() string {
+	return "defined"
+}
+
 // NewVector creates a new vector
 func NewVector(values ...Value) *Vector {
 	return &Vector{elements: values}

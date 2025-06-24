@@ -55,14 +55,20 @@ func Bootstrap(env *Environment) error {
 				return nil, fmt.Errorf("first requires exactly 1 argument")
 			}
 
-			if list, ok := args[0].(*List); ok {
-				if list.IsEmpty() {
+			switch coll := args[0].(type) {
+			case *List:
+				if coll.IsEmpty() {
 					return Nil{}, nil
 				}
-				return list.First(), nil
+				return coll.First(), nil
+			case *Vector:
+				if len(coll.elements) == 0 {
+					return Nil{}, nil
+				}
+				return coll.elements[0], nil
+			default:
+				return nil, fmt.Errorf("first requires a list or vector, got %T", args[0])
 			}
-
-			return nil, fmt.Errorf("first requires a list, got %T", args[0])
 		},
 	})
 
@@ -74,11 +80,18 @@ func Bootstrap(env *Environment) error {
 				return nil, fmt.Errorf("rest requires exactly 1 argument")
 			}
 
-			if list, ok := args[0].(*List); ok {
-				return list.Rest(), nil
+			switch coll := args[0].(type) {
+			case *List:
+				return coll.Rest(), nil
+			case *Vector:
+				if len(coll.elements) <= 1 {
+					return NewList(), nil // Empty list
+				}
+				// Return rest as a list for compatibility with recursive functions
+				return NewList(coll.elements[1:]...), nil
+			default:
+				return nil, fmt.Errorf("rest requires a list or vector, got %T", args[0])
 			}
-
-			return nil, fmt.Errorf("rest requires a list, got %T", args[0])
 		},
 	})
 
@@ -317,6 +330,158 @@ func Bootstrap(env *Environment) error {
 
 			// If second arg is not a list, create a dotted pair (simple list)
 			return NewList(args[0], args[1]), nil
+		},
+	})
+
+	// Add arithmetic operators
+	env.Set(Intern("+"), &BuiltinFunction{
+		Name: "+",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			result := 0.0
+			for _, arg := range args {
+				if num, ok := arg.(Number); ok {
+					result += float64(num)
+				} else {
+					return nil, fmt.Errorf("+ requires numeric arguments, got %T", arg)
+				}
+			}
+			return Number(result), nil
+		},
+	})
+
+	env.Set(Intern("-"), &BuiltinFunction{
+		Name: "-",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("- requires at least 1 argument")
+			}
+			if len(args) == 1 {
+				if num, ok := args[0].(Number); ok {
+					return Number(-float64(num)), nil
+				}
+				return nil, fmt.Errorf("- requires numeric arguments, got %T", args[0])
+			}
+
+			if num, ok := args[0].(Number); ok {
+				result := float64(num)
+				for i := 1; i < len(args); i++ {
+					if num, ok := args[i].(Number); ok {
+						result -= float64(num)
+					} else {
+						return nil, fmt.Errorf("- requires numeric arguments, got %T", args[i])
+					}
+				}
+				return Number(result), nil
+			}
+			return nil, fmt.Errorf("- requires numeric arguments, got %T", args[0])
+		},
+	})
+
+	env.Set(Intern("*"), &BuiltinFunction{
+		Name: "*",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			result := 1.0
+			for _, arg := range args {
+				if num, ok := arg.(Number); ok {
+					result *= float64(num)
+				} else {
+					return nil, fmt.Errorf("* requires numeric arguments, got %T", arg)
+				}
+			}
+			return Number(result), nil
+		},
+	})
+
+	env.Set(Intern("/"), &BuiltinFunction{
+		Name: "/",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("/ requires at least 1 argument")
+			}
+			if len(args) == 1 {
+				if num, ok := args[0].(Number); ok {
+					if float64(num) == 0 {
+						return nil, fmt.Errorf("division by zero")
+					}
+					return Number(1.0 / float64(num)), nil
+				}
+				return nil, fmt.Errorf("/ requires numeric arguments, got %T", args[0])
+			}
+
+			if num, ok := args[0].(Number); ok {
+				result := float64(num)
+				for i := 1; i < len(args); i++ {
+					if num, ok := args[i].(Number); ok {
+						if float64(num) == 0 {
+							return nil, fmt.Errorf("division by zero")
+						}
+						result /= float64(num)
+					} else {
+						return nil, fmt.Errorf("/ requires numeric arguments, got %T", args[i])
+					}
+				}
+				return Number(result), nil
+			}
+			return nil, fmt.Errorf("/ requires numeric arguments, got %T", args[0])
+		},
+	})
+
+	// Add 'nth' function as alias for vector-get
+	env.Set(Intern("nth"), &BuiltinFunction{
+		Name: "nth",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("nth requires exactly 2 arguments")
+			}
+
+			// Support both vectors and lists
+			switch coll := args[0].(type) {
+			case *Vector:
+				if idx, ok := args[1].(Number); ok {
+					index := int(idx)
+					if index < 0 || index >= len(coll.elements) {
+						return nil, fmt.Errorf("index %d out of bounds for vector of length %d", index, len(coll.elements))
+					}
+					return coll.elements[index], nil
+				}
+				return nil, fmt.Errorf("nth index must be a number, got %T", args[1])
+			case *List:
+				if idx, ok := args[1].(Number); ok {
+					index := int(idx)
+					if index < 0 || index >= len(coll.elements) {
+						return nil, fmt.Errorf("index %d out of bounds for list of length %d", index, len(coll.elements))
+					}
+					return coll.elements[index], nil
+				}
+				return nil, fmt.Errorf("nth index must be a number, got %T", args[1])
+			default:
+				return nil, fmt.Errorf("nth requires a vector or list, got %T", args[0])
+			}
+		},
+	})
+
+	// Add 'conj' function as alias for vector-append/cons
+	env.Set(Intern("conj"), &BuiltinFunction{
+		Name: "conj",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("conj requires exactly 2 arguments")
+			}
+
+			// Support both vectors and lists
+			switch coll := args[0].(type) {
+			case *Vector:
+				// For vectors, append to the end
+				newElements := make([]Value, len(coll.elements)+1)
+				copy(newElements, coll.elements)
+				newElements[len(coll.elements)] = args[1]
+				return NewVector(newElements...), nil
+			case *List:
+				// For lists, prepend to the front (traditional cons behavior)
+				return NewList(append([]Value{args[1]}, coll.elements...)...), nil
+			default:
+				return nil, fmt.Errorf("conj requires a vector or list, got %T", args[0])
+			}
 		},
 	})
 
