@@ -10,10 +10,25 @@ import (
 
 // Eval evaluates a Lisp expression in the given environment
 func Eval(expr Value, env *Environment) (Value, error) {
+	return EvalWithContext(expr, env, NewEvaluationContext())
+}
+
+// EvalWithContext evaluates a Lisp expression with evaluation context for better error reporting
+func EvalWithContext(expr Value, env *Environment, ctx *EvaluationContext) (Value, error) {
+	// Set current expression for error reporting
+	ctx.SetExpression(expr.String())
+
 	switch v := expr.(type) {
 	case Symbol:
 		// Look up symbol in environment
-		return env.Get(v)
+		ctx.PushFrame(fmt.Sprintf("looking up symbol: %s", v))
+		result, err := env.Get(v)
+		ctx.PopFrame()
+
+		if err != nil {
+			return nil, ctx.WrapError(err)
+		}
+		return result, nil
 
 	case *List:
 		if v.IsEmpty() {
@@ -22,19 +37,29 @@ func Eval(expr Value, env *Environment) (Value, error) {
 
 		// Check if first element is a special form
 		if sym, ok := v.First().(Symbol); ok {
-			result, err := evalSpecialForm(sym, v.Rest(), env)
+			ctx.PushFrame(fmt.Sprintf("evaluating special form: %s", sym))
+			result, err := evalSpecialFormWithContext(sym, v.Rest(), env, ctx)
+			ctx.PopFrame()
+
 			if err == nil {
 				return result, nil
 			}
 			// Not a special form - check if the error is our specific "not a special form" error
 			if err.Error() != "not a special form" {
-				return nil, err // Return actual errors from special forms
+				return nil, ctx.WrapError(err) // Return actual errors from special forms
 			}
 			// Fall through to function application
 		}
 
 		// Regular function application
-		return Apply(v, env)
+		ctx.PushFrame(fmt.Sprintf("applying function: %s", v.First()))
+		result, err := ApplyWithContext(v, env, ctx)
+		ctx.PopFrame()
+
+		if err != nil {
+			return nil, ctx.WrapError(err)
+		}
+		return result, nil
 
 	default:
 		// Self-evaluating expressions (numbers, strings, booleans, etc.)
@@ -44,73 +69,100 @@ func Eval(expr Value, env *Environment) (Value, error) {
 
 // Apply applies a function to arguments
 func Apply(list *List, env *Environment) (Value, error) {
+	return ApplyWithContext(list, env, NewEvaluationContext())
+}
+
+// ApplyWithContext applies a function to arguments with evaluation context
+func ApplyWithContext(list *List, env *Environment, ctx *EvaluationContext) (Value, error) {
 	if list.IsEmpty() {
-		return nil, fmt.Errorf("cannot apply empty list")
+		return nil, ctx.CreateError("cannot apply empty list")
 	}
 
 	// Evaluate the function
-	fn, err := Eval(list.First(), env)
+	ctx.PushFrame("evaluating function")
+	fn, err := EvalWithContext(list.First(), env, ctx)
+	ctx.PopFrame()
+
 	if err != nil {
 		return nil, err
 	}
 
 	// Check if it's a macro - macros get unevaluated arguments
 	if macro, ok := fn.(*Macro); ok {
+		ctx.PushFrame("expanding macro")
 		// Collect unevaluated arguments for macro
 		args := make([]Value, 0)
 		for current := list.Rest(); !current.IsEmpty(); current = current.Rest() {
 			args = append(args, current.First())
 		}
-		return macro.Call(args, env)
+		result, err := macro.CallWithContext(args, env, ctx)
+		ctx.PopFrame()
+		return result, err
 	}
 
 	function, ok := fn.(Function)
 	if !ok {
-		return nil, fmt.Errorf("%v is not a function", fn)
+		return nil, ctx.CreateError(fmt.Sprintf("%v is not a function", fn))
 	}
 
 	// Evaluate all arguments for regular functions
+	ctx.PushFrame("evaluating arguments")
 	args := make([]Value, 0)
 	for current := list.Rest(); !current.IsEmpty(); current = current.Rest() {
-		evaluated, err := Eval(current.First(), env)
+		evaluated, err := EvalWithContext(current.First(), env, ctx)
 		if err != nil {
+			ctx.PopFrame()
 			return nil, err
 		}
 		args = append(args, evaluated)
 	}
+	ctx.PopFrame()
 
 	// Call the function
-	return function.Call(args, env)
+	ctx.PushFrame(fmt.Sprintf("calling function with %d arguments", len(args)))
+	result, err := function.CallWithContext(args, env, ctx)
+	ctx.PopFrame()
+
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // Function interface for all callable functions
 type Function interface {
 	Value
 	Call(args []Value, env *Environment) (Value, error)
+	CallWithContext(args []Value, env *Environment, ctx *EvaluationContext) (Value, error)
 }
 
 // evalSpecialForm handles evaluation of special forms
 // Returns (nil, nil) if the symbol is not a special form
 func evalSpecialForm(name Symbol, args *List, env *Environment) (Value, error) {
+	return evalSpecialFormWithContext(name, args, env, NewEvaluationContext())
+}
+
+// evalSpecialFormWithContext handles evaluation of special forms with context
+func evalSpecialFormWithContext(name Symbol, args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
 	switch name {
 	case Intern("quote"):
-		return specialQuote(args, env)
+		return specialQuoteWithContext(args, env, ctx)
 	case Intern("quasiquote"):
-		return specialQuasiquote(args, env)
+		return specialQuasiquoteWithContext(args, env, ctx)
 	case Intern("unquote"):
-		return nil, fmt.Errorf("unquote not inside quasiquote")
+		return nil, ctx.CreateError("unquote not inside quasiquote")
 	case Intern("if"):
-		return specialIf(args, env)
+		return specialIfWithContext(args, env, ctx)
 	case Intern("fn"):
-		return specialFn(args, env)
+		return specialFnWithContext(args, env, ctx)
 	case Intern("define"):
-		return specialDefine(args, env)
+		return specialDefineWithContext(args, env, ctx)
 	case Intern("defmacro"):
-		return specialDefmacro(args, env)
+		return specialDefmacroWithContext(args, env, ctx)
 	case Intern("load"):
-		return specialLoad(args, env)
+		return specialLoadWithContext(args, env, ctx)
 	case Intern("do"):
-		return specialDo(args, env)
+		return specialDoWithContext(args, env, ctx)
 	default:
 		return nil, fmt.Errorf("not a special form") // Use a specific error
 	}
@@ -339,6 +391,33 @@ func (f *UserFunction) Call(args []Value, callEnv *Environment) (Value, error) {
 	return Eval(f.Body, env)
 }
 
+// CallWithContext calls the function with evaluation context
+func (f *UserFunction) CallWithContext(args []Value, callEnv *Environment, ctx *EvaluationContext) (Value, error) {
+	// Create new environment with closure's environment as parent
+	env := NewEnvironment(f.Env)
+
+	// Bind parameters to arguments
+	if len(args) != f.Params.Length() {
+		return nil, ctx.CreateError(fmt.Sprintf("function expects %d arguments, got %d", f.Params.Length(), len(args)))
+	}
+
+	i := 0
+	for current := f.Params; !current.IsEmpty(); current = current.Rest() {
+		param, ok := current.First().(Symbol)
+		if !ok {
+			return nil, ctx.CreateError(fmt.Sprintf("parameter must be a symbol, got %T", current.First()))
+		}
+		env.Set(param, args[i])
+		i++
+	}
+
+	ctx.PushFrame("executing user function body")
+	result, err := EvalWithContext(f.Body, env, ctx)
+	ctx.PopFrame()
+
+	return result, err
+}
+
 func (f *UserFunction) String() string {
 	return "<user-function>"
 }
@@ -377,6 +456,43 @@ func (m *Macro) Call(args []Value, callEnv *Environment) (Value, error) {
 
 	// Evaluate the expansion in the calling environment
 	return Eval(expansion, callEnv)
+}
+
+// CallWithContext calls the macro with evaluation context
+func (m *Macro) CallWithContext(args []Value, callEnv *Environment, ctx *EvaluationContext) (Value, error) {
+	// Create new environment with macro's environment as parent
+	env := NewEnvironment(m.Env)
+
+	// Bind parameters to arguments (unevaluated)
+	if len(args) != m.Params.Length() {
+		return nil, ctx.CreateError(fmt.Sprintf("macro expects %d arguments, got %d", m.Params.Length(), len(args)))
+	}
+
+	i := 0
+	for current := m.Params; !current.IsEmpty(); current = current.Rest() {
+		param, ok := current.First().(Symbol)
+		if !ok {
+			return nil, ctx.CreateError(fmt.Sprintf("parameter must be a symbol, got %T", current.First()))
+		}
+		env.Set(param, args[i])
+		i++
+	}
+
+	// Evaluate macro body to get the expansion
+	ctx.PushFrame("expanding macro body")
+	expansion, err := EvalWithContext(m.Body, env, ctx)
+	ctx.PopFrame()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate the expansion in the calling environment
+	ctx.PushFrame("evaluating macro expansion")
+	result, err := EvalWithContext(expansion, callEnv, ctx)
+	ctx.PopFrame()
+
+	return result, err
 }
 
 func (m *Macro) String() string {
@@ -471,4 +587,267 @@ func removeComments(content string) string {
 	}
 
 	return strings.Join(cleanLines, " ")
+}
+
+// Context-aware versions of special forms for enhanced error handling
+
+func specialQuoteWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if args.Length() != 1 {
+		return nil, ctx.CreateError("quote requires exactly 1 argument")
+	}
+	return args.First(), nil
+}
+
+func specialQuasiquoteWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if args.Length() != 1 {
+		return nil, ctx.CreateError("quasiquote requires exactly 1 argument")
+	}
+	return quasiExpandWithContext(args.First(), env, ctx)
+}
+
+// quasiExpandWithContext expands a quasiquoted expression with context
+func quasiExpandWithContext(expr Value, env *Environment, ctx *EvaluationContext) (Value, error) {
+	// Check if this is an unquote
+	if list, ok := expr.(*List); ok && !list.IsEmpty() {
+		if sym, ok := list.First().(Symbol); ok && sym == Intern("unquote") {
+			if list.Length() != 2 {
+				return nil, ctx.CreateError("unquote requires exactly 1 argument")
+			}
+			// Evaluate the unquoted expression
+			ctx.PushFrame("evaluating unquoted expression")
+			result, err := EvalWithContext(list.Rest().First(), env, ctx)
+			ctx.PopFrame()
+			return result, err
+		}
+
+		// Recursively expand list elements
+		expanded := make([]Value, 0)
+		for current := list; !current.IsEmpty(); current = current.Rest() {
+			expandedElem, err := quasiExpandWithContext(current.First(), env, ctx)
+			if err != nil {
+				return nil, err
+			}
+			expanded = append(expanded, expandedElem)
+		}
+		return NewList(expanded...), nil
+	}
+
+	// For non-lists, return as-is (quoted)
+	return expr, nil
+}
+
+func specialIfWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if args.Length() < 2 || args.Length() > 3 {
+		return nil, ctx.CreateError("if requires 2 or 3 arguments")
+	}
+
+	// Evaluate condition
+	ctx.PushFrame("evaluating if condition")
+	condition, err := EvalWithContext(args.First(), env, ctx)
+	ctx.PopFrame()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if condition is truthy
+	if isTruthy(condition) {
+		ctx.PushFrame("evaluating if then-branch")
+		result, err := EvalWithContext(args.Rest().First(), env, ctx)
+		ctx.PopFrame()
+		return result, err
+	} else if args.Length() == 3 {
+		ctx.PushFrame("evaluating if else-branch")
+		result, err := EvalWithContext(args.Rest().Rest().First(), env, ctx)
+		ctx.PopFrame()
+		return result, err
+	}
+
+	// Return nil if no else branch
+	return Nil{}, nil
+}
+
+func specialFnWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if args.Length() < 2 {
+		return nil, ctx.CreateError("fn requires at least 2 arguments: (fn [params] body...)")
+	}
+
+	params := args.First()
+	var paramList *List
+
+	// Accept both lists and vectors for parameters
+	if list, ok := params.(*List); ok {
+		paramList = list
+	} else if vector, ok := params.(*Vector); ok {
+		// Convert vector to list for consistency
+		elements := make([]Value, 0)
+		for i := 0; i < vector.Length(); i++ {
+			elements = append(elements, vector.Get(i))
+		}
+		paramList = NewList(elements...)
+	} else {
+		return nil, ctx.CreateError("fn parameters must be a list or vector")
+	}
+
+	bodyArgs := args.Rest()
+	var body Value
+
+	if bodyArgs.Length() == 1 {
+		body = bodyArgs.First()
+	} else {
+		// Multiple body expressions - wrap in 'do'
+		bodyElements := []Value{Intern("do")}
+		for current := bodyArgs; !current.IsEmpty(); current = current.Rest() {
+			bodyElements = append(bodyElements, current.First())
+		}
+		body = NewList(bodyElements...)
+	}
+
+	// Return a closure
+	return &UserFunction{
+		Params: paramList,
+		Body:   body,
+		Env:    env,
+	}, nil
+}
+
+func specialDefineWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if args.Length() != 2 {
+		return nil, ctx.CreateError("define requires exactly 2 arguments")
+	}
+
+	symbol, ok := args.First().(Symbol)
+	if !ok {
+		return nil, ctx.CreateError("first argument to define must be a symbol")
+	}
+
+	ctx.PushFrame(fmt.Sprintf("evaluating definition of %s", symbol))
+	value, err := EvalWithContext(args.Rest().First(), env, ctx)
+	ctx.PopFrame()
+
+	if err != nil {
+		return nil, err
+	}
+
+	env.Set(symbol, value)
+	return Intern("defined"), nil
+}
+
+func specialDefmacroWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if args.Length() != 3 {
+		return nil, ctx.CreateError("defmacro requires exactly 3 arguments: (defmacro name [params] body)")
+	}
+
+	// Get macro name
+	name, ok := args.First().(Symbol)
+	if !ok {
+		return nil, ctx.CreateError("macro name must be a symbol")
+	}
+
+	// Get parameters - accept both lists and vectors
+	params := args.Rest().First()
+	var paramList *List
+
+	if list, ok := params.(*List); ok {
+		paramList = list
+	} else if vector, ok := params.(*Vector); ok {
+		// Convert vector to list for consistency
+		elements := make([]Value, 0)
+		for i := 0; i < vector.Length(); i++ {
+			elements = append(elements, vector.Get(i))
+		}
+		paramList = NewList(elements...)
+	} else {
+		return nil, ctx.CreateError("macro parameters must be a list or vector")
+	}
+
+	// Get body
+	body := args.Rest().Rest().First()
+
+	// Create macro
+	macro := &Macro{
+		Params: paramList,
+		Body:   body,
+		Env:    env,
+	}
+
+	// Define in environment
+	env.Set(name, macro)
+	return Intern("defined"), nil
+}
+
+func specialDoWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if args.Length() == 0 {
+		return Nil{}, nil
+	}
+
+	var result Value = Nil{}
+	for current := args; !current.IsEmpty(); current = current.Rest() {
+		ctx.PushFrame("evaluating do expression")
+		val, err := EvalWithContext(current.First(), env, ctx)
+		ctx.PopFrame()
+
+		if err != nil {
+			return nil, err
+		}
+		result = val
+	}
+
+	return result, nil
+}
+
+func specialLoadWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if args.Length() != 1 {
+		return nil, ctx.CreateError("load requires exactly 1 argument")
+	}
+
+	// Evaluate the filename argument
+	ctx.PushFrame("evaluating load filename")
+	filenameValue, err := EvalWithContext(args.First(), env, ctx)
+	ctx.PopFrame()
+
+	if err != nil {
+		return nil, err
+	}
+
+	filename, ok := filenameValue.(String)
+	if !ok {
+		return nil, ctx.CreateError("load argument must be a string")
+	}
+
+	// Set filename in context for better error reporting
+	oldFilename := ctx.Filename
+	ctx.Filename = string(filename)
+	defer func() { ctx.Filename = oldFilename }()
+
+	ctx.PushFrame(fmt.Sprintf("loading file: %s", filename))
+	result, err := loadFileWithContext(string(filename), env, ctx)
+	ctx.PopFrame()
+
+	return result, err
+}
+
+// loadFileWithContext loads and evaluates a Lisp file with context
+func loadFileWithContext(filename string, env *Environment, ctx *EvaluationContext) (Value, error) {
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, ctx.CreateError(fmt.Sprintf("could not read file %s: %v", filename, err))
+	}
+
+	// Parse with position tracking
+	expr, pos, err := ParseWithPositions(string(content), filename)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set source location in context
+	if pos != nil {
+		ctx.SetLocation(pos.Line, pos.Column, pos.File)
+	}
+
+	ctx.PushFrame(fmt.Sprintf("evaluating file contents: %s", filename))
+	result, err := EvalWithContext(expr, env, ctx)
+	ctx.PopFrame()
+
+	return result, err
 }

@@ -83,17 +83,24 @@ func (r *REPL) Run() {
 			continue
 		}
 
-		// Parse and evaluate
-		expr, err := r.parse(input)
+		// Parse and evaluate with enhanced error handling
+		expr, pos, err := ParseWithPositions(input, "<repl>")
 		if err != nil {
-			fmt.Printf("Parse error: %v\n", err)
+			fmt.Printf("%v\n", err)
 			inputBuffer.Reset()
 			continue
 		}
 
-		result, err := Eval(expr, r.Env)
+		// Create evaluation context
+		ctx := NewEvaluationContext()
+		if pos != nil {
+			ctx.SetLocation(pos.Line, pos.Column, pos.File)
+		}
+		ctx.SetExpression(input)
+
+		result, err := EvalWithContext(expr, r.Env, ctx)
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
+			fmt.Printf("%v\n", err)
 			inputBuffer.Reset()
 			continue
 		}
@@ -507,6 +514,18 @@ type BuiltinFunction struct {
 
 func (bf *BuiltinFunction) Call(args []Value, env *Environment) (Value, error) {
 	return bf.Fn(args, env)
+}
+
+// CallWithContext calls the builtin function with evaluation context
+func (bf *BuiltinFunction) CallWithContext(args []Value, env *Environment, ctx *EvaluationContext) (Value, error) {
+	ctx.PushFrame(fmt.Sprintf("calling builtin: %s", bf.Name))
+	result, err := bf.Fn(args, env)
+	ctx.PopFrame()
+
+	if err != nil {
+		return nil, ctx.WrapError(err)
+	}
+	return result, nil
 }
 
 func (bf *BuiltinFunction) String() string {
