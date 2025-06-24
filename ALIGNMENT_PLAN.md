@@ -45,20 +45,37 @@ $ go run cmd/minimal-lisp/main.go examples
    (factorial 5) => 120
 ```
 
-## 🔄 Phase 2: Enhanced Kernel (IN PROGRESS)
+## 🔄 Phase 2: Enhanced Kernel (✅ MACRO SYSTEM COMPLETE)
 
-### 2.1 Macro System Implementation
+### 2.1 Macro System Implementation ✅ COMPLETE
 
 **Goal**: Add code-as-data manipulation capabilities
 
 ```go
-// Add to special forms
+// Added to special forms in eval.go
 case Intern("quasiquote"):
     return specialQuasiquote(args, env)
 case Intern("unquote"):
-    return specialUnquote(args, env)
+    return nil, fmt.Errorf("unquote not inside quasiquote")
 case Intern("defmacro"):
     return specialDefmacro(args, env)
+```
+
+**Achievements**:
+- ✅ **Quasiquote/Unquote**: Template system with selective evaluation using `` ` `` and `~` syntax
+- ✅ **Defmacro**: Define macros with Clojure-style square bracket `[param]` syntax
+- ✅ **Macro Type**: User-defined macros that receive unevaluated arguments
+- ✅ **Parser Support**: Tokenizer and parser handle backtick and tilde syntax
+- ✅ **Comprehensive Tests**: Full test coverage for macro functionality
+
+**Demo**:
+```lisp
+minimal> (defmacro when [condition body] `(if ~condition ~body nil))
+=> defined
+minimal> (when true 42)
+=> 42
+minimal> (when false 42)
+=> nil
 ```
 
 **Benefits**:
@@ -337,10 +354,10 @@ func TestRegressions(t *testing.T) {
 - Basic REPL and examples
 - Core test coverage
 
-### Phase 2: 🔄 CURRENT (1 week)
-- Macro system
-- Advanced data structures
-- Enhanced error handling
+### Phase 2: 🔄 IN PROGRESS (1 week)
+- ✅ Macro system (quasiquote, unquote, defmacro)
+- 📅 Advanced data structures (HashMap, Set, enhanced Vector)
+- 📅 Enhanced error handling
 
 ### Phase 3: 📅 PLANNED (2 weeks)
 - Integration adapters

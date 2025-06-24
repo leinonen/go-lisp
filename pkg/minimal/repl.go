@@ -65,17 +65,108 @@ func (r *REPL) parse(input string) (Value, error) {
 		return nil, fmt.Errorf("empty input")
 	}
 
-	return r.parseTokens(tokens)
+	result, _, err := r.parseExpression(tokens, 0)
+	return result, err
+}
+
+// Parse exposes the parser for external use
+func (r *REPL) Parse(input string) (Value, error) {
+	return r.parse(input)
+}
+
+func (r *REPL) parseExpression(tokens []string, pos int) (Value, int, error) {
+	if pos >= len(tokens) {
+		return nil, pos, fmt.Errorf("unexpected end of input")
+	}
+
+	token := tokens[pos]
+
+	if token == "(" {
+		// Parse list
+		elements, newPos, err := r.parseListElements(tokens, pos+1)
+		if err != nil {
+			return nil, newPos, err
+		}
+		return NewList(elements...), newPos, nil
+	}
+
+	if token == "[" {
+		// Parse vector
+		elements, newPos, err := r.parseVectorElements(tokens, pos+1)
+		if err != nil {
+			return nil, newPos, err
+		}
+		return NewVector(elements...), newPos, nil
+	}
+
+	if token == "`" {
+		// Parse quasiquote - `expr becomes (quasiquote expr)
+		expr, newPos, err := r.parseExpression(tokens, pos+1)
+		if err != nil {
+			return nil, newPos, err
+		}
+		return NewList(Intern("quasiquote"), expr), newPos, nil
+	}
+
+	if token == "~" {
+		// Parse unquote - ~expr becomes (unquote expr)
+		expr, newPos, err := r.parseExpression(tokens, pos+1)
+		if err != nil {
+			return nil, newPos, err
+		}
+		return NewList(Intern("unquote"), expr), newPos, nil
+	}
+
+	// Parse atom
+	return r.parseAtom(token), pos + 1, nil
+}
+
+func (r *REPL) parseListElements(tokens []string, pos int) ([]Value, int, error) {
+	var elements []Value
+
+	for pos < len(tokens) {
+		if tokens[pos] == ")" {
+			return elements, pos + 1, nil
+		}
+
+		expr, newPos, err := r.parseExpression(tokens, pos)
+		if err != nil {
+			return nil, newPos, err
+		}
+		elements = append(elements, expr)
+		pos = newPos
+	}
+
+	return nil, pos, fmt.Errorf("unclosed list")
+}
+
+func (r *REPL) parseVectorElements(tokens []string, pos int) ([]Value, int, error) {
+	var elements []Value
+
+	for pos < len(tokens) {
+		if tokens[pos] == "]" {
+			return elements, pos + 1, nil
+		}
+
+		expr, newPos, err := r.parseExpression(tokens, pos)
+		if err != nil {
+			return nil, newPos, err
+		}
+		elements = append(elements, expr)
+		pos = newPos
+	}
+
+	return nil, pos, fmt.Errorf("unclosed vector")
 }
 
 func (r *REPL) tokenize(input string) []string {
-	// Simple tokenizer - splits on whitespace and handles parentheses and square brackets
+	// Simple tokenizer - splits on whitespace and handles special characters
 	var tokens []string
 	var current strings.Builder
 
 	for _, char := range input {
 		switch char {
-		case '(', ')', '[', ']':
+		case '(', ')', '[', ']', '`', '~':
 			if current.Len() > 0 {
 				tokens = append(tokens, current.String())
 				current.Reset()
@@ -99,24 +190,8 @@ func (r *REPL) tokenize(input string) []string {
 }
 
 func (r *REPL) parseTokens(tokens []string) (Value, error) {
-	if len(tokens) == 0 {
-		return nil, fmt.Errorf("unexpected end of input")
-	}
-
-	token := tokens[0]
-
-	if token == "(" {
-		// Parse list
-		return r.parseList(tokens[1:])
-	}
-
-	if token == "[" {
-		// Parse vector
-		return r.parseVector(tokens[1:])
-	}
-
-	// Parse atom
-	return r.parseAtom(token), nil
+	result, _, err := r.parseExpression(tokens, 0)
+	return result, err
 }
 
 func (r *REPL) parseList(tokens []string) (Value, error) {

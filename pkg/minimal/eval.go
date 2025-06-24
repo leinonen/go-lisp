@@ -50,12 +50,22 @@ func Apply(list *List, env *Environment) (Value, error) {
 		return nil, err
 	}
 
+	// Check if it's a macro - macros get unevaluated arguments
+	if macro, ok := fn.(*Macro); ok {
+		// Collect unevaluated arguments for macro
+		args := make([]Value, 0)
+		for current := list.Rest(); !current.IsEmpty(); current = current.Rest() {
+			args = append(args, current.First())
+		}
+		return macro.Call(args, env)
+	}
+
 	function, ok := fn.(Function)
 	if !ok {
 		return nil, fmt.Errorf("%v is not a function", fn)
 	}
 
-	// Evaluate all arguments
+	// Evaluate all arguments for regular functions
 	args := make([]Value, 0)
 	for current := list.Rest(); !current.IsEmpty(); current = current.Rest() {
 		evaluated, err := Eval(current.First(), env)
@@ -81,12 +91,18 @@ func evalSpecialForm(name Symbol, args *List, env *Environment) (Value, error) {
 	switch name {
 	case Intern("quote"):
 		return specialQuote(args, env)
+	case Intern("quasiquote"):
+		return specialQuasiquote(args, env)
+	case Intern("unquote"):
+		return nil, fmt.Errorf("unquote not inside quasiquote")
 	case Intern("if"):
 		return specialIf(args, env)
 	case Intern("fn"):
 		return specialFn(args, env)
 	case Intern("define"):
 		return specialDefine(args, env)
+	case Intern("defmacro"):
+		return specialDefmacro(args, env)
 	case Intern("do"):
 		return specialDo(args, env)
 	default:
@@ -99,6 +115,41 @@ func specialQuote(args *List, env *Environment) (Value, error) {
 		return nil, fmt.Errorf("quote requires exactly 1 argument")
 	}
 	return args.First(), nil
+}
+
+func specialQuasiquote(args *List, env *Environment) (Value, error) {
+	if args.Length() != 1 {
+		return nil, fmt.Errorf("quasiquote requires exactly 1 argument")
+	}
+	return quasiExpand(args.First(), env)
+}
+
+// quasiExpand expands a quasiquoted expression
+func quasiExpand(expr Value, env *Environment) (Value, error) {
+	// Check if this is an unquote
+	if list, ok := expr.(*List); ok && !list.IsEmpty() {
+		if sym, ok := list.First().(Symbol); ok && sym == Intern("unquote") {
+			if list.Length() != 2 {
+				return nil, fmt.Errorf("unquote requires exactly 1 argument")
+			}
+			// Evaluate the unquoted expression
+			return Eval(list.Rest().First(), env)
+		}
+
+		// Recursively expand list elements
+		expanded := make([]Value, 0)
+		for current := list; !current.IsEmpty(); current = current.Rest() {
+			expandedElem, err := quasiExpand(current.First(), env)
+			if err != nil {
+				return nil, err
+			}
+			expanded = append(expanded, expandedElem)
+		}
+		return NewList(expanded...), nil
+	}
+
+	// For non-lists, return as-is (quoted)
+	return expr, nil
 }
 
 func specialIf(args *List, env *Environment) (Value, error) {
@@ -187,6 +238,45 @@ func specialDefine(args *List, env *Environment) (Value, error) {
 	return value, nil
 }
 
+// specialDefmacro implements defmacro functionality
+func specialDefmacro(args *List, env *Environment) (Value, error) {
+	if args.Length() != 3 {
+		return nil, fmt.Errorf("defmacro requires exactly 3 arguments: name, parameters, body")
+	}
+
+	// Get macro name
+	name, ok := args.First().(Symbol)
+	if !ok {
+		return nil, fmt.Errorf("macro name must be a symbol, got %T", args.First())
+	}
+
+	// Get parameters (must be a vector or list)
+	var params *List
+	paramsArg := args.Rest().First()
+	if vec, ok := paramsArg.(*Vector); ok {
+		params = vec.ToList()
+	} else if list, ok := paramsArg.(*List); ok {
+		params = list
+	} else {
+		return nil, fmt.Errorf("macro parameters must be a vector or list, got %T", paramsArg)
+	}
+
+	// Get body
+	body := args.Rest().Rest().First()
+
+	// Create macro
+	macro := &Macro{
+		Params: params,
+		Body:   body,
+		Env:    env,
+	}
+
+	// Store in environment
+	env.Set(name, macro)
+
+	return Intern("defined"), nil
+}
+
 func specialDo(args *List, env *Environment) (Value, error) {
 	var result Value = Nil{}
 	var err error
@@ -233,4 +323,44 @@ func (f *UserFunction) Call(args []Value, callEnv *Environment) (Value, error) {
 
 func (f *UserFunction) String() string {
 	return "<user-function>"
+}
+
+// Macro represents a user-defined macro
+type Macro struct {
+	Params *List
+	Body   Value
+	Env    *Environment
+}
+
+func (m *Macro) Call(args []Value, callEnv *Environment) (Value, error) {
+	// Create new environment with macro's environment as parent
+	env := NewEnvironment(m.Env)
+
+	// Bind parameters to arguments (unevaluated)
+	if len(args) != m.Params.Length() {
+		return nil, fmt.Errorf("macro expects %d arguments, got %d", m.Params.Length(), len(args))
+	}
+
+	i := 0
+	for current := m.Params; !current.IsEmpty(); current = current.Rest() {
+		param, ok := current.First().(Symbol)
+		if !ok {
+			return nil, fmt.Errorf("parameter must be a symbol, got %T", current.First())
+		}
+		env.Set(param, args[i])
+		i++
+	}
+
+	// Evaluate macro body to get the expansion
+	expansion, err := Eval(m.Body, env)
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate the expansion in the calling environment
+	return Eval(expansion, callEnv)
+}
+
+func (m *Macro) String() string {
+	return "<macro>"
 }

@@ -1,29 +1,44 @@
-# Core Architecture Overview
+# Minimal Lisp Kernel Implementation
 
-1. Minimal Core Interpreter (Kernel)
-Build a tiny, trusted set of primitive operations. This includes:
+This package implements a minimal Lisp kernel following the clean architecture principles outlined in `future.md`.
 
-- Symbols and interning
-- Lists (linked or array-based)
-- Environments (lexical scope + symbol table)
-- Eval/apply logic
-- Basic special forms: if, define, fn, quote, do
-- A minimal REPL
+## 1. ✅ Minimal Core Interpreter (Kernel)
+Built with a tiny, trusted set of primitive operations:
 
-💡 Design principle: The core should be so small that you could hold it in your head. Think of this like a "Lisp microkernel".
+- **Symbols and interning** (`types.go`) - Unique symbol representation
+- **Lists and Vectors** (`types.go`) - Core data structures with Clojure-style `[param]` syntax
+- **Environments** (`env.go`) - Lexical scope with parent chain lookup
+- **Eval/apply logic** (`eval.go`) - Core evaluation engine
+- **Special forms**: `if`, `define`, `fn`, `quote`, `do`, `quasiquote`, `unquote`, `defmacro`
+- **Minimal REPL** (`repl.go`) - Interactive development environment
 
-2. Bootstrap Language in Itself
-Implement higher-level constructs using the language itself:
+💡 **Design achieved**: The core is small enough to hold in your head (~366 lines in eval.go). This is our "Lisp microkernel".
 
-- Build macros using the core
-- Extend with user-defined functions
-- Implement conditionals, loops, data structures, and module systems in the language
+## 2. ✅ Bootstrap Language in Itself
+Higher-level constructs implemented using the language itself:
+
+- **Built-in functions** (`bootstrap.go`) - `list`, `first`, `rest`, arithmetic, comparisons
+- **User-defined functions** - Closures with lexical scoping
+- **Macro system** - Code generation and language extension
+- **Control structures** - Built using macros (`when`, `unless`, etc.)
 
 This makes the language self-hosting and keeps the core clean.
 
-3. Macro System (Hygienic Optional)
-Macros are Lisp's superpower. Design a macro system that:
+## 3. ✅ Macro System Implementation
+Full metaprogramming capabilities achieved:
 
-- Can manipulate code-as-data (quasiquote, unquote, etc.)
-- Optionally supports hygienic macros (via symbol renaming or gensym)
-- This makes your language infinitely extensible.
+- **Code-as-data manipulation** - Quasiquote (`` ` ``) and unquote (`~`) syntax
+- **Macro definitions** - `defmacro` with Clojure-style square bracket `[param]` syntax
+- **Language extensibility** - Users can define new control structures
+- **Template system** - Selective evaluation within code templates
+
+**Example Usage:**
+```lisp
+(defmacro when [condition body] `(if ~condition ~body nil))
+(when true 42)  ; => 42
+
+(defmacro unless [condition body] `(if ~condition nil ~body))
+(unless false 99)  ; => 99
+```
+
+This makes the language infinitely extensible through metaprogramming.
