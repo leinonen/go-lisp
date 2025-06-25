@@ -155,7 +155,7 @@ func evalSpecialFormWithContext(name Symbol, args *List, env *Environment, ctx *
 		return specialIfWithContext(args, env, ctx)
 	case Intern("fn"):
 		return specialFnWithContext(args, env, ctx)
-	case Intern("define"):
+	case Intern("def"):
 		return specialDefineWithContext(args, env, ctx)
 	case Intern("defmacro"):
 		return specialDefmacroWithContext(args, env, ctx)
@@ -287,13 +287,13 @@ func specialFn(args *List, env *Environment) (Value, error) {
 
 func specialDefine(args *List, env *Environment) (Value, error) {
 	if args.Length() != 2 {
-		return nil, fmt.Errorf("define requires exactly 2 arguments")
+		return nil, fmt.Errorf("def requires exactly 2 arguments")
 	}
 
 	// Get symbol name
 	name, ok := args.First().(Symbol)
 	if !ok {
-		return nil, fmt.Errorf("define first argument must be a symbol")
+		return nil, fmt.Errorf("def first argument must be a symbol")
 	}
 
 	// Evaluate value
@@ -713,12 +713,12 @@ func specialFnWithContext(args *List, env *Environment, ctx *EvaluationContext) 
 
 func specialDefineWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
 	if args.Length() != 2 {
-		return nil, ctx.CreateError("define requires exactly 2 arguments")
+		return nil, ctx.CreateError("def requires exactly 2 arguments")
 	}
 
 	symbol, ok := args.First().(Symbol)
 	if !ok {
-		return nil, ctx.CreateError("first argument to define must be a symbol")
+		return nil, ctx.CreateError("first argument to def must be a symbol")
 	}
 
 	ctx.PushFrame(fmt.Sprintf("evaluating definition of %s", symbol))

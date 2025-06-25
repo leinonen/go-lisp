@@ -21,7 +21,7 @@ func TestFileLoadingAndStandardLibrary(t *testing.T) {
 		expr     string
 		expected string
 	}{
-		{"(define numbers [1 2 3 4 5])", "defined"},
+		{"(def numbers [1 2 3 4 5])", "defined"},
 		{"(nth numbers 2)", "3"},
 		{"(conj numbers 6)", "[1 2 3 4 5 6]"},
 		{"(sum numbers)", "15"},

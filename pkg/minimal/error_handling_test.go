@@ -109,7 +109,7 @@ func TestErrorContextPreservation(t *testing.T) {
 	repl := NewREPL()
 
 	// Define a function that will cause an error
-	input := `(define error-fn (fn [x] (+ x "bad")))`
+	input := `(def error-fn (fn [x] (+ x "bad")))`
 	expr, _, err := ParseWithPositions(input, "<test>")
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)

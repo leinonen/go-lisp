@@ -22,9 +22,9 @@ func TestMinimalKernel(t *testing.T) {
 	}
 
 	// Test function definition and calling
-	// (define square (fn [x] (* x x)))
+	// (def square (fn [x] (* x x)))
 	defineExpr := NewList(
-		Intern("define"),
+		Intern("def"),
 		Intern("square"),
 		NewList(
 			Intern("fn"),
@@ -280,8 +280,8 @@ func TestFileLoading(t *testing.T) {
 	Bootstrap(env)
 
 	// Create a temporary test file
-	testContent := `(define test-var 42)
-(define test-fn (fn [x] (* x 2)))`
+	testContent := `(def test-var 42)
+(def test-fn (fn [x] (* x 2)))`
 
 	err := os.WriteFile("test-temp.lisp", []byte(testContent), 0644)
 	if err != nil {

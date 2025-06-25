@@ -18,7 +18,7 @@ func RunExamples() {
 	fmt.Println("   - Lists")
 	fmt.Println("   - Environment (lexical scope)")
 	fmt.Println("   - Eval/apply logic")
-	fmt.Println("   - Basic special forms: if, define, fn, quote, do")
+	fmt.Println("   - Basic special forms: if, def, fn, quote, do")
 
 	// Test core special forms
 	fmt.Println("\n2. Testing Core Special Forms:")
@@ -28,8 +28,8 @@ func RunExamples() {
 		evalAndPrint(NewList(Intern("quote"), Intern("hello")), env))
 
 	// Define
-	evalAndPrint(NewList(Intern("define"), Intern("x"), Number(42)), env)
-	fmt.Println("   (define x 42) => defined")
+	evalAndPrint(NewList(Intern("def"), Intern("x"), Number(42)), env)
+	fmt.Println("   (def x 42) => defined")
 
 	// Symbol lookup
 	fmt.Println("   x =>", evalAndPrint(Intern("x"), env))
@@ -41,14 +41,14 @@ func RunExamples() {
 	// Function definition
 	fmt.Println("\n3. User-Defined Functions (Closures):")
 
-	// (define add (fn [a b] (+ a b)))
+	// (def add (fn [a b] (+ a b)))
 	addFn := NewList(
 		Intern("fn"),
 		NewVector(Intern("a"), Intern("b")),
 		NewList(Intern("+"), Intern("a"), Intern("b")),
 	)
-	evalAndPrint(NewList(Intern("define"), Intern("add"), addFn), env)
-	fmt.Println("   (define add (fn [a b] (+ a b))) => defined")
+	evalAndPrint(NewList(Intern("def"), Intern("add"), addFn), env)
+	fmt.Println("   (def add (fn [a b] (+ a b))) => defined")
 
 	// Bootstrap higher-level functions
 	fmt.Println("\n4. Bootstrap Language in Itself:")
@@ -83,8 +83,8 @@ func RunExamples() {
 		),
 	)
 
-	evalAndPrint(NewList(Intern("define"), Intern("factorial"), factorialFn), env)
-	fmt.Println("   (define factorial (fn [n] ...)) => defined")
+	evalAndPrint(NewList(Intern("def"), Intern("factorial"), factorialFn), env)
+	fmt.Println("   (def factorial (fn [n] ...)) => defined")
 
 	fmt.Println("   (factorial 5) =>",
 		evalAndPrint(NewList(Intern("factorial"), Number(5)), env))

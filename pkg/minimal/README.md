@@ -9,7 +9,7 @@ Built with a tiny, trusted set of primitive operations:
 - **Lists and Vectors** (`types.go`) - Core data structures with Clojure-style `[param]` syntax
 - **Environments** (`env.go`) - Lexical scope with parent chain lookup
 - **Eval/apply logic** (`eval.go`) - Core evaluation engine
-- **Special forms**: `if`, `define`, `fn`, `quote`, `do`, `quasiquote`, `unquote`, `defmacro`
+- **Special forms**: `if`, `def`, `fn`, `quote`, `do`, `quasiquote`, `unquote`, `defmacro`
 - **Minimal REPL** (`repl.go`) - Interactive development environment
 
 💡 **Design achieved**: The core maintains clean separation of concerns (~475 lines in eval.go with comprehensive macro system). This is our "Lisp microkernel".

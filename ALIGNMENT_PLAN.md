@@ -14,7 +14,7 @@ We have successfully implemented a minimal Lisp kernel in `pkg/minimal/` that de
 - **Types System** (`types.go`): Symbol interning, Lists, Numbers, Booleans, Strings, Nil
 - **Environment** (`env.go`): Lexical scoping with parent chain lookup
 - **Evaluator** (`eval.go`): Core eval/apply logic with special form handling
-- **Special Forms**: `quote`, `if`, `fn`, `define`, `do`
+- **Special Forms**: `quote`, `if`, `fn`, `def`, `do`
 - **Bootstrap** (`bootstrap.go`): Higher-level functions implemented in Lisp itself
 - **REPL** (`repl.go`): Simple tokenizer, parser, and evaluation loop
 - **Tests** (`minimal_test.go`): Comprehensive test coverage
@@ -38,7 +38,7 @@ $ go run cmd/minimal-lisp/main.go examples
 
 === Minimal Lisp Kernel Examples ===
    (quote hello) => hello
-   (define x 42) => defined
+   (def x 42) => defined
    x => 42
    (if true "yes" "no") => "yes"
    (add 3 4) => 7
@@ -139,7 +139,7 @@ Loading standard library...
 "Minimal standard library loaded!"
 "Call (demo) to see examples."
 Testing basic operations...
-   (define test-list (list 1 2 3 4 5)) => (1 2 3 4 5)
+   (def test-list (list 1 2 3 4 5)) => (1 2 3 4 5)
 "Test list:" (1 2 3 4 5)
 "Length:" 5
 "Sum:" 15
@@ -266,7 +266,7 @@ func TestCompatibility(t *testing.T) {
     testCases := []string{
         "(+ 1 2 3)",
         "(if true 42 0)",
-        "(define factorial (fn [n] ...))",
+        "(def factorial (fn [n] ...))",
     }
     
     for _, test := range testCases {
