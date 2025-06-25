@@ -6,7 +6,8 @@ import (
 
 func TestFileLoadingAndStandardLibrary(t *testing.T) {
 	// Create a bootstrapped REPL
-	repl := NewBootstrappedREPL()
+	repl := NewREPL()
+	Bootstrap(repl.Env)
 
 	// Test loading the standard library
 	t.Log("Loading standard library...")

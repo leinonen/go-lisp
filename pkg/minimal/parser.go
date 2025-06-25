@@ -337,6 +337,18 @@ func (p *Parser) parseExpression() (Value, *Position, error) {
 	case TokenLeftBracket:
 		return p.parseVector()
 
+	case TokenRightParen:
+		return nil, pos, &ParseError{
+			Message:        "unexpected closing parenthesis",
+			SourceLocation: token.Position,
+		}
+
+	case TokenRightBracket:
+		return nil, pos, &ParseError{
+			Message:        "unexpected closing bracket",
+			SourceLocation: token.Position,
+		}
+
 	case TokenQuasiquote:
 		p.position++
 		expr, _, err := p.parseExpression()
@@ -452,5 +464,75 @@ func ParseWithPositions(input, filename string) (Value, *Position, error) {
 	}
 
 	parser := NewParser(tokens, filename)
-	return parser.Parse()
+	value, pos, err := parser.Parse()
+	if err != nil {
+		return nil, pos, err
+	}
+
+	// Check for extra unmatched closing tokens (syntax errors)
+	for i := parser.position; i < len(parser.tokens); i++ {
+		token := parser.tokens[i]
+
+		// Skip EOF tokens as they're expected
+		if token.Type == TokenEOF {
+			continue
+		}
+
+		// Check for unmatched closing tokens
+		if token.Type == TokenRightParen {
+			return nil, &token.Position, &ParseError{
+				Message:        "unexpected closing parenthesis",
+				SourceLocation: token.Position,
+			}
+		}
+		if token.Type == TokenRightBracket {
+			return nil, &token.Position, &ParseError{
+				Message:        "unexpected closing bracket",
+				SourceLocation: token.Position,
+			}
+		}
+	}
+
+	return value, pos, nil
+}
+
+// Parse parses input string into a Value
+func Parse(input string) (Value, error) {
+	lexer := NewLexer(input, "<input>")
+	tokens, err := lexer.Tokenize()
+	if err != nil {
+		return nil, err
+	}
+
+	parser := NewParser(tokens, "<input>")
+	value, _, err := parser.Parse()
+	if err != nil {
+		return nil, err
+	}
+
+	// Check for unmatched closing tokens (syntax errors)
+	for i := parser.position; i < len(parser.tokens); i++ {
+		token := parser.tokens[i]
+
+		// Skip EOF tokens as they're expected
+		if token.Type == TokenEOF {
+			continue
+		}
+
+		// Check for unmatched closing tokens
+		if token.Type == TokenRightParen {
+			return nil, &ParseError{
+				Message:        "unexpected closing parenthesis",
+				SourceLocation: token.Position,
+			}
+		}
+		if token.Type == TokenRightBracket {
+			return nil, &ParseError{
+				Message:        "unexpected closing bracket",
+				SourceLocation: token.Position,
+			}
+		}
+	}
+
+	return value, nil
 }

@@ -26,7 +26,9 @@ func EvalWithContext(expr Value, env *Environment, ctx *EvaluationContext) (Valu
 		ctx.PopFrame()
 
 		if err != nil {
-			return nil, ctx.WrapError(err)
+			// Enhance undefined symbol errors with suggestions
+			enhancedErr := enhanceUndefinedSymbolError(err, v.String(), env)
+			return nil, ctx.WrapError(enhancedErr)
 		}
 		return result, nil
 
@@ -136,12 +138,6 @@ type Function interface {
 	CallWithContext(args []Value, env *Environment, ctx *EvaluationContext) (Value, error)
 }
 
-// evalSpecialForm handles evaluation of special forms
-// Returns (nil, nil) if the symbol is not a special form
-func evalSpecialForm(name Symbol, args *List, env *Environment) (Value, error) {
-	return evalSpecialFormWithContext(name, args, env, NewEvaluationContext())
-}
-
 // evalSpecialFormWithContext handles evaluation of special forms with context
 func evalSpecialFormWithContext(name Symbol, args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
 	switch name {
@@ -168,70 +164,6 @@ func evalSpecialFormWithContext(name Symbol, args *List, env *Environment, ctx *
 	}
 }
 
-func specialQuote(args *List, env *Environment) (Value, error) {
-	if args.Length() != 1 {
-		return nil, fmt.Errorf("quote requires exactly 1 argument")
-	}
-	return args.First(), nil
-}
-
-func specialQuasiquote(args *List, env *Environment) (Value, error) {
-	if args.Length() != 1 {
-		return nil, fmt.Errorf("quasiquote requires exactly 1 argument")
-	}
-	return quasiExpand(args.First(), env)
-}
-
-// quasiExpand expands a quasiquoted expression
-func quasiExpand(expr Value, env *Environment) (Value, error) {
-	// Check if this is an unquote
-	if list, ok := expr.(*List); ok && !list.IsEmpty() {
-		if sym, ok := list.First().(Symbol); ok && sym == Intern("unquote") {
-			if list.Length() != 2 {
-				return nil, fmt.Errorf("unquote requires exactly 1 argument")
-			}
-			// Evaluate the unquoted expression
-			return Eval(list.Rest().First(), env)
-		}
-
-		// Recursively expand list elements
-		expanded := make([]Value, 0)
-		for current := list; !current.IsEmpty(); current = current.Rest() {
-			expandedElem, err := quasiExpand(current.First(), env)
-			if err != nil {
-				return nil, err
-			}
-			expanded = append(expanded, expandedElem)
-		}
-		return NewList(expanded...), nil
-	}
-
-	// For non-lists, return as-is (quoted)
-	return expr, nil
-}
-
-func specialIf(args *List, env *Environment) (Value, error) {
-	if args.Length() < 2 || args.Length() > 3 {
-		return nil, fmt.Errorf("if requires 2 or 3 arguments")
-	}
-
-	// Evaluate condition
-	condition, err := Eval(args.First(), env)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check if condition is truthy
-	if isTruthy(condition) {
-		return Eval(args.Rest().First(), env)
-	} else if args.Length() == 3 {
-		return Eval(args.Rest().Rest().First(), env)
-	}
-
-	// Return nil if no else branch
-	return Nil{}, nil
-}
-
 func isTruthy(v Value) bool {
 	if v == nil {
 		return false
@@ -243,123 +175,6 @@ func isTruthy(v Value) bool {
 		return false
 	}
 	return true
-}
-
-func specialFn(args *List, env *Environment) (Value, error) {
-	if args.Length() < 2 {
-		return nil, fmt.Errorf("fn requires at least 2 arguments: (fn [params] body...)")
-	}
-
-	// Get parameter list - accept either vector or list
-	var params *List
-	switch paramArg := args.First().(type) {
-	case *Vector:
-		// Convert vector to list for internal use
-		params = paramArg.ToList()
-	case *List:
-		params = paramArg
-	default:
-		return nil, fmt.Errorf("fn parameter list must be a vector [params] or list (params)")
-	}
-
-	// Get function body - if multiple expressions, wrap in 'do'
-	var body Value
-	bodyArgs := args.Rest()
-	if bodyArgs.Length() == 1 {
-		body = bodyArgs.First()
-	} else {
-		// Multiple body expressions - wrap in 'do'
-		bodyElements := make([]Value, 0, bodyArgs.Length()+1)
-		bodyElements = append(bodyElements, Intern("do"))
-		for current := bodyArgs; !current.IsEmpty(); current = current.Rest() {
-			bodyElements = append(bodyElements, current.First())
-		}
-		body = NewList(bodyElements...)
-	}
-
-	// Create user function (closure)
-	return &UserFunction{
-		Params: params,
-		Body:   body,
-		Env:    env, // Capture current environment
-	}, nil
-}
-
-func specialDefine(args *List, env *Environment) (Value, error) {
-	if args.Length() != 2 {
-		return nil, fmt.Errorf("def requires exactly 2 arguments")
-	}
-
-	// Get symbol name
-	name, ok := args.First().(Symbol)
-	if !ok {
-		return nil, fmt.Errorf("def first argument must be a symbol")
-	}
-
-	// Evaluate value
-	value, err := Eval(args.Rest().First(), env)
-	if err != nil {
-		return nil, err
-	}
-
-	// Define in current environment
-	env.Set(name, value)
-
-	return DefinedValue{}, nil
-}
-
-// specialDefmacro implements defmacro functionality
-func specialDefmacro(args *List, env *Environment) (Value, error) {
-	if args.Length() != 3 {
-		return nil, fmt.Errorf("defmacro requires exactly 3 arguments: name, parameters, body")
-	}
-
-	// Get macro name
-	name, ok := args.First().(Symbol)
-	if !ok {
-		return nil, fmt.Errorf("macro name must be a symbol, got %T", args.First())
-	}
-
-	// Get parameters (must be a vector or list)
-	var params *List
-	paramsArg := args.Rest().First()
-	if vec, ok := paramsArg.(*Vector); ok {
-		params = vec.ToList()
-	} else if list, ok := paramsArg.(*List); ok {
-		params = list
-	} else {
-		return nil, fmt.Errorf("macro parameters must be a vector or list, got %T", paramsArg)
-	}
-
-	// Get body
-	body := args.Rest().Rest().First()
-
-	// Create macro
-	macro := &Macro{
-		Params: params,
-		Body:   body,
-		Env:    env,
-	}
-
-	// Store in environment
-	env.Set(name, macro)
-
-	return Intern("defined"), nil
-}
-
-func specialDo(args *List, env *Environment) (Value, error) {
-	var result Value = Nil{}
-	var err error
-
-	// Evaluate each expression in sequence
-	for current := args; !current.IsEmpty(); current = current.Rest() {
-		result, err = Eval(current.First(), env)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return result, nil
 }
 
 // UserFunction represents a user-defined function (closure)
@@ -499,20 +314,6 @@ func (m *Macro) String() string {
 	return "<macro>"
 }
 
-// specialLoad implements file loading
-func specialLoad(args *List, env *Environment) (Value, error) {
-	if args.Length() != 1 {
-		return nil, fmt.Errorf("load requires exactly 1 argument (filename)")
-	}
-
-	filename, ok := args.First().(String)
-	if !ok {
-		return nil, fmt.Errorf("load argument must be a string, got %T", args.First())
-	}
-
-	return LoadFile(string(filename), env)
-}
-
 // LoadFile loads and evaluates a Lisp file
 func LoadFile(filename string, env *Environment) (Value, error) {
 	content, err := os.ReadFile(filename)
@@ -530,6 +331,10 @@ func LoadFile(filename string, env *Environment) (Value, error) {
 	tokens := repl.tokenize(cleanContent)
 	var lastResult Value = Nil{}
 	pos := 0
+	lineNum := 1
+
+	// Track original content for better error reporting
+	contentLines := strings.Split(cleanContent, "\n")
 
 	for pos < len(tokens) {
 		// Skip empty tokens
@@ -540,12 +345,48 @@ func LoadFile(filename string, env *Environment) (Value, error) {
 
 		expr, newPos, err := repl.parseExpression(tokens, pos)
 		if err != nil {
-			return nil, fmt.Errorf("parse error in %s: %v", filename, err)
+			// Calculate approximate line number
+			tokensSoFar := strings.Join(tokens[:pos], " ")
+			lineNum = strings.Count(tokensSoFar, "\n") + 1
+
+			// Show context around the error
+			contextLines := make([]string, 0)
+			start := lineNum - 2
+			if start < 1 {
+				start = 1
+			}
+			end := lineNum + 2
+			if end > len(contentLines) {
+				end = len(contentLines)
+			}
+
+			for i := start; i <= end; i++ {
+				marker := "    "
+				if i == lineNum {
+					marker = " -> "
+				}
+				if i-1 < len(contentLines) {
+					contextLines = append(contextLines, fmt.Sprintf("%s%d: %s", marker, i, contentLines[i-1]))
+				}
+			}
+
+			context := strings.Join(contextLines, "\n")
+			return nil, fmt.Errorf("parse error in %s at line %d:\n%s\nError: %v", filename, lineNum, context, err)
 		}
 
 		result, err := Eval(expr, env)
 		if err != nil {
-			return nil, fmt.Errorf("eval error in %s: %v", filename, err)
+			// Try to provide better context for evaluation errors
+			exprStr := expr.String()
+			if len(exprStr) > 100 {
+				exprStr = exprStr[:100] + "..."
+			}
+
+			// Calculate line number for evaluation error
+			tokensSoFar := strings.Join(tokens[:pos], " ")
+			lineNum = strings.Count(tokensSoFar, "\n") + 1
+
+			return nil, fmt.Errorf("eval error in %s at line %d:\nExpression: %s\nError: %v", filename, lineNum, exprStr, err)
 		}
 
 		lastResult = result
@@ -591,7 +432,7 @@ func removeComments(content string) string {
 
 // Context-aware versions of special forms for enhanced error handling
 
-func specialQuoteWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+func specialQuoteWithContext(args *List, _ *Environment, ctx *EvaluationContext) (Value, error) {
 	if args.Length() != 1 {
 		return nil, ctx.CreateError("quote requires exactly 1 argument")
 	}
@@ -632,7 +473,20 @@ func quasiExpandWithContext(expr Value, env *Environment, ctx *EvaluationContext
 		return NewList(expanded...), nil
 	}
 
-	// For non-lists, return as-is (quoted)
+	// Handle vectors
+	if vector, ok := expr.(*Vector); ok {
+		expanded := make([]Value, 0)
+		for i := 0; i < vector.Length(); i++ {
+			expandedElem, err := quasiExpandWithContext(vector.Get(i), env, ctx)
+			if err != nil {
+				return nil, err
+			}
+			expanded = append(expanded, expandedElem)
+		}
+		return NewVector(expanded...), nil
+	}
+
+	// For non-lists and non-vectors, return as-is (quoted)
 	return expr, nil
 }
 
@@ -675,18 +529,16 @@ func specialFnWithContext(args *List, env *Environment, ctx *EvaluationContext) 
 	params := args.First()
 	var paramList *List
 
-	// Accept both lists and vectors for parameters
-	if list, ok := params.(*List); ok {
-		paramList = list
-	} else if vector, ok := params.(*Vector); ok {
-		// Convert vector to list for consistency
+	// Parameters must be a vector (Clojure-style)
+	if vector, ok := params.(*Vector); ok {
+		// Convert vector to list for internal consistency
 		elements := make([]Value, 0)
 		for i := 0; i < vector.Length(); i++ {
 			elements = append(elements, vector.Get(i))
 		}
 		paramList = NewList(elements...)
 	} else {
-		return nil, ctx.CreateError("fn parameters must be a list or vector")
+		return nil, ctx.CreateError("fn parameters must be a vector")
 	}
 
 	bodyArgs := args.Rest()
@@ -703,11 +555,11 @@ func specialFnWithContext(args *List, env *Environment, ctx *EvaluationContext) 
 		body = NewList(bodyElements...)
 	}
 
-	// Return a closure
+	// Return a closure with captured environment
 	return &UserFunction{
 		Params: paramList,
 		Body:   body,
-		Env:    env,
+		Env:    env.CreateClosure(),
 	}, nil
 }
 
@@ -729,8 +581,28 @@ func specialDefineWithContext(args *List, env *Environment, ctx *EvaluationConte
 		return nil, err
 	}
 
-	env.Set(symbol, value)
-	return Intern("defined"), nil
+	// In a closure context, def creates/updates local bindings
+	// This enables proper lexical closure behavior
+	if env.parent != nil {
+		// We're in a local environment (function, let, etc.)
+		// Check if variable exists in current scope chain
+		if env.HasBinding(symbol) {
+			// Update existing binding
+			err := env.Update(symbol, value)
+			if err != nil {
+				// If update fails, create new local binding
+				env.SetLocal(symbol, value)
+			}
+		} else {
+			// Create new local binding
+			env.SetLocal(symbol, value)
+		}
+	} else {
+		// We're in global environment, use global definition
+		env.Set(symbol, value)
+	}
+
+	return DefinedValue{}, nil
 }
 
 func specialDefmacroWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
@@ -744,21 +616,19 @@ func specialDefmacroWithContext(args *List, env *Environment, ctx *EvaluationCon
 		return nil, ctx.CreateError("macro name must be a symbol")
 	}
 
-	// Get parameters - accept both lists and vectors
+	// Get parameters - must be a vector (Clojure-style)
 	params := args.Rest().First()
 	var paramList *List
 
-	if list, ok := params.(*List); ok {
-		paramList = list
-	} else if vector, ok := params.(*Vector); ok {
-		// Convert vector to list for consistency
+	if vector, ok := params.(*Vector); ok {
+		// Convert vector to list for internal consistency
 		elements := make([]Value, 0)
 		for i := 0; i < vector.Length(); i++ {
 			elements = append(elements, vector.Get(i))
 		}
 		paramList = NewList(elements...)
 	} else {
-		return nil, ctx.CreateError("macro parameters must be a list or vector")
+		return nil, ctx.CreateError("macro parameters must be a vector")
 	}
 
 	// Get body
@@ -773,7 +643,7 @@ func specialDefmacroWithContext(args *List, env *Environment, ctx *EvaluationCon
 
 	// Define in environment
 	env.Set(name, macro)
-	return Intern("defined"), nil
+	return DefinedValue{}, nil
 }
 
 func specialDoWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
@@ -834,20 +704,111 @@ func loadFileWithContext(filename string, env *Environment, ctx *EvaluationConte
 		return nil, ctx.CreateError(fmt.Sprintf("could not read file %s: %v", filename, err))
 	}
 
-	// Parse with position tracking
-	expr, pos, err := ParseWithPositions(string(content), filename)
+	// Remove comments for cleaner parsing
+	cleanedContent := removeComments(string(content))
+
+	// Create a lexer for the file content
+	lexer := NewLexer(cleanedContent, filename)
+	tokens, err := lexer.Tokenize()
 	if err != nil {
 		return nil, err
 	}
 
-	// Set source location in context
-	if pos != nil {
-		ctx.SetLocation(pos.Line, pos.Column, pos.File)
+	// Create parser
+	parser := NewParser(tokens, filename)
+	var result Value = Nil{}
+
+	ctx.PushFrame(fmt.Sprintf("evaluating file: %s", filename))
+	defer ctx.PopFrame()
+
+	// Parse and evaluate multiple expressions from the file
+	for parser.position < len(parser.tokens) {
+		// Skip EOF tokens
+		if parser.position < len(parser.tokens) && parser.tokens[parser.position].Type == TokenEOF {
+			break
+		}
+
+		// Parse one expression
+		expr, pos, err := parser.Parse()
+		if err != nil {
+			return nil, err
+		}
+
+		// Set source location in context
+		if pos != nil {
+			ctx.SetLocation(pos.Line, pos.Column, pos.File)
+		}
+
+		// Evaluate the expression
+		result, err = EvalWithContext(expr, env, ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	ctx.PushFrame(fmt.Sprintf("evaluating file contents: %s", filename))
-	result, err := EvalWithContext(expr, env, ctx)
-	ctx.PopFrame()
-
 	return result, err
+}
+
+// Enhanced error handling functions
+
+// getSimilarSymbols finds symbols similar to the given symbol name
+func getSimilarSymbols(symbolName string, env *Environment) []string {
+	var similar []string
+
+	// Get all defined symbols in the environment
+	bindings := env.GetAllBindings()
+
+	for name := range bindings {
+		nameStr := name.String()
+		// Simple similarity check - same length or starts with same characters
+		if len(nameStr) > 0 && (len(nameStr) == len(symbolName) ||
+			strings.HasPrefix(nameStr, symbolName[:min(2, len(symbolName))]) ||
+			strings.HasPrefix(symbolName, nameStr[:min(2, len(nameStr))])) {
+			similar = append(similar, nameStr)
+		}
+	}
+
+	return similar
+}
+
+// min returns the minimum of two integers
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// enhanceUndefinedSymbolError adds suggestions to undefined symbol errors
+func enhanceUndefinedSymbolError(err error, symbolName string, env *Environment) error {
+	if err == nil {
+		return nil
+	}
+
+	errMsg := err.Error()
+	if !strings.Contains(errMsg, "undefined symbol") {
+		return err
+	}
+
+	similar := getSimilarSymbols(symbolName, env)
+	if len(similar) > 0 {
+		suggestions := strings.Join(similar[:min(5, len(similar))], ", ")
+		return fmt.Errorf("%s\nDid you mean one of: %s", errMsg, suggestions)
+	}
+
+	// Show available functions from environment
+	bindings := env.GetAllBindings()
+	var functions []string
+	for name, value := range bindings {
+		if _, ok := value.(*UserFunction); ok {
+			functions = append(functions, name.String())
+		}
+	}
+
+	if len(functions) > 0 {
+		available := strings.Join(functions[:min(10, len(functions))], ", ")
+		return fmt.Errorf("%s\nAvailable functions: %s", errMsg, available)
+	}
+
+	return err
 }

@@ -1,15 +1,15 @@
 package minimal
 
 // Bootstrap demonstrates extending the minimal kernel with higher-level constructs
-// This shows how to implement features in Lisp itself, following the architecture in future.md
+// This shows how to implement features in Lisp itself
 
 import "fmt"
 
 // Bootstrap loads higher-level constructs into the environment
 func Bootstrap(env *Environment) error {
 	// Define 'when' macro-like function using core 'if'
-	// (define when (fn [condition & body] (if condition (do body) nil)))
-	whenParams := NewVector(Intern("condition"), Intern("body")).ToList()
+	// (define when (fn [condition body] (if condition (do body) nil)))
+	whenParams := NewList(Intern("condition"), Intern("body"))
 	whenBody := NewList(
 		Intern("if"),
 		Intern("condition"),
@@ -25,7 +25,7 @@ func Bootstrap(env *Environment) error {
 
 	// Define 'unless' using 'if'
 	// (define unless (fn [condition body] (if condition nil body)))
-	unlessParams := NewVector(Intern("condition"), Intern("body")).ToList()
+	unlessParams := NewList(Intern("condition"), Intern("body"))
 	unlessBody := NewList(
 		Intern("if"),
 		Intern("condition"),
@@ -44,6 +44,14 @@ func Bootstrap(env *Environment) error {
 		Name: "list",
 		Fn: func(args []Value, env *Environment) (Value, error) {
 			return NewList(args...), nil
+		},
+	})
+
+	// Define 'vector' function to create vectors dynamically
+	env.Set(Intern("vector"), &BuiltinFunction{
+		Name: "vector",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			return NewVector(args...), nil
 		},
 	})
 
@@ -123,6 +131,72 @@ func Bootstrap(env *Environment) error {
 			}
 
 			return Boolean(float64(num1) < float64(num2)), nil
+		},
+	})
+
+	// Add more comparison operators
+	env.Set(Intern("<="), &BuiltinFunction{
+		Name: "<=",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("<= requires exactly 2 arguments")
+			}
+
+			num1, ok1 := args[0].(Number)
+			num2, ok2 := args[1].(Number)
+
+			if !ok1 || !ok2 {
+				return nil, fmt.Errorf("<= requires numbers")
+			}
+
+			return Boolean(float64(num1) <= float64(num2)), nil
+		},
+	})
+
+	env.Set(Intern(">"), &BuiltinFunction{
+		Name: ">",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("> requires exactly 2 arguments")
+			}
+
+			num1, ok1 := args[0].(Number)
+			num2, ok2 := args[1].(Number)
+
+			if !ok1 || !ok2 {
+				return nil, fmt.Errorf("> requires numbers")
+			}
+
+			return Boolean(float64(num1) > float64(num2)), nil
+		},
+	})
+
+	env.Set(Intern(">="), &BuiltinFunction{
+		Name: ">=",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf(">= requires exactly 2 arguments")
+			}
+
+			num1, ok1 := args[0].(Number)
+			num2, ok2 := args[1].(Number)
+
+			if !ok1 || !ok2 {
+				return nil, fmt.Errorf(">= requires numbers")
+			}
+
+			return Boolean(float64(num1) >= float64(num2)), nil
+		},
+	})
+
+	env.Set(Intern("!="), &BuiltinFunction{
+		Name: "!=",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("!= requires exactly 2 arguments")
+			}
+
+			return Boolean(args[0].String() != args[1].String()), nil
 		},
 	})
 
@@ -342,7 +416,7 @@ func Bootstrap(env *Environment) error {
 				if num, ok := arg.(Number); ok {
 					result += float64(num)
 				} else {
-					return nil, fmt.Errorf("+ requires numeric arguments, got %T", arg)
+					return nil, fmt.Errorf("+ requires number arguments, got %T", arg)
 				}
 			}
 			return Number(result), nil
@@ -359,7 +433,7 @@ func Bootstrap(env *Environment) error {
 				if num, ok := args[0].(Number); ok {
 					return Number(-float64(num)), nil
 				}
-				return nil, fmt.Errorf("- requires numeric arguments, got %T", args[0])
+				return nil, fmt.Errorf("- requires number arguments, got %T", args[0])
 			}
 
 			if num, ok := args[0].(Number); ok {
@@ -368,12 +442,12 @@ func Bootstrap(env *Environment) error {
 					if num, ok := args[i].(Number); ok {
 						result -= float64(num)
 					} else {
-						return nil, fmt.Errorf("- requires numeric arguments, got %T", args[i])
+						return nil, fmt.Errorf("- requires number arguments, got %T", args[i])
 					}
 				}
 				return Number(result), nil
 			}
-			return nil, fmt.Errorf("- requires numeric arguments, got %T", args[0])
+			return nil, fmt.Errorf("- requires number arguments, got %T", args[0])
 		},
 	})
 
@@ -385,7 +459,7 @@ func Bootstrap(env *Environment) error {
 				if num, ok := arg.(Number); ok {
 					result *= float64(num)
 				} else {
-					return nil, fmt.Errorf("* requires numeric arguments, got %T", arg)
+					return nil, fmt.Errorf("* requires number arguments, got %T", arg)
 				}
 			}
 			return Number(result), nil
@@ -405,7 +479,7 @@ func Bootstrap(env *Environment) error {
 					}
 					return Number(1.0 / float64(num)), nil
 				}
-				return nil, fmt.Errorf("/ requires numeric arguments, got %T", args[0])
+				return nil, fmt.Errorf("/ requires number arguments, got %T", args[0])
 			}
 
 			if num, ok := args[0].(Number); ok {
@@ -417,12 +491,12 @@ func Bootstrap(env *Environment) error {
 						}
 						result /= float64(num)
 					} else {
-						return nil, fmt.Errorf("/ requires numeric arguments, got %T", args[i])
+						return nil, fmt.Errorf("/ requires number arguments, got %T", args[i])
 					}
 				}
 				return Number(result), nil
 			}
-			return nil, fmt.Errorf("/ requires numeric arguments, got %T", args[0])
+			return nil, fmt.Errorf("/ requires number arguments, got %T", args[0])
 		},
 	})
 
@@ -485,6 +559,76 @@ func Bootstrap(env *Environment) error {
 		},
 	})
 
+	// Add modulo operator
+	env.Set(Intern("%"), &BuiltinFunction{
+		Name: "%",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("%% requires exactly 2 arguments")
+			}
+
+			num1, ok1 := args[0].(Number)
+			num2, ok2 := args[1].(Number)
+
+			if !ok1 || !ok2 {
+				return nil, fmt.Errorf("%% requires numbers")
+			}
+
+			if float64(num2) == 0 {
+				return nil, fmt.Errorf("modulo by zero")
+			}
+
+			// Use integer modulo for simplicity
+			result := int(float64(num1)) % int(float64(num2))
+			return Number(float64(result)), nil
+		},
+	})
+
+	// Add logical operators
+	env.Set(Intern("and"), &BuiltinFunction{
+		Name: "and",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			// Short-circuit evaluation: return first falsy value or last value
+			for _, arg := range args {
+				if isTruthy(arg) {
+					continue
+				}
+				return arg, nil // Return the falsy value
+			}
+			if len(args) > 0 {
+				return args[len(args)-1], nil // Return last value if all truthy
+			}
+			return Boolean(true), nil
+		},
+	})
+
+	env.Set(Intern("or"), &BuiltinFunction{
+		Name: "or",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			// Short-circuit evaluation: return first truthy value or last value
+			for _, arg := range args {
+				if isTruthy(arg) {
+					return arg, nil // Return the truthy value
+				}
+			}
+			if len(args) > 0 {
+				return args[len(args)-1], nil // Return last value if all falsy
+			}
+			return Boolean(false), nil
+		},
+	})
+
+	env.Set(Intern("not"), &BuiltinFunction{
+		Name: "not",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("not requires exactly 1 argument")
+			}
+
+			return Boolean(!isTruthy(args[0])), nil
+		},
+	})
+
 	return nil
 }
 
@@ -492,5 +636,26 @@ func Bootstrap(env *Environment) error {
 func NewBootstrappedREPL() *REPL {
 	repl := NewREPL()
 	Bootstrap(repl.Env)
+
+	// Try to load the standard library from different possible paths
+	paths := []string{
+		"stdlib.lisp",             // Test directory
+		"pkg/minimal/stdlib.lisp", // From project root
+		"minimal/stdlib.lisp",     // From pkg directory
+	}
+
+	loaded := false
+	for _, path := range paths {
+		_, err := LoadFile(path, repl.Env)
+		if err == nil {
+			loaded = true
+			break
+		}
+	}
+
+	if !loaded {
+		fmt.Printf("Warning: Failed to load standard library from any of the standard paths\n")
+	}
+
 	return repl
 }

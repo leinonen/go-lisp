@@ -1,6 +1,6 @@
 # Minimal Lisp Kernel Implementation
 
-This package implements a minimal Lisp kernel following the clean architecture principles outlined in `future.md`.
+This package implements a minimal Lisp kernel.
 
 ## 1. ✅ Minimal Core Interpreter (Kernel)
 Built with a tiny, trusted set of primitive operations:

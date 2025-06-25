@@ -1,13 +1,12 @@
 package minimal
 
-// Example demonstrates the minimal kernel architecture from future.md
+// Example demonstrates the minimal kernel architecture
 
 import "fmt"
 
 // RunExamples demonstrates the minimal kernel and bootstrap concepts
 func RunExamples() {
 	fmt.Println("=== Minimal Lisp Kernel Examples ===")
-	fmt.Println("Based on the architecture described in future.md")
 
 	// Create environment with minimal core
 	repl := NewREPL()

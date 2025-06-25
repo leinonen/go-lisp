@@ -15,7 +15,7 @@ func main() {
 	}
 
 	fmt.Println("Starting Minimal Lisp REPL")
-	fmt.Println("This demonstrates the kernel architecture from future.md")
+	fmt.Println("This demonstrates the micro kernel architecture")
 	fmt.Println()
 
 	// Create and run the minimal REPL

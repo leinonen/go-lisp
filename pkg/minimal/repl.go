@@ -263,38 +263,6 @@ func (r *REPL) tokenize(input string) []string {
 	return tokens
 }
 
-func (r *REPL) parseTokens(tokens []string) (Value, error) {
-	result, _, err := r.parseExpression(tokens, 0)
-	return result, err
-}
-
-func (r *REPL) parseList(tokens []string) (Value, error) {
-	var elements []Value
-	i := 0
-
-	for i < len(tokens) {
-		if tokens[i] == ")" {
-			return NewList(elements...), nil
-		}
-
-		if tokens[i] == "(" {
-			// Nested list
-			subList, consumed, err := r.parseNestedList(tokens[i:])
-			if err != nil {
-				return nil, err
-			}
-			elements = append(elements, subList)
-			i += consumed
-		} else {
-			// Atom
-			elements = append(elements, r.parseAtom(tokens[i]))
-			i++
-		}
-	}
-
-	return nil, fmt.Errorf("unclosed list")
-}
-
 func (r *REPL) parseNestedList(tokens []string) (Value, int, error) {
 	if tokens[0] != "(" {
 		return nil, 0, fmt.Errorf("expected '('")
@@ -335,41 +303,6 @@ func (r *REPL) parseNestedList(tokens []string) (Value, int, error) {
 	}
 
 	return nil, 0, fmt.Errorf("unclosed list")
-}
-
-func (r *REPL) parseVector(tokens []string) (Value, error) {
-	var elements []Value
-	i := 0
-
-	for i < len(tokens) {
-		if tokens[i] == "]" {
-			return NewVector(elements...), nil
-		}
-
-		if tokens[i] == "(" {
-			// Nested list
-			subList, consumed, err := r.parseNestedList(tokens[i:])
-			if err != nil {
-				return nil, err
-			}
-			elements = append(elements, subList)
-			i += consumed
-		} else if tokens[i] == "[" {
-			// Nested vector
-			subVector, consumed, err := r.parseNestedVector(tokens[i:])
-			if err != nil {
-				return nil, err
-			}
-			elements = append(elements, subVector)
-			i += consumed
-		} else {
-			// Atom
-			elements = append(elements, r.parseAtom(tokens[i]))
-			i++
-		}
-	}
-
-	return nil, fmt.Errorf("unclosed vector")
 }
 
 func (r *REPL) parseNestedVector(tokens []string) (Value, int, error) {
@@ -537,19 +470,25 @@ func (r *REPL) isBalanced(input string) bool {
 	stack := make([]rune, 0)
 	inString := false
 
-	for i, char := range input {
-		if char == '"' {
-			// Handle string start/end (check for escape)
-			if !inString {
-				inString = true
-			} else if i == 0 || rune(input[i-1]) != '\\' {
-				inString = false
-			}
+	for i := 0; i < len(input); i++ {
+		char := rune(input[i])
+
+		if char == '"' && !inString {
+			// Start of string
+			inString = true
 			continue
 		}
 
 		if inString {
-			// Skip characters inside strings
+			if char == '\\' && i+1 < len(input) {
+				// Skip escaped character
+				i++
+				continue
+			}
+			if char == '"' {
+				// End of string
+				inString = false
+			}
 			continue
 		}
 
