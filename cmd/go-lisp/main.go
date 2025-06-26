@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/leinonen/go-lisp/pkg/executor"
-	"github.com/leinonen/go-lisp/pkg/interpreter"
-	"github.com/leinonen/go-lisp/pkg/repl"
+	"github.com/leinonen/go-lisp/pkg/minimal"
 )
 
 func main() {
@@ -35,22 +33,30 @@ func main() {
 		return
 	}
 
-	// Create modular interpreter with all plugins
-	interp, err := interpreter.NewModularInterpreter()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating modular interpreter: %v\n", err)
-		os.Exit(1)
-	}
+	// Create a bootstrapped REPL environment
+	repl := minimal.NewBootstrappedREPL()
 
 	// Handle -e flag: evaluate code directly
 	if *eval != "" {
-		result, err := interp.Interpret(*eval)
+		// Wrap the code in a 'do' block to allow multiple statements
+		wrappedCode := "(do " + *eval + ")"
+
+		// Parse the wrapped code
+		expr, err := minimal.Parse(wrappedCode)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing code: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Evaluate the parsed expression
+		result, err := minimal.Eval(expr, repl.Env)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error evaluating code: %v\n", err)
 			os.Exit(1)
 		}
+
 		// Don't print nil values (used by print functions to avoid duplicate output)
-		if result.String() != "nil" {
+		if result != nil && result.String() != "nil" {
 			fmt.Println(result)
 		}
 		return
@@ -58,7 +64,7 @@ func main() {
 
 	// Handle -f flag: execute a file
 	if *filename != "" {
-		err := executor.ExecuteFile(interp, *filename)
+		_, err := minimal.LoadFile(*filename, repl.Env)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error executing file %s: %v\n", *filename, err)
 			os.Exit(1)
@@ -69,7 +75,7 @@ func main() {
 	// Check for legacy positional argument (backward compatibility)
 	if len(flag.Args()) > 0 {
 		legacyFilename := flag.Args()[0]
-		err := executor.ExecuteFile(interp, legacyFilename)
+		_, err := minimal.LoadFile(legacyFilename, repl.Env)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error executing file %s: %v\n", legacyFilename, err)
 			os.Exit(1)
@@ -77,10 +83,10 @@ func main() {
 		return
 	}
 
-	// If no arguments provided, start REPL with tab completion
-	err = repl.REPLWithCompletion(interp, true)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error starting REPL: %v\n", err)
-		os.Exit(1)
-	}
+	// If no arguments provided, start REPL
+	fmt.Println("Starting GoLisp REPL")
+	fmt.Println("This demonstrates the micro kernel architecture")
+	fmt.Println()
+
+	repl.Run()
 }
