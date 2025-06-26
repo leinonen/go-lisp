@@ -25,16 +25,15 @@ func NewREPL() *REPL {
 func (r *REPL) Run() {
 	fmt.Println("Minimal Lisp REPL - Type 'exit' to quit")
 	fmt.Println("Multi-line input supported - expressions are evaluated when parentheses are balanced")
-	fmt.Println("Use ':reset' or ':clear' to discard incomplete input")
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var inputBuffer strings.Builder
 
 	for {
 		// Determine the prompt based on whether we're continuing input
-		prompt := "minimal> "
+		prompt := "=> "
 		if inputBuffer.Len() > 0 {
-			prompt = "      ... "
+			prompt = "   "
 		}
 
 		fmt.Print(prompt)
@@ -52,15 +51,6 @@ func (r *REPL) Run() {
 				continue
 			}
 			break
-		}
-
-		// Check for reset command to clear incomplete input
-		if strings.TrimSpace(line) == ":reset" || strings.TrimSpace(line) == ":clear" {
-			if inputBuffer.Len() > 0 {
-				fmt.Println("Input buffer cleared")
-				inputBuffer.Reset()
-			}
-			continue
 		}
 
 		// Add line to buffer
