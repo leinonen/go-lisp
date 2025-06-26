@@ -20,6 +20,7 @@ const (
 	TokenSymbol TokenType = iota
 	TokenNumber
 	TokenString
+	TokenKeyword
 	TokenLeftParen
 	TokenRightParen
 	TokenLeftBracket
@@ -179,6 +180,9 @@ func (l *Lexer) nextToken() (Token, error) {
 	case '"':
 		return l.readString(startLine, startColumn)
 
+	case ':':
+		return l.readKeyword(startLine, startColumn)
+
 	default:
 		if l.isDigit(char) || (char == '-' && l.isDigit(l.peek())) {
 			return l.readNumber(startLine, startColumn)
@@ -291,6 +295,34 @@ func (l *Lexer) readSymbol(startLine, startColumn int) (Token, error) {
 	}, nil
 }
 
+func (l *Lexer) readKeyword(startLine, startColumn int) (Token, error) {
+	var value strings.Builder
+
+	// Skip the ':' character
+	l.advance()
+
+	for l.position < len(l.input) {
+		char := l.current()
+		if l.isWhitespace(char) || char == '(' || char == ')' ||
+			char == '[' || char == ']' || char == '`' || char == '~' ||
+			char == '"' || char == ';' || char == ':' {
+			break
+		}
+		value.WriteRune(char)
+		l.advance()
+	}
+
+	if value.Len() == 0 {
+		return Token{}, fmt.Errorf("invalid keyword: keyword name cannot be empty")
+	}
+
+	return Token{
+		Type:     TokenKeyword,
+		Value:    value.String(),
+		Position: Position{Line: startLine, Column: startColumn, File: l.filename},
+	}, nil
+}
+
 // Parser parses tokens into expressions with position tracking
 type Parser struct {
 	tokens   []Token
@@ -376,6 +408,10 @@ func (p *Parser) parseExpression() (Value, *Position, error) {
 	case TokenString:
 		p.position++
 		return String(token.Value), pos, nil
+
+	case TokenKeyword:
+		p.position++
+		return InternKeyword(token.Value), pos, nil
 
 	default:
 		return nil, pos, &ParseError{

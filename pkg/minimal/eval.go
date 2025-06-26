@@ -316,84 +316,7 @@ func (m *Macro) String() string {
 
 // LoadFile loads and evaluates a Lisp file
 func LoadFile(filename string, env *Environment) (Value, error) {
-	content, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file %s: %v", filename, err)
-	}
-
-	// Create a temporary REPL for parsing
-	repl := &REPL{Env: env}
-
-	// Remove comments and clean up the content
-	cleanContent := removeComments(string(content))
-
-	// Parse the entire content as a sequence of expressions
-	tokens := repl.tokenize(cleanContent)
-	var lastResult Value = Nil{}
-	pos := 0
-	lineNum := 1
-
-	// Track original content for better error reporting
-	contentLines := strings.Split(cleanContent, "\n")
-
-	for pos < len(tokens) {
-		// Skip empty tokens
-		if tokens[pos] == "" {
-			pos++
-			continue
-		}
-
-		expr, newPos, err := repl.parseExpression(tokens, pos)
-		if err != nil {
-			// Calculate approximate line number
-			tokensSoFar := strings.Join(tokens[:pos], " ")
-			lineNum = strings.Count(tokensSoFar, "\n") + 1
-
-			// Show context around the error
-			contextLines := make([]string, 0)
-			start := lineNum - 2
-			if start < 1 {
-				start = 1
-			}
-			end := lineNum + 2
-			if end > len(contentLines) {
-				end = len(contentLines)
-			}
-
-			for i := start; i <= end; i++ {
-				marker := "    "
-				if i == lineNum {
-					marker = " -> "
-				}
-				if i-1 < len(contentLines) {
-					contextLines = append(contextLines, fmt.Sprintf("%s%d: %s", marker, i, contentLines[i-1]))
-				}
-			}
-
-			context := strings.Join(contextLines, "\n")
-			return nil, fmt.Errorf("parse error in %s at line %d:\n%s\nError: %v", filename, lineNum, context, err)
-		}
-
-		result, err := Eval(expr, env)
-		if err != nil {
-			// Try to provide better context for evaluation errors
-			exprStr := expr.String()
-			if len(exprStr) > 100 {
-				exprStr = exprStr[:100] + "..."
-			}
-
-			// Calculate line number for evaluation error
-			tokensSoFar := strings.Join(tokens[:pos], " ")
-			lineNum = strings.Count(tokensSoFar, "\n") + 1
-
-			return nil, fmt.Errorf("eval error in %s at line %d:\nExpression: %s\nError: %v", filename, lineNum, exprStr, err)
-		}
-
-		lastResult = result
-		pos = newPos
-	}
-
-	return lastResult, nil
+	return loadFileWithContext(filename, env, NewEvaluationContext())
 }
 
 // removeComments removes Lisp comments from source code
@@ -716,7 +639,6 @@ func loadFileWithContext(filename string, env *Environment, ctx *EvaluationConte
 
 	// Create parser
 	parser := NewParser(tokens, filename)
-	var result Value = Nil{}
 
 	ctx.PushFrame(fmt.Sprintf("evaluating file: %s", filename))
 	defer ctx.PopFrame()
@@ -739,14 +661,15 @@ func loadFileWithContext(filename string, env *Environment, ctx *EvaluationConte
 			ctx.SetLocation(pos.Line, pos.Column, pos.File)
 		}
 
-		// Evaluate the expression
-		result, err = EvalWithContext(expr, env, ctx)
+		// Evaluate the expression - we don't care about the result
+		_, err = EvalWithContext(expr, env, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return result, err
+	// Always return nil after successfully loading a file
+	return Nil{}, nil
 }
 
 // Enhanced error handling functions

@@ -284,9 +284,9 @@ func Bootstrap(env *Environment) error {
 
 			hm := NewHashMap()
 			for i := 0; i < len(args); i += 2 {
-				key := args[i].String()
+				key := args[i]
 				val := args[i+1]
-				hm = hm.Put(key, val)
+				hm = hm.PutByValue(key, val)
 			}
 
 			return hm, nil
@@ -305,8 +305,8 @@ func Bootstrap(env *Environment) error {
 				return nil, fmt.Errorf("first argument to hash-map-get must be a hash-map, got %T", args[0])
 			}
 
-			key := args[1].String()
-			return hm.Get(key), nil
+			key := args[1]
+			return hm.GetByValue(key), nil
 		},
 	})
 
@@ -322,9 +322,9 @@ func Bootstrap(env *Environment) error {
 				return nil, fmt.Errorf("first argument to hash-map-put must be a hash-map, got %T", args[0])
 			}
 
-			key := args[1].String()
+			key := args[1]
 			val := args[2]
-			return hm.Put(key, val), nil
+			return hm.PutByValue(key, val), nil
 		},
 	})
 

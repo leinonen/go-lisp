@@ -16,8 +16,78 @@ func (s Symbol) String() string {
 	return string(s)
 }
 
+// Keyword represents an interned keyword (like Clojure keywords)
+type Keyword string
+
+func (k Keyword) String() string {
+	return ":" + string(k)
+}
+
+// Call implements Function interface for keywords to access maps
+func (k Keyword) Call(args []Value, env *Environment) (Value, error) {
+	if len(args) < 1 || len(args) > 2 {
+		return nil, fmt.Errorf("keyword function expects 1-2 arguments, got %d", len(args))
+	}
+
+	// Get the map to access
+	mapValue := args[0]
+
+	// Handle default value if provided
+	var defaultValue Value = Nil{}
+	if len(args) == 2 {
+		defaultValue = args[1]
+	}
+
+	// Try to access the map
+	switch m := mapValue.(type) {
+	case *HashMap:
+		result := m.GetByKeyword(k)
+		if _, isNil := result.(Nil); isNil && len(args) == 2 {
+			return defaultValue, nil
+		}
+		return result, nil
+	case Nil:
+		return defaultValue, nil
+	default:
+		return nil, fmt.Errorf("keyword %s cannot access non-map value: %T", k, mapValue)
+	}
+}
+
+// CallWithContext implements Function interface for keywords with evaluation context
+func (k Keyword) CallWithContext(args []Value, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if len(args) < 1 || len(args) > 2 {
+		return nil, ctx.CreateError(fmt.Sprintf("keyword function expects 1-2 arguments, got %d", len(args)))
+	}
+
+	// Get the map to access
+	mapValue := args[0]
+
+	// Handle default value if provided
+	var defaultValue Value = Nil{}
+	if len(args) == 2 {
+		defaultValue = args[1]
+	}
+
+	// Try to access the map
+	switch m := mapValue.(type) {
+	case *HashMap:
+		result := m.GetByKeyword(k)
+		if _, isNil := result.(Nil); isNil && len(args) == 2 {
+			return defaultValue, nil
+		}
+		return result, nil
+	case Nil:
+		return defaultValue, nil
+	default:
+		return nil, ctx.CreateError(fmt.Sprintf("keyword %s cannot access non-map value: %T", k, mapValue))
+	}
+}
+
 // Intern table for symbols
 var internTable = make(map[string]Symbol)
+
+// Keyword intern table
+var keywordInternTable = make(map[string]Keyword)
 
 // Intern ensures symbol uniqueness
 func Intern(name string) Symbol {
@@ -27,6 +97,16 @@ func Intern(name string) Symbol {
 	sym := Symbol(name)
 	internTable[name] = sym
 	return sym
+}
+
+// InternKeyword ensures keyword uniqueness
+func InternKeyword(name string) Keyword {
+	if keyword, exists := keywordInternTable[name]; exists {
+		return keyword
+	}
+	keyword := Keyword(name)
+	keywordInternTable[name] = keyword
+	return keyword
 }
 
 // List represents a Lisp list
@@ -236,12 +316,63 @@ func (h *HashMap) Get(key string) Value {
 	return Nil{}
 }
 
+// GetByKeyword retrieves a value by keyword
+func (h *HashMap) GetByKeyword(key Keyword) Value {
+	keyString := string(key)
+	if val, exists := h.elements[keyString]; exists {
+		return val
+	}
+	return Nil{}
+}
+
+// GetByValue retrieves a value using any type as key (string representation)
+func (h *HashMap) GetByValue(key Value) Value {
+	var keyString string
+	switch k := key.(type) {
+	case Keyword:
+		keyString = string(k)
+	case String:
+		keyString = string(k)
+	case Symbol:
+		keyString = string(k)
+	default:
+		keyString = k.String()
+	}
+
+	if val, exists := h.elements[keyString]; exists {
+		return val
+	}
+	return Nil{}
+}
+
 func (h *HashMap) Put(key string, val Value) *HashMap {
 	newElements := make(map[string]Value)
 	for k, v := range h.elements {
 		newElements[k] = v
 	}
 	newElements[key] = val
+	return &HashMap{elements: newElements}
+}
+
+// PutByValue adds a key-value pair using any type as key
+func (h *HashMap) PutByValue(key Value, val Value) *HashMap {
+	var keyString string
+	switch k := key.(type) {
+	case Keyword:
+		keyString = string(k)
+	case String:
+		keyString = string(k)
+	case Symbol:
+		keyString = string(k)
+	default:
+		keyString = k.String()
+	}
+
+	newElements := make(map[string]Value)
+	for k, v := range h.elements {
+		newElements[k] = v
+	}
+	newElements[keyString] = val
 	return &HashMap{elements: newElements}
 }
 
