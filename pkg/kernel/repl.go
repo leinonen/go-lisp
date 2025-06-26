@@ -501,3 +501,12 @@ func (r *REPL) isBalanced(input string) bool {
 	// All parentheses and brackets should be matched
 	return len(stack) == 0 && !inString
 }
+
+// Eval evaluates a string expression in the REPL environment
+func (r *REPL) Eval(input string) (Value, error) {
+	parsed, err := r.Parse(input)
+	if err != nil {
+		return nil, err
+	}
+	return Eval(parsed, r.Env)
+}

@@ -449,3 +449,19 @@ func (s *Set) Remove(val Value) *Set {
 func (s *Set) Length() int {
 	return s.elements.Length()
 }
+
+// RecurValue represents a recur call with new binding values
+// This is used internally to implement tail-call optimization for loop/recur
+type RecurValue struct {
+	Values []Value
+}
+
+func (r *RecurValue) String() string {
+	return fmt.Sprintf("<recur with %d values>", len(r.Values))
+}
+
+// LoopContext represents the execution context for a loop block
+type LoopContext struct {
+	Bindings []Symbol
+	Parent   *LoopContext
+}

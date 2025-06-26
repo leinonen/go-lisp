@@ -6,15 +6,17 @@ import "fmt"
 
 // Environment represents a lexical environment with symbol bindings
 type Environment struct {
-	bindings map[Symbol]Value
-	parent   *Environment
+	bindings    map[Symbol]Value
+	parent      *Environment
+	loopContext *LoopContext
 }
 
 // NewEnvironment creates a new environment with optional parent
 func NewEnvironment(parent *Environment) *Environment {
 	return &Environment{
-		bindings: make(map[Symbol]Value),
-		parent:   parent,
+		bindings:    make(map[Symbol]Value),
+		parent:      parent,
+		loopContext: nil,
 	}
 }
 
@@ -116,4 +118,34 @@ func (env *Environment) GetLocalBindings() map[Symbol]Value {
 		result[sym] = val
 	}
 	return result
+}
+
+// SetLoopContext sets the loop context for the current environment
+func (env *Environment) SetLoopContext(bindings []Symbol) {
+	env.loopContext = &LoopContext{
+		Bindings: bindings,
+		Parent:   env.loopContext,
+	}
+}
+
+// ClearLoopContext removes the current loop context
+func (env *Environment) ClearLoopContext() {
+	if env.loopContext != nil {
+		env.loopContext = env.loopContext.Parent
+	}
+}
+
+// GetLoopContext returns the current loop context
+func (env *Environment) GetLoopContext() *LoopContext {
+	// Look for loop context in current environment first
+	if env.loopContext != nil {
+		return env.loopContext
+	}
+
+	// Then check parent environments
+	if env.parent != nil {
+		return env.parent.GetLoopContext()
+	}
+
+	return nil
 }

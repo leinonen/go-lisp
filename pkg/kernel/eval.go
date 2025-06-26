@@ -160,6 +160,10 @@ func evalSpecialFormWithContext(name Symbol, args *List, env *Environment, ctx *
 		return specialLoadWithContext(args, env, ctx)
 	case Intern("do"):
 		return specialDoWithContext(args, env, ctx)
+	case Intern("loop"):
+		return specialLoopWithContext(args, env, ctx)
+	case Intern("recur"):
+		return specialRecurWithContext(args, env, ctx)
 	default:
 		return nil, fmt.Errorf("not a special form") // Use a specific error
 	}
@@ -778,4 +782,120 @@ func enhanceUndefinedSymbolError(err error, symbolName string, env *Environment)
 	}
 
 	return err
+}
+
+// specialLoopWithContext implements the loop special form
+// Syntax: (loop [bindings...] body...)
+func specialLoopWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	if args.Length() < 2 {
+		return nil, ctx.CreateError("loop requires at least 2 arguments: (loop [bindings...] body...)")
+	}
+
+	// First argument should be a vector of bindings
+	bindingsArg := args.First()
+	bindingsVector, ok := bindingsArg.(*Vector)
+	if !ok {
+		return nil, ctx.CreateError("loop bindings must be a vector")
+	}
+
+	// Parse bindings - should be [name value name value ...]
+	if bindingsVector.Length()%2 != 0 {
+		return nil, ctx.CreateError("loop bindings must be pairs of [name value ...]")
+	}
+
+	// Extract binding names and initial values
+	var bindingNames []Symbol
+	var initialValues []Value
+
+	for i := 0; i < bindingsVector.Length(); i += 2 {
+		name, ok := bindingsVector.Get(i).(Symbol)
+		if !ok {
+			return nil, ctx.CreateError("loop binding names must be symbols")
+		}
+		bindingNames = append(bindingNames, name)
+
+		// Evaluate initial value in current environment
+		initValue, err := EvalWithContext(bindingsVector.Get(i+1), env, ctx)
+		if err != nil {
+			return nil, err
+		}
+		initialValues = append(initialValues, initValue)
+	}
+
+	// Get body expressions
+	bodyArgs := args.Rest()
+	if bodyArgs.IsEmpty() {
+		return nil, ctx.CreateError("loop requires a body")
+	}
+
+	// Create new environment for loop
+	loopEnv := NewEnvironment(env)
+
+	// Set up loop context
+	loopEnv.SetLoopContext(bindingNames)
+
+	// Execute loop with tail call optimization
+	return executeLoop(bindingNames, initialValues, bodyArgs, loopEnv, ctx)
+}
+
+// executeLoop implements the actual loop execution with tail call optimization
+func executeLoop(bindingNames []Symbol, values []Value, body *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	for {
+		// Bind current values to loop variables
+		for i, name := range bindingNames {
+			env.Set(name, values[i])
+		}
+
+		// Execute body expressions
+		var result Value
+		var err error
+
+		for current := body; !current.IsEmpty(); current = current.Rest() {
+			result, err = EvalWithContext(current.First(), env, ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			// Check if this is a recur call
+			if recurVal, ok := result.(*RecurValue); ok {
+				// Validate argument count
+				if len(recurVal.Values) != len(bindingNames) {
+					return nil, ctx.CreateError(fmt.Sprintf("recur expects %d arguments, got %d",
+						len(bindingNames), len(recurVal.Values)))
+				}
+
+				// Update values for next iteration
+				values = recurVal.Values
+				break // Break out of body evaluation and restart loop
+			}
+		}
+
+		// If we didn't encounter a recur, return the result
+		if _, ok := result.(*RecurValue); !ok {
+			return result, nil
+		}
+	}
+}
+
+// specialRecurWithContext implements the recur special form
+// Syntax: (recur args...)
+func specialRecurWithContext(args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	// Check if we're in a loop context
+	loopContext := env.GetLoopContext()
+	if loopContext == nil {
+		return nil, ctx.CreateError("recur can only be used inside a loop")
+	}
+
+	// Evaluate all arguments
+	var values []Value
+	for current := args; !current.IsEmpty(); current = current.Rest() {
+		value, err := EvalWithContext(current.First(), env, ctx)
+		if err != nil {
+			return nil, err
+		}
+		values = append(values, value)
+	}
+
+	// Return a RecurValue which will be handled by the loop
+	return &RecurValue{Values: values}, nil
 }

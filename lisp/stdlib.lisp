@@ -12,12 +12,6 @@
       ()
       (cons (f (first lst)) (map f (rest lst))))))
 
-(def range
-  (fn [n]
-    (if (<= n 0)
-      ()
-      (cons (- n 1) (range (- n 1))))))
-
 (def sum
   (fn [lst]
     (if (= lst ())
@@ -30,7 +24,6 @@
     (print "Numbers:" (list 1 2 3 4 5))
     (print "Length:" (length (list 1 2 3 4 5)))
     (print "Doubled:" (map (fn [x] (* x 2)) (list 1 2 3 4 5)))
-    (print "Range 5:" (range 5))
     (print "=== Demo Complete ===")))
 
 ;; (print "Minimal standard library loaded!")

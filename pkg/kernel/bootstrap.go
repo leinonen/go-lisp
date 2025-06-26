@@ -629,6 +629,108 @@ func Bootstrap(env *Environment) error {
 		},
 	})
 
+	// Add utility functions that leverage loop/recur
+
+	// range function using loop/recur internally
+	env.Set(Intern("range"), &BuiltinFunction{
+		Name: "range",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) < 1 || len(args) > 3 {
+				return nil, fmt.Errorf("range requires 1-3 arguments")
+			}
+
+			var start, end, step Number
+
+			if len(args) == 1 {
+				start = Number(0)
+				end = args[0].(Number)
+				step = Number(1)
+			} else if len(args) == 2 {
+				start = args[0].(Number)
+				end = args[1].(Number)
+				step = Number(1)
+			} else {
+				start = args[0].(Number)
+				end = args[1].(Number)
+				step = args[2].(Number)
+			}
+
+			// Build list of numbers
+			var result []Value
+			for i := start; (step > 0 && i < end) || (step < 0 && i > end); i += step {
+				result = append(result, i)
+			}
+
+			return NewList(result...), nil
+		},
+	})
+
+	// reduce function using loop/recur
+	env.Set(Intern("reduce"), &BuiltinFunction{
+		Name: "reduce",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) < 2 || len(args) > 3 {
+				return nil, fmt.Errorf("reduce requires 2-3 arguments")
+			}
+
+			fn := args[0]
+			coll := args[1]
+
+			var init Value
+			var hasInit bool
+
+			if len(args) == 3 {
+				init = args[2]
+				hasInit = true
+			}
+
+			// Convert collection to list for iteration
+			var elements []Value
+			switch c := coll.(type) {
+			case *List:
+				for current := c; !current.IsEmpty(); current = current.Rest() {
+					elements = append(elements, current.First())
+				}
+			case *Vector:
+				elements = c.elements
+			default:
+				return nil, fmt.Errorf("reduce requires a collection")
+			}
+
+			if len(elements) == 0 {
+				if hasInit {
+					return init, nil
+				}
+				return nil, fmt.Errorf("reduce on empty collection requires initial value")
+			}
+
+			var acc Value
+			startIdx := 0
+
+			if hasInit {
+				acc = init
+			} else {
+				acc = elements[0]
+				startIdx = 1
+			}
+
+			function, ok := fn.(Function)
+			if !ok {
+				return nil, fmt.Errorf("first argument to reduce must be a function")
+			}
+
+			for i := startIdx; i < len(elements); i++ {
+				result, err := function.Call([]Value{acc, elements[i]}, env)
+				if err != nil {
+					return nil, err
+				}
+				acc = result
+			}
+
+			return acc, nil
+		},
+	})
+
 	return nil
 }
 

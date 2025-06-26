@@ -165,15 +165,6 @@ func TestREPLParse(t *testing.T) {
 	}
 }
 
-// Helper function to evaluate a string expression in a REPL
-func (r *REPL) Eval(input string) (Value, error) {
-	parsed, err := r.Parse(input)
-	if err != nil {
-		return nil, err
-	}
-	return Eval(parsed, r.Env)
-}
-
 // Helper function to create a bootstrapped REPL
 func newBootstrappedREPL() *REPL {
 	repl := NewREPL()
