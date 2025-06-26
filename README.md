@@ -2,7 +2,7 @@
 
 ![GoLisp logo](./docs/img/golisp-logo.png)
 
-A minimalist Lisp interpreter written in Go, inspired by Clojure — but without the Java baggage.
+A minimalist Lisp interpreter written in Go, inspired by Clojure.
 
 ## Usage
 
@@ -14,9 +14,11 @@ make build
 ## Examples
 
 ```lisp
-(+ 1 2 3)
-(def x 42)
-(fn [x] (* x x))
+(+ 1 2 3)                         ; 6
+(defn square [x] (* x x))         ; define function
+(square 5)                        ; 25
+[1 2 3]                           ; vectors
+{:name "GoLisp" :lang "Clojure"}  ; maps
 ```
 
 ## License
