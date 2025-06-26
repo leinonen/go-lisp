@@ -9,38 +9,83 @@ import (
 )
 
 func main() {
-	// Define command line flags
-	var filename string
-	flag.StringVar(&filename, "f", "", "Load and execute a Lisp file")
+	var (
+		help     = flag.Bool("help", false, "Show help message")
+		eval     = flag.String("e", "", "Evaluate code directly instead of reading from a file")
+		filename = flag.String("f", "", "File to execute")
+	)
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\nOptions:\n")
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "\nExamples:\n")
+		fmt.Fprintf(os.Stderr, "  %s                     # Start interactive REPL\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -f script.lisp      # Execute a file\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -e '(+ 1 2 3)'      # Evaluate code directly\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -help               # Show this help message\n", os.Args[0])
+	}
+
 	flag.Parse()
 
-	// Handle legacy "examples" argument for backward compatibility
-	if len(os.Args) > 1 && os.Args[1] == "examples" {
-		// Run examples to demonstrate the architecture
-		minimal.RunExamples()
+	if *help {
+		flag.Usage()
 		return
 	}
 
 	// Create a bootstrapped REPL environment
 	repl := minimal.NewBootstrappedREPL()
 
-	// If a filename is provided, load and execute it
-	if filename != "" {
-		fmt.Printf("Loading file: %s\n", filename)
-		_, err := minimal.LoadFile(filename, repl.Env)
+	// Handle -e flag: evaluate code directly
+	if *eval != "" {
+		// Wrap the code in a 'do' block to allow multiple statements
+		wrappedCode := "(do " + *eval + ")"
+
+		// Parse the wrapped code
+		expr, err := minimal.Parse(wrappedCode)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error loading file '%s': %v\n", filename, err)
+			fmt.Fprintf(os.Stderr, "Error parsing code: %v\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Println("File loaded successfully.")
+		// Evaluate the parsed expression
+		result, err := minimal.Eval(expr, repl.Env)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error evaluating code: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Don't print nil values (used by print functions to avoid duplicate output)
+		if result != nil && result.String() != "nil" {
+			fmt.Println(result)
+		}
 		return
 	}
 
-	// Start interactive REPL if no file was specified
+	// Handle -f flag: execute a file
+	if *filename != "" {
+		_, err := minimal.LoadFile(*filename, repl.Env)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error executing file %s: %v\n", *filename, err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	// Check for legacy positional argument (backward compatibility)
+	if len(flag.Args()) > 0 {
+		legacyFilename := flag.Args()[0]
+		_, err := minimal.LoadFile(legacyFilename, repl.Env)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error executing file %s: %v\n", legacyFilename, err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	// If no arguments provided, start REPL
 	fmt.Println("Starting Minimal Lisp REPL")
 	fmt.Println("This demonstrates the micro kernel architecture")
-	fmt.Println("Use -f <filename> to load and execute a file")
 	fmt.Println()
 
 	repl.Run()

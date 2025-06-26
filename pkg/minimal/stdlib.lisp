@@ -33,6 +33,4 @@
     (print "Range 5:" (range 5))
     (print "=== Demo Complete ===")))
 
-(print "Minimal standard library loaded!")
-(print "Available functions: length, map, range, sum, demo")
-(print "Call (demo) to see examples.")
+;; (print "Minimal standard library loaded!")
