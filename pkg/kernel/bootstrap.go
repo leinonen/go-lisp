@@ -39,6 +39,26 @@ func Bootstrap(env *Environment) error {
 	}
 	env.Set(Intern("unless"), unlessFn)
 
+	// Define 'defn' macro for more convenient function definition
+	// (defn name [params] body) expands to (def name (fn [params] body))
+	defnMacro := &Macro{
+		Params: NewList(Intern("name"), Intern("params"), Intern("body")),
+		Body: NewList(
+			Intern("quasiquote"),
+			NewList(
+				Intern("def"),
+				NewList(Intern("unquote"), Intern("name")),
+				NewList(
+					Intern("fn"),
+					NewList(Intern("unquote"), Intern("params")),
+					NewList(Intern("unquote"), Intern("body")),
+				),
+			),
+		),
+		Env: env,
+	}
+	env.Set(Intern("defn"), defnMacro)
+
 	// Define 'list' function to create lists dynamically
 	env.Set(Intern("list"), &BuiltinFunction{
 		Name: "list",

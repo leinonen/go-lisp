@@ -142,7 +142,7 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - Sequence operations (`first`, `rest`, `list`, `vector`)
 - HashMap operations (`hash-map`, `hash-map-get`, `hash-map-put`)
 - Basic I/O (`print`, `load`)
-- Macros (`defmacro`)
+- Macros (`defmacro`, `defn`)
 
 ### 🔄 Partially Implemented
 - `map` (basic version in stdlib)
