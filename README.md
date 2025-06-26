@@ -2,7 +2,7 @@
 
 ![GoLisp logo](./docs/img/golisp-logo.png)
 
-A Lisp interpreter in Go.
+A minimalist Lisp interpreter written in Go, inspired by Clojure — but without the Java baggage.
 
 ## Usage
 
