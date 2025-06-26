@@ -23,7 +23,7 @@ func NewREPL() *REPL {
 
 // Run starts the REPL
 func (r *REPL) Run() {
-	fmt.Println("Minimal Lisp REPL - Type 'exit' to quit")
+	fmt.Println("GoLisp REPL - Type 'exit' to quit")
 	fmt.Println("Multi-line input supported - expressions are evaluated when parentheses are balanced")
 	scanner := bufio.NewScanner(os.Stdin)
 

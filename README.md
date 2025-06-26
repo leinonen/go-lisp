@@ -2,7 +2,7 @@
 
 ![GoLisp logo](./docs/img/golisp-logo.png)
 
-A modern, production-ready Lisp dialect implemented in Go with a modular plugin architecture. Features comprehensive language support, advanced data types, functional programming utilities, and a powerful plugin system.
+A modern Lisp dialect built on a minimal kernel architecture, combining the elegance of Clojure with the performance and simplicity of Go. Features a clean core interpreter with extensible modules for building powerful, fun programming experiences without the Java bloat.
 
 ## Quick Start
 
@@ -35,128 +35,178 @@ make build
 
 ## Current Status
 
-GoLisp is a **functional Lisp interpreter** with a modern plugin architecture under active development:
+GoLisp is built on a **minimal Lisp kernel** with a modular architecture designed for extensibility and fun:
 
-- Core Language Support: Basic Lisp constructs implemented (arithmetic, lists, functions)
-- Plugin Architecture: Modular design with 21+ plugin categories
-- Interactive REPL: Basic REPL functionality for interactive development
-- Data Types: Numbers, strings, booleans, lists, hash maps, and functions
-- Hash Map Literals: Clojure-style syntax for easy hash map creation using `{:key "value"}`
-- File Execution: Support for running Lisp programs from files
-- Clean Architecture: Well-structured codebase with comprehensive testing
+- **Minimal Core**: Clean, trusted kernel with essential primitives (~475 lines)
+- **Self-Hosting**: Higher-level constructs implemented in Lisp itself
+- **Macro System**: Full metaprogramming with quasiquote/unquote syntax
+- **Modular Design**: Separate modules for different functionality areas
+- **Interactive REPL**: Development environment with comprehensive examples
+- **Data Structures**: Core types plus hash maps, vectors, and sets
+- **File Loading**: Module system for organizing code
+
+**Philosophy**: Like Clojure's elegance without Java's complexity, leveraging Go's strengths to create something new and enjoyable.
 
 **Go Compatibility**: Go 1.24.2+  
 **Platform Support**: Linux, macOS, Windows
 
-**Note**: This is an actively developed project. Some advanced features mentioned in the documentation may be in various stages of implementation.
+## Architecture Philosophy
 
-## Plugin Architecture
+GoLisp follows a **minimal kernel** approach inspired by the best of both Clojure and Go:
 
-GoLisp features a modular plugin system with the following categories:
+### Minimal Lisp Kernel (`pkg/minimal/`)
+The core is a tiny, trusted set of primitive operations that forms our "Lisp microkernel":
 
-- **arithmetic** - Basic arithmetic operations
-- **atom** - Atomic operations and type checking  
-- **comparison** - Comparison and equality operations
-- **concurrency** - Concurrent programming primitives
-- **control** - Control flow constructs
-- **core** - Core language functionality (def, fn, quote, help, etc.)
-- **functional** - Functional programming utilities
-- **hashmap** - Hash map operations and utilities
-- **http** - HTTP client functionality
-- **io** - Input/output operations
-- **json** - JSON parsing and manipulation
-- **keyword** - Keyword support
-- **list** - List processing and manipulation
-- **logical** - Logical operations
-- **math** - Mathematical functions and constants
-- **string** - String processing and manipulation
-- **binding** - Variable binding and scoping
-- **environment** - Environment management
-- **macro** - Macro system
-- **sequence** - Sequence operations
-- **advanced** - Advanced language features
+- **Essential Primitives**: Symbols, lists, vectors, environments, eval/apply
+- **Special Forms**: `if`, `def`, `fn`, `quote`, `do`, `quasiquote`, `unquote`, `defmacro`
+- **Macro System**: Full metaprogramming with code-as-data manipulation
+- **Self-Hosting**: Higher-level constructs implemented in Lisp itself
+- **Clean Separation**: ~475 lines maintaining clear concerns
 
-*Note: Plugin functionality is in various stages of implementation and testing.*
+### Modular Extension System
+Built on the kernel, separate modules provide specialized functionality:
+
+- **Domain-Specific Modules**: HTTP, JSON, math, string processing, concurrency
+- **Go Integration**: Leverage Go's strengths (performance, concurrency, tooling)
+- **Incremental Loading**: Add functionality as needed
+- **Clean Interfaces**: Well-defined boundaries between kernel and modules
+
+### Design Goals
+- **Clojure's Elegance**: Modern Lisp design without Java's complexity
+- **Go's Strengths**: Performance, simple deployment, excellent tooling
+- **Minimal Core**: Keep the kernel small and trusted
+- **Maximum Fun**: Create something new and enjoyable to use
 
 ## Key Features
 
-- **Core Lisp Implementation**: Tokenizer, parser, and evaluator with plugin architecture
-- **Interactive REPL**: Development environment for interactive programming
-- **File Execution**: Run Lisp programs from files with multi-expression support
-- **Clojure-Style Functions**: Modern Clojure-compatible function names and aliases
-- **Polymorphic Functions**: Type-aware functions that work across different data types (lists, vectors, strings, hashmaps)
-- **Unified Sequence Operations**: Functions like `first`, `rest`, `last`, `nth`, `count`, `empty?` work on all collection types
-- **Cross-Type Compatibility**: `get` and `contains?` work on hashmaps, vectors, lists, and strings
-- **Basic Arithmetic**: Support for fundamental mathematical operations
-- **List Processing**: Core list manipulation and processing functions
-- **Plugin System**: Modular architecture with 21+ plugin categories
-- **Modern Syntax**: Clean, readable Lisp syntax with Clojure-style literals
-- **Error Handling**: Clear error messages for debugging
-- **Development Tools**: Command-line interface with multiple execution modes
-- **Extensible Design**: Plugin-based architecture for easy feature addition
+### Minimal Kernel Design
+- **Trusted Core**: Small, verifiable kernel with essential primitives
+- **Self-Hosting**: Language constructs implemented in Lisp itself
+- **Macro System**: Full metaprogramming capabilities with quasiquote/unquote
+- **Clean Architecture**: Clear separation between kernel and extensions
 
-*Note: Advanced features like big number arithmetic, comprehensive string processing, HTTP clients, and other specialized functionality are in development.*
+### Clojure-Inspired Experience
+- **Modern Syntax**: Square bracket `[param]` syntax for function parameters
+- **Data Structures**: Vectors, hash maps, sets with Clojure-style literals
+- **Functional Programming**: Immutable data structures and functional patterns
+- **Polymorphic Functions**: Operations that work across different collection types
+
+### Go Integration Benefits
+- **Performance**: Native compilation without JVM overhead
+- **Simple Deployment**: Single binary distribution
+- **Concurrency**: Leverage Go's goroutines and channels
+- **Ecosystem Access**: Integrate with Go libraries and tools
+
+### Development Experience
+- **Interactive REPL**: Rich development environment with examples
+- **File Loading**: Module system for code organization
+- **Standard Library**: Higher-level functions implemented in Lisp
+- **Extensible Design**: Add new modules without touching the kernel
+
+*Note: This project focuses on creating something new and fun by combining the best aspects of Clojure and Go.*
 
 ## Language Design
 
-GoLisp draws major inspiration from **Clojure**, incorporating modern Lisp design principles and idiomatic function names. The language features:
+GoLisp combines the best of **Clojure** and **Go** to create something new and delightful:
 
-- **Clojure-Compatible Functions**: Familiar function names like `get`, `assoc`, `dissoc`, `contains?`, `keys`, `vals`
-- **Polymorphic Operations**: Functions like `first`, `rest`, `last`, `nth`, `count`, `empty?` work across all collection types (lists, vectors, strings, hashmaps)
-- **Cross-Type Compatibility**: Advanced functions like `get` and `contains?` work seamlessly on hashmaps, vectors, lists, and strings
-- **Unified Sequence Interface**: All collections can be treated as sequences with consistent behavior
-- **Modern Syntax**: Clean, readable syntax with support for hash map literals `{:key "value"}`
-- **Functional Paradigm**: Emphasis on immutable data structures and functional programming patterns
-- **Practical Design**: Balance between academic correctness and real-world usability
+### From Clojure
+- **Modern Lisp Design**: Clean syntax with bracket notation `[param]` for parameters
+- **Rich Data Structures**: Vectors, hash maps, sets with literal syntax
+- **Functional Paradigm**: Immutable data and functional programming patterns
+- **Macro System**: Full metaprogramming with quasiquote/unquote
+- **Polymorphic Operations**: Functions that work across collection types
 
-While maintaining its own identity, GoLisp aims to provide a familiar experience for developers coming from Clojure while offering the performance and deployment advantages of Go.
+### From Go
+- **Minimal Core**: Small, trusted kernel without unnecessary complexity
+- **Performance**: Native compilation and efficient execution
+- **Simplicity**: Easy deployment and straightforward tooling
+- **Concurrency**: Future integration with Go's concurrency primitives
+
+### New & Fun
+- **Kernel Architecture**: Minimal, verifiable core with modular extensions
+- **Self-Hosting**: Higher-level features implemented in the language itself
+- **Module System**: Clean separation between core and specialized functionality
+- **Development Joy**: Focus on creating something enjoyable to use
+
+**Goal**: Capture Clojure's elegance without Java's bloat, while leveraging Go's strengths to build something both practical and fun.
 
 ## REPL Features
 
-The interactive REPL provides a development environment:
+The interactive REPL provides a rich development environment built on the minimal kernel:
 
 - **Interactive Execution**: Read-eval-print loop for immediate feedback
-- **Multi-line Input**: Support for complex expressions
-- **Basic Error Handling**: Clear error messages for common issues
-- **Expression Evaluation**: Direct evaluation of Lisp expressions
+- **Macro Exploration**: Test metaprogramming features interactively
+- **Standard Library**: Access to all bootstrap functions and higher-level constructs
+- **File Loading**: Load and experiment with modular code
+- **Examples**: Built-in examples demonstrating kernel capabilities
 
-*Note: Advanced REPL features like tab completion, syntax highlighting, and built-in help system are in development.*
+*Example REPL session:*
+```lisp
+user> (defmacro when [condition body] `(if ~condition ~body nil))
+#<macro when>
+user> (when true 42)
+42
+user> (load "stdlib.lisp")
+; Standard library functions now available
+```
 
 ## Architecture
 
-GoLisp is built with a modern, modular plugin architecture that provides clean separation of concerns and extensibility. The core components include:
+GoLisp follows a **minimal kernel** approach with clean modular extensions:
 
-### Core Components
-- **Tokenizer**: Lexical analysis converting source code to tokens
-- **Parser**: Builds abstract syntax trees from token streams  
-- **Evaluator**: Executes parsed expressions with environment management
-- **Interpreter**: Coordinates parsing and evaluation
-- **REPL**: Interactive read-eval-print loop with advanced features
-- **Executor**: Handles file execution and command-line evaluation
+### Minimal Lisp Kernel (`pkg/minimal/`)
+The core implements a tiny, trusted set of primitives that form our "Lisp microkernel":
 
-### Plugin System
-The plugin architecture allows for modular functionality:
-- **Plugin Registry**: Central registration and discovery system
-- **Function Registry**: Type-safe function registration with metadata
-- **Category System**: Logical grouping of related functionality
-- **Environment Integration**: Seamless integration with the core evaluator
+- **Core Types**: Symbols, lists, vectors, hash maps with interning
+- **Environments**: Lexical scoping with parent chain lookup
+- **Evaluator**: Essential eval/apply logic (~475 lines)
+- **Special Forms**: `if`, `def`, `fn`, `quote`, `do`, `quasiquote`, `unquote`, `defmacro`
+- **Macro System**: Full metaprogramming capabilities
+- **Bootstrap**: Built-in functions implemented in Lisp itself
+- **File Loading**: Module system for code organization
 
-All functionality is organized into focused plugins, making the codebase maintainable and extensible while providing a comprehensive set of built-in capabilities.
+### Extension Modules (Future)
+Specialized functionality built on the kernel foundation:
+- **HTTP Module**: Web client and server capabilities
+- **JSON Module**: Data serialization and parsing
+- **Math Module**: Advanced mathematical functions
+- **Concurrency Module**: Go-style concurrent programming
+- **String Module**: Text processing utilities
+- **File System Module**: File and directory operations
 
-## Function Categories
+### Design Principles
+- **Minimal Core**: Keep the kernel small and verifiable
+- **Self-Hosting**: Implement features in Lisp when possible
+- **Clean Interfaces**: Well-defined boundaries between components
+- **Go Integration**: Leverage Go's strengths where appropriate
 
-The built-in functions are organized into logical categories:
+## Kernel Functions
 
-- **Core Functions**: Variable definition, function creation, quoting
-- **Arithmetic**: Basic mathematical operations (+, -, *, /, %)
-- **Comparison**: Equality and ordering operations
-- **Logical**: Boolean logic operations
-- **Polymorphic Functions**: Type-aware sequence operations (`first`, `rest`, `last`, `nth`, `second`, `empty?`, `take`, `drop`, `reverse`)
-- **Collection Operations**: Cross-type functions (`get`, `contains?`, `count`) that work on all data types
-- **List**: List-specific operations (list creation, cons, append)
-- **Control**: Flow control constructs (if, cond)
+The minimal kernel provides essential functionality organized into logical categories:
 
-*Note: Additional categories like advanced math, string processing, HTTP clients, JSON handling, and other specialized functions are implemented as plugins in various stages of development.*
+### Core Language
+- **Definition**: `def` for variables, `fn` for functions, `defmacro` for macros
+- **Control Flow**: `if`, `do`, `quote` for essential program structure
+- **Metaprogramming**: Quasiquote (`` ` ``) and unquote (`~`) for macro templates
+
+### Data Structures
+- **Lists**: `list`, `first`, `rest`, `cons` for list processing
+- **Vectors**: Square bracket notation `[1 2 3]` with indexing
+- **Hash Maps**: `hash-map`, `hash-map-get`, `hash-map-put`, `hash-map-keys`
+- **Type Checking**: `list?`, `vector?`, `map?`, `nil?`, `keyword?`
+
+### Arithmetic & Comparison
+- **Basic Math**: `+`, `-`, `*`, `/`, `%` for arithmetic operations
+- **Comparisons**: `=`, `<`, `>`, `<=`, `>=` for ordering and equality
+- **Logic**: `and`, `or`, `not` for boolean operations
+
+### Self-Hosted Features
+Built using the kernel primitives and implemented in Lisp:
+- **Control Macros**: `when`, `unless` for conditional execution
+- **Higher-Order Functions**: Functional programming utilities
+- **Standard Library**: Collection of useful functions in `stdlib.lisp`
+
+*The beauty of this approach: most functionality is implemented in Lisp itself, keeping the kernel minimal while maximizing expressiveness.*
 
 ## Documentation
 
@@ -194,76 +244,47 @@ make build
 make test
 ```
 
-## Project Structure
-
-The project follows a clean, modular architecture:
-
-```
-go-lisp/
-├── bin/golisp             # Built binary
-├── cmd/go-lisp/           # Main application entry point
-├── pkg/                   # Core packages
-│   ├── evaluator/         # Expression evaluation and environment
-│   ├── executor/          # File execution coordination  
-│   ├── functions/         # Function definition and metadata
-│   ├── interpreter/       # Main interpreter logic
-│   ├── parser/           # Syntax analysis and AST generation
-│   ├── plugins/          # Plugin system and implementations
-│   │   ├── arithmetic/   # Basic math operations
-│   │   ├── atom/         # Atomic operations
-│   │   ├── comparison/   # Comparison operations
-│   │   ├── concurrency/  # Concurrent programming
-│   │   ├── control/      # Control flow
-│   │   ├── core/         # Core language features
-│   │   ├── functional/   # Functional programming
-│   │   ├── hashmap/      # Hash map operations
-│   │   ├── http/         # HTTP client
-│   │   ├── io/           # Input/output operations
-│   │   ├── json/         # JSON processing
-│   │   ├── list/         # List operations
-│   │   ├── logical/      # Boolean logic
-│   │   ├── math/         # Mathematical functions
-│   │   └── string/       # String processing
-│   ├── registry/         # Function and plugin registration
-│   ├── repl/             # Interactive REPL with completion
-│   ├── tokenizer/        # Lexical analysis
-│   └── types/            # Core data types and expressions
-└── Makefile              # Build automation
-```
-
 ## Contributing
 
-This project features a modern, plugin-based architecture built with clean coding standards. We welcome contributions in several areas:
+GoLisp is built on a **minimal kernel architecture** that makes contributions focused and impactful:
 
-### Areas for Contribution
-- **Bug Reports**: Help us maintain reliability by reporting issues
-- **Feature Implementation**: Complete plugin functionality and add new capabilities
-- **Documentation**: Improve guides, add tutorials, or enhance examples  
-- **Testing**: Add test coverage and edge case validation
-- **Performance**: Optimize critical paths and memory usage
-- **Tool Integration**: IDE plugins, syntax highlighting, or language servers
-- **Examples**: Real-world applications and algorithm implementations
+### Kernel Development
+- **Core Improvements**: Enhance the minimal kernel (performance, features, correctness)
+- **Macro System**: Expand metaprogramming capabilities
+- **Standard Library**: Add useful functions implemented in Lisp
+- **Testing**: Comprehensive test coverage for kernel reliability
 
-### Development Standards
-- **Test-Driven Development**: All features require comprehensive tests
-- **Plugin Architecture**: New functionality should follow the modular plugin pattern
-- **Documentation**: New features need documentation and examples
-- **Clean Architecture**: Maintain separation of concerns and modularity
-- **Go Best Practices**: Follow Go idioms and conventions
+### Module Development
+- **New Modules**: Create specialized functionality (HTTP, JSON, concurrency, etc.)
+- **Go Integration**: Bridge Lisp and Go ecosystems effectively
+- **Domain Expertise**: Contribute modules in your area of expertise
+- **Clean Interfaces**: Maintain clear boundaries between kernel and modules
 
-The plugin system makes it easy to extend functionality while maintaining clean separation of concerns.
+### Documentation & Examples
+- **Kernel Guide**: Document the minimal core and its philosophy
+- **Module Examples**: Show how to build on the kernel foundation
+- **Real-World Apps**: Demonstrate practical uses of the language
+- **Learning Materials**: Help others understand Lisp and metaprogramming
+
+### Development Philosophy
+- **Minimal Kernel**: Keep the core small, trusted, and verifiable
+- **Self-Hosting**: Prefer implementing features in Lisp over Go when possible
+- **Clean Architecture**: Maintain clear separation between components
+- **Fun First**: Create something enjoyable to use and extend
+
+The kernel approach makes it easy to contribute meaningfully while maintaining the project's core vision of combining Clojure's elegance with Go's strengths.
 
 ## Recognition
 
 **Built in 2025** as a demonstration of:
-- Modern GoLisp implementation with plugin architecture  
-- Test-driven development methodologies
-- Clean architecture principles in Go
-- Modular design patterns
-- Software engineering best practices
+- **Minimal Kernel Architecture**: Small, trusted core with modular extensions
+- **Self-Hosting Language Design**: Higher-level features implemented in Lisp itself  
+- **Modern Lisp Innovation**: Combining Clojure's elegance with Go's practical benefits
+- **Clean Software Engineering**: Separation of concerns and testable components
+- **Fun Programming Experience**: Creating something new and enjoyable to use
 
-This project showcases both educational value and practical Lisp programming capabilities through a well-structured, extensible codebase.
+This project showcases how to build a modern Lisp that's both educationally valuable and practically useful, proving that you can have Clojure's expressiveness without Java's complexity.
 
 ## License
 
-This project is open source and available under the MIT License. Built as both an educational resource and a practical tool for Lisp programming with modern software engineering practices.
+This project is open source and available under the MIT License. Built as both an educational resource and a practical tool for exploring modern Lisp design, demonstrating how to combine the best of Clojure and Go to create something new and fun.

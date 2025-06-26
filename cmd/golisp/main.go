@@ -84,9 +84,6 @@ func main() {
 	}
 
 	// If no arguments provided, start REPL
-	fmt.Println("Starting GoLisp REPL")
-	fmt.Println("This demonstrates the micro kernel architecture")
-	fmt.Println()
 
 	repl.Run()
 }

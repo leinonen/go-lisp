@@ -1,4 +1,4 @@
-# Lisp Interpreter Makefile
+# GoLisp Makefile
 
 # Variables
 BINARY_NAME=golisp
@@ -9,7 +9,7 @@ BINARY_NAME=golisp
 all: build
 
 build: ## Build the interpreter binary
-	go build -o ./bin/$(BINARY_NAME) ./cmd/go-lisp
+	go build -o ./bin/$(BINARY_NAME) ./cmd/golisp
 
 run: build ## Build and run the interpreter
 	./bin/$(BINARY_NAME)
@@ -22,6 +22,3 @@ test-nocache: ## Run all tests without cache
 
 fmt: ## Format all Go source files
 	go fmt ./...
-
-micro:
-	go run ./cmd/minimal-lisp/main.go
