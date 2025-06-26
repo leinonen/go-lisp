@@ -1,11 +1,11 @@
-package minimal
+package kernel
 
 import (
 	"testing"
 )
 
-// TestBuiltinFunctionsComprehensive provides comprehensive testing of all built-in functions
-func TestBuiltinFunctionsComprehensive(t *testing.T) {
+// TestBuiltinFunctions provides comprehensive testing of all built-in functions
+func TestBuiltinFunctions(t *testing.T) {
 	t.Run("ArithmeticFunctions", func(t *testing.T) {
 		repl := NewREPL()
 		Bootstrap(repl.Env)

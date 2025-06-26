@@ -1,4 +1,4 @@
-package minimal
+package kernel
 
 // Core evaluation logic for the minimal Lisp kernel
 

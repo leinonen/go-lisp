@@ -1,11 +1,11 @@
-package minimal
+package kernel
 
 import (
 	"testing"
 )
 
-// TestEnvironmentComprehensive provides comprehensive testing of the environment system
-func TestEnvironmentComprehensive(t *testing.T) {
+// TestEnvironment provides comprehensive testing of the environment system
+func TestEnvironment(t *testing.T) {
 	t.Run("BasicOperations", func(t *testing.T) {
 		env := NewEnvironment(nil)
 

@@ -1,12 +1,12 @@
-package minimal
+package kernel
 
 import (
 	"strings"
 	"testing"
 )
 
-// TestParserComprehensive provides comprehensive testing of the parser
-func TestParserComprehensive(t *testing.T) {
+// TestParser provides comprehensive testing of the parser
+func TestParser(t *testing.T) {
 	t.Run("BasicTokens", func(t *testing.T) {
 		input := `42 3.14 "hello" symbol true false nil`
 		tokens, err := NewLexer(input, "<test>").Tokenize()

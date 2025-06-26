@@ -1,11 +1,11 @@
-package minimal
+package kernel
 
 import (
 	"testing"
 )
 
-// TestEvaluatorComprehensive provides comprehensive testing of the evaluator
-func TestEvaluatorComprehensive(t *testing.T) {
+// TestEvaluator provides comprehensive testing of the evaluator
+func TestEvaluator(t *testing.T) {
 	t.Run("SelfEvaluatingExpressions", func(t *testing.T) {
 		repl := NewREPL()
 		Bootstrap(repl.Env)

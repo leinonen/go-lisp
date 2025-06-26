@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/leinonen/go-lisp/pkg/minimal"
+	"github.com/leinonen/go-lisp/pkg/kernel"
 )
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// Create a bootstrapped REPL environment
-	repl := minimal.NewBootstrappedREPL()
+	repl := kernel.NewBootstrappedREPL()
 
 	// Handle -e flag: evaluate code directly
 	if *eval != "" {
@@ -42,14 +42,14 @@ func main() {
 		wrappedCode := "(do " + *eval + ")"
 
 		// Parse the wrapped code
-		expr, err := minimal.Parse(wrappedCode)
+		expr, err := kernel.Parse(wrappedCode)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error parsing code: %v\n", err)
 			os.Exit(1)
 		}
 
 		// Evaluate the parsed expression
-		result, err := minimal.Eval(expr, repl.Env)
+		result, err := kernel.Eval(expr, repl.Env)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error evaluating code: %v\n", err)
 			os.Exit(1)
@@ -64,7 +64,7 @@ func main() {
 
 	// Handle -f flag: execute a file
 	if *filename != "" {
-		_, err := minimal.LoadFile(*filename, repl.Env)
+		_, err := kernel.LoadFile(*filename, repl.Env)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error executing file %s: %v\n", *filename, err)
 			os.Exit(1)
@@ -75,7 +75,7 @@ func main() {
 	// Check for legacy positional argument (backward compatibility)
 	if len(flag.Args()) > 0 {
 		legacyFilename := flag.Args()[0]
-		_, err := minimal.LoadFile(legacyFilename, repl.Env)
+		_, err := kernel.LoadFile(legacyFilename, repl.Env)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error executing file %s: %v\n", legacyFilename, err)
 			os.Exit(1)

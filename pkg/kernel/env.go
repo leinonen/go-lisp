@@ -1,4 +1,4 @@
-package minimal
+package kernel
 
 // Environment for lexical scoping
 

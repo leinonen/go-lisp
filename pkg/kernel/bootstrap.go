@@ -1,4 +1,4 @@
-package minimal
+package kernel
 
 // Bootstrap demonstrates extending the minimal kernel with higher-level constructs
 // This shows how to implement features in Lisp itself

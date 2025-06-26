@@ -1,4 +1,4 @@
-package minimal
+package kernel
 
 // Example demonstrates the minimal kernel architecture
 

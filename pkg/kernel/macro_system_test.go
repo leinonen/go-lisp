@@ -1,12 +1,12 @@
-package minimal
+package kernel
 
 import (
 	"strings"
 	"testing"
 )
 
-// TestMacroSystemComprehensive provides comprehensive testing of the macro system
-func TestMacroSystemComprehensive(t *testing.T) {
+// TestMacroSystem provides comprehensive testing of the macro system
+func TestMacroSystem(t *testing.T) {
 	t.Run("BasicQuasiquote", func(t *testing.T) {
 		repl := NewREPL()
 		Bootstrap(repl.Env)

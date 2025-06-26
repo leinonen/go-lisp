@@ -1,4 +1,4 @@
-package minimal
+package kernel
 
 // Core data types for the minimal Lisp kernel
 
