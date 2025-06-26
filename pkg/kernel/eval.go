@@ -5,6 +5,7 @@ package kernel
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -622,25 +623,68 @@ func specialLoadWithContext(args *List, env *Environment, ctx *EvaluationContext
 
 // loadFileWithContext loads and evaluates a Lisp file with context
 func loadFileWithContext(filename string, env *Environment, ctx *EvaluationContext) (Value, error) {
-	content, err := os.ReadFile(filename)
+	// Try to find the file in different locations
+	var content []byte
+	var err error
+	var actualPath string
+
+	// First try the filename as-is (for absolute paths or relative to current directory)
+	content, err = os.ReadFile(filename)
 	if err != nil {
-		return nil, ctx.CreateError(fmt.Sprintf("could not read file %s: %v", filename, err))
+		// If that fails, try looking in the lisp directory relative to the working directory
+		lispPath := filepath.Join("lisp", filename)
+		content, err = os.ReadFile(lispPath)
+		if err != nil {
+			// Try relative to the executable location
+			if execPath, execErr := os.Executable(); execErr == nil {
+				execDir := filepath.Dir(execPath)
+				lispPath = filepath.Join(execDir, "..", "lisp", filename)
+				content, err = os.ReadFile(lispPath)
+				if err != nil {
+					// Finally, try relative to the Go module root
+					if wd, wdErr := os.Getwd(); wdErr == nil {
+						// Walk up directories to find go.mod
+						for dir := wd; dir != "/" && dir != "."; dir = filepath.Dir(dir) {
+							if _, statErr := os.Stat(filepath.Join(dir, "go.mod")); statErr == nil {
+								lispPath = filepath.Join(dir, "lisp", filename)
+								content, err = os.ReadFile(lispPath)
+								if err == nil {
+									actualPath = lispPath
+									break
+								}
+							}
+						}
+					}
+					if err != nil {
+						return nil, ctx.CreateError(fmt.Sprintf("could not read file %s: %v", filename, err))
+					}
+				} else {
+					actualPath = lispPath
+				}
+			} else {
+				return nil, ctx.CreateError(fmt.Sprintf("could not read file %s: %v", filename, err))
+			}
+		} else {
+			actualPath = lispPath
+		}
+	} else {
+		actualPath = filename
 	}
 
 	// Remove comments for cleaner parsing
 	cleanedContent := removeComments(string(content))
 
-	// Create a lexer for the file content
-	lexer := NewLexer(cleanedContent, filename)
+	// Create a lexer for the file content - use actual path for better error reporting
+	lexer := NewLexer(cleanedContent, actualPath)
 	tokens, err := lexer.Tokenize()
 	if err != nil {
 		return nil, err
 	}
 
 	// Create parser
-	parser := NewParser(tokens, filename)
+	parser := NewParser(tokens, actualPath)
 
-	ctx.PushFrame(fmt.Sprintf("evaluating file: %s", filename))
+	ctx.PushFrame(fmt.Sprintf("evaluating file: %s", actualPath))
 	defer ctx.PopFrame()
 
 	// Parse and evaluate multiple expressions from the file
