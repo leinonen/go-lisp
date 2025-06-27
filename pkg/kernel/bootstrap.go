@@ -3,7 +3,11 @@ package kernel
 // Bootstrap demonstrates extending the minimal kernel with higher-level constructs
 // This shows how to implement features in Lisp itself
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"strings"
+)
 
 // Bootstrap loads higher-level constructs into the environment
 func Bootstrap(env *Environment) error {
@@ -748,6 +752,281 @@ func Bootstrap(env *Environment) error {
 			}
 
 			return acc, nil
+		},
+	})
+
+	// Meta-programming functions essential for self-hosting
+	env.Set(Intern("eval"), &BuiltinFunction{
+		Name: "eval",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("eval requires exactly 1 argument")
+			}
+
+			return Eval(args[0], env)
+		},
+	})
+
+	env.Set(Intern("read-string"), &BuiltinFunction{
+		Name: "read-string",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("read-string requires exactly 1 argument")
+			}
+
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("read-string requires a string argument")
+			}
+
+			return Parse(string(str))
+		},
+	})
+
+	env.Set(Intern("slurp"), &BuiltinFunction{
+		Name: "slurp",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("slurp requires exactly 1 argument")
+			}
+
+			filename, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("slurp requires a string filename")
+			}
+
+			content, err := os.ReadFile(string(filename))
+			if err != nil {
+				return nil, fmt.Errorf("could not read file %s: %v", filename, err)
+			}
+
+			return String(content), nil
+		},
+	})
+
+	env.Set(Intern("spit"), &BuiltinFunction{
+		Name: "spit",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("spit requires exactly 2 arguments")
+			}
+
+			filename, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("spit first argument must be a string filename")
+			}
+
+			content, ok := args[1].(String)
+			if !ok {
+				return nil, fmt.Errorf("spit second argument must be a string content")
+			}
+
+			err := os.WriteFile(string(filename), []byte(content), 0644)
+			if err != nil {
+				return nil, fmt.Errorf("could not write file %s: %v", filename, err)
+			}
+
+			return Nil{}, nil
+		},
+	})
+
+	// String operations for code generation
+	env.Set(Intern("str"), &BuiltinFunction{
+		Name: "str",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			var result strings.Builder
+			for _, arg := range args {
+				result.WriteString(arg.String())
+			}
+			return String(result.String()), nil
+		},
+	})
+
+	// Type predicates essential for meta-programming
+	env.Set(Intern("symbol?"), &BuiltinFunction{
+		Name: "symbol?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("symbol? requires exactly 1 argument")
+			}
+			_, ok := args[0].(Symbol)
+			return Boolean(ok), nil
+		},
+	})
+
+	env.Set(Intern("string?"), &BuiltinFunction{
+		Name: "string?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("string? requires exactly 1 argument")
+			}
+			_, ok := args[0].(String)
+			return Boolean(ok), nil
+		},
+	})
+
+	env.Set(Intern("keyword?"), &BuiltinFunction{
+		Name: "keyword?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("keyword? requires exactly 1 argument")
+			}
+			_, ok := args[0].(Keyword)
+			return Boolean(ok), nil
+		},
+	})
+
+	env.Set(Intern("list?"), &BuiltinFunction{
+		Name: "list?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("list? requires exactly 1 argument")
+			}
+			_, ok := args[0].(*List)
+			return Boolean(ok), nil
+		},
+	})
+
+	env.Set(Intern("vector?"), &BuiltinFunction{
+		Name: "vector?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("vector? requires exactly 1 argument")
+			}
+			_, ok := args[0].(*Vector)
+			return Boolean(ok), nil
+		},
+	})
+
+	// Symbol and keyword creation
+	env.Set(Intern("symbol"), &BuiltinFunction{
+		Name: "symbol",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("symbol requires exactly 1 argument")
+			}
+
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("symbol requires a string argument")
+			}
+
+			return Intern(string(str)), nil
+		},
+	})
+
+	env.Set(Intern("keyword"), &BuiltinFunction{
+		Name: "keyword",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("keyword requires exactly 1 argument")
+			}
+
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("keyword requires a string argument")
+			}
+
+			return InternKeyword(string(str)), nil
+		},
+	})
+
+	env.Set(Intern("name"), &BuiltinFunction{
+		Name: "name",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("name requires exactly 1 argument")
+			}
+
+			switch v := args[0].(type) {
+			case Symbol:
+				return String(v), nil
+			case Keyword:
+				return String(v), nil
+			default:
+				return nil, fmt.Errorf("name requires a symbol or keyword, got %T", args[0])
+			}
+		},
+	})
+
+	// Add more meta-programming functions
+
+	// Define 'macroexpand' function - expand macro once
+	env.Set(Intern("macroexpand"), &BuiltinFunction{
+		Name: "macroexpand",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("macroexpand requires exactly 1 argument")
+			}
+
+			// Check if it's a macro call
+			if list, ok := args[0].(*List); ok && !list.IsEmpty() {
+				if sym, ok := list.First().(Symbol); ok {
+					if val, err := env.Get(sym); err == nil {
+						if macro, ok := val.(*Macro); ok {
+							// Expand the macro
+							macroArgs := make([]Value, 0)
+							for current := list.Rest(); !current.IsEmpty(); current = current.Rest() {
+								macroArgs = append(macroArgs, current.First())
+							}
+							return macro.Call(macroArgs, env)
+						}
+					}
+				}
+			}
+
+			// Not a macro call, return as-is
+			return args[0], nil
+		},
+	})
+
+	// Define 'gensym' function - generate unique symbols
+	var gensymCounter int64 = 0
+	env.Set(Intern("gensym"), &BuiltinFunction{
+		Name: "gensym",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			var prefix string = "G__"
+
+			if len(args) == 1 {
+				if str, ok := args[0].(String); ok {
+					prefix = string(str) + "__"
+				} else {
+					return nil, fmt.Errorf("gensym argument must be a string")
+				}
+			} else if len(args) > 1 {
+				return nil, fmt.Errorf("gensym takes 0 or 1 arguments")
+			}
+
+			gensymCounter++
+			return Intern(fmt.Sprintf("%s%d", prefix, gensymCounter)), nil
+		},
+	})
+
+	// Define 'list*' function - construct list with last element as tail
+	env.Set(Intern("list*"), &BuiltinFunction{
+		Name: "list*",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) == 0 {
+				return NewList(), nil
+			}
+
+			if len(args) == 1 {
+				return args[0], nil
+			}
+
+			// Build list with all but last as cons cells, last as tail
+			result := args[len(args)-1]
+			for i := len(args) - 2; i >= 0; i-- {
+				if list, ok := result.(*List); ok {
+					result = NewList(append([]Value{args[i]}, list.elements...)...)
+				} else {
+					// If tail is not a list, create a dotted pair (not supported yet)
+					// For now, just treat it as a list
+					result = NewList(args[i], result)
+				}
+			}
+
+			return result, nil
 		},
 	})
 
