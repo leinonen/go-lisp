@@ -15,11 +15,9 @@ make build
 
 ```lisp
 (+ 1 2 3)                         ; 6
-(defn square [x] (* x x))         ; define function
+(def square (fn [x] (* x x)))     ; define function
 (square 5)                        ; 25
 [1 2 3]                           ; vectors
-{:name "GoLisp" :lang "Clojure"}  ; maps
-(loop [n 5 acc 1] (if (= n 0) acc (recur (- n 1) (* acc n))))  ; factorial
 ```
 
 ## License
