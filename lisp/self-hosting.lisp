@@ -11,7 +11,7 @@
 ;; Compilation context
 (defn make-context []
   {:symbols (hash-map)
-   :locals #{}
+   :locals '()
    :target *compile-target*})
 
 ;; Core compilation functions
@@ -23,12 +23,13 @@
     :else expr)) ; literals
 
 (defn compile-symbol [sym ctx]
-  ;; Check if it's a local binding or global
-  (if (contains? (:locals ctx) sym)
-    sym  ; Local reference - keep as-is
-    (do
-      ;; Global reference - could be optimized
-      sym)))
+  ;; Check if it's a local binding or global using any? for list-based locals
+  (let [is-local? (any? (fn [local] (= local sym)) (:locals ctx))]
+    (if is-local?
+      sym  ; Local reference - keep as-is
+      (do
+        ;; Global reference - could be optimized
+        sym))))
 
 (defn compile-list [lst ctx]
   (if (empty? lst)
@@ -71,8 +72,8 @@
                             (:locals ctx) 
                             params)
           fn-ctx (assoc ctx :locals new-locals)]
-      ;; Compile function body with new context
-      (list 'fn params (map (fn [expr] (compile-expr expr fn-ctx)) body)))))
+      ;; Compile function body with new context  
+      (cons 'fn (cons params (map (fn [expr] (compile-expr expr fn-ctx)) body))))))
 
 (defn compile-if [args ctx]
   (if (not= (length args) 3)
@@ -86,6 +87,38 @@
   (if (not= (length args) 1)
     (throw (str "quote requires exactly 1 argument"))
     (list 'quote (first args))))
+
+(defn compile-let [args ctx]
+  (if (< (length args) 2)
+    (throw (str "let requires at least 2 arguments"))
+    (let [bindings (first args)
+          body (rest args)]
+      ;; Extract symbols from bindings for local context
+      (let [extract-symbols (fn [bindings-list acc]
+                              (if (empty? bindings-list)
+                                acc
+                                (if (empty? (rest bindings-list))
+                                  (throw (str "odd number of binding forms"))
+                                  (extract-symbols (rest (rest bindings-list))
+                                                 (conj acc (first bindings-list))))))
+            binding-symbols (extract-symbols bindings '())
+            ;; Create new context with locals  
+            new-locals (reduce (fn [acc sym] (conj acc sym)) (:locals ctx) binding-symbols)
+            let-ctx (assoc ctx :locals new-locals)
+            ;; Compile bindings values with current context
+            compile-bindings (fn [bindings-list acc]
+                              (if (empty? bindings-list)
+                                acc
+                                (if (empty? (rest bindings-list))
+                                  (throw (str "odd number of binding forms"))
+                                  (compile-bindings (rest (rest bindings-list))
+                                                  (conj (conj acc (first bindings-list))
+                                                        (compile-expr (second bindings-list) ctx))))))
+            compiled-bindings (compile-bindings bindings [])]
+        ;; Return compiled let form
+        (cons 'let 
+              (cons compiled-bindings
+                    (map (fn [expr] (compile-expr expr let-ctx)) body)))))))
 
 (defn compile-do [args ctx]
   (cons 'do (map (fn [expr] (compile-expr expr ctx)) args)))
