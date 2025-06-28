@@ -7,10 +7,18 @@ import (
 	"unicode"
 )
 
-// Token represents a token
+// Position represents a position in source code
+type Position struct {
+	Line   int
+	Column int
+	Offset int
+}
+
+// Token represents a token with source location
 type Token struct {
-	Type  TokenType
-	Value string
+	Type     TokenType
+	Value    string
+	Position Position
 }
 
 // TokenType represents the type of a token
@@ -39,6 +47,8 @@ const (
 type Lexer struct {
 	input    string
 	position int
+	line     int
+	column   int
 }
 
 // NewLexer creates a new lexer
@@ -46,6 +56,8 @@ func NewLexer(input string) *Lexer {
 	return &Lexer{
 		input:    input,
 		position: 0,
+		line:     1,
+		column:   1,
 	}
 }
 
@@ -75,7 +87,7 @@ func (l *Lexer) Tokenize() ([]Token, error) {
 	}
 
 	// Add EOF token
-	tokens = append(tokens, Token{Type: TokenEOF})
+	tokens = append(tokens, Token{Type: TokenEOF, Position: l.currentPosition()})
 	return tokens, nil
 }
 
@@ -87,7 +99,21 @@ func (l *Lexer) current() rune {
 }
 
 func (l *Lexer) advance() {
+	if l.position < len(l.input) && l.input[l.position] == '\n' {
+		l.line++
+		l.column = 1
+	} else {
+		l.column++
+	}
 	l.position++
+}
+
+func (l *Lexer) currentPosition() Position {
+	return Position{
+		Line:   l.line,
+		Column: l.column,
+		Offset: l.position,
+	}
 }
 
 func (l *Lexer) skipComment() {
@@ -98,43 +124,44 @@ func (l *Lexer) skipComment() {
 
 func (l *Lexer) nextToken() (Token, error) {
 	char := l.current()
+	pos := l.currentPosition()
 
 	switch char {
 	case '(':
 		l.advance()
-		return Token{Type: TokenLeftParen, Value: "("}, nil
+		return Token{Type: TokenLeftParen, Value: "(", Position: pos}, nil
 	case ')':
 		l.advance()
-		return Token{Type: TokenRightParen, Value: ")"}, nil
+		return Token{Type: TokenRightParen, Value: ")", Position: pos}, nil
 	case '[':
 		l.advance()
-		return Token{Type: TokenLeftBracket, Value: "["}, nil
+		return Token{Type: TokenLeftBracket, Value: "[", Position: pos}, nil
 	case ']':
 		l.advance()
-		return Token{Type: TokenRightBracket, Value: "]"}, nil
+		return Token{Type: TokenRightBracket, Value: "]", Position: pos}, nil
 	case '{':
 		l.advance()
-		return Token{Type: TokenLeftBrace, Value: "{"}, nil
+		return Token{Type: TokenLeftBrace, Value: "{", Position: pos}, nil
 	case '}':
 		l.advance()
-		return Token{Type: TokenRightBrace, Value: "}"}, nil
+		return Token{Type: TokenRightBrace, Value: "}", Position: pos}, nil
 	case '#':
 		l.advance()
-		return Token{Type: TokenHash, Value: "#"}, nil
+		return Token{Type: TokenHash, Value: "#", Position: pos}, nil
 	case '\'':
 		l.advance()
-		return Token{Type: TokenQuote, Value: "'"}, nil
+		return Token{Type: TokenQuote, Value: "'", Position: pos}, nil
 	case '`':
 		l.advance()
-		return Token{Type: TokenQuasiquote, Value: "`"}, nil
+		return Token{Type: TokenQuasiquote, Value: "`", Position: pos}, nil
 	case '~':
 		l.advance()
 		// Check for unquote-splicing (~@)
 		if l.position < len(l.input) && l.current() == '@' {
 			l.advance()
-			return Token{Type: TokenUnquoteSplicing, Value: "~@"}, nil
+			return Token{Type: TokenUnquoteSplicing, Value: "~@", Position: pos}, nil
 		}
-		return Token{Type: TokenUnquote, Value: "~"}, nil
+		return Token{Type: TokenUnquote, Value: "~", Position: pos}, nil
 	case '"':
 		return l.readString()
 	case ':':
@@ -158,6 +185,7 @@ func (l *Lexer) peek() rune {
 }
 
 func (l *Lexer) readString() (Token, error) {
+	pos := l.currentPosition()
 	l.advance() // Skip opening quote
 	start := l.position
 
@@ -169,7 +197,7 @@ func (l *Lexer) readString() (Token, error) {
 	}
 
 	if l.position >= len(l.input) {
-		return Token{}, fmt.Errorf("unterminated string")
+		return Token{}, fmt.Errorf("unterminated string at line %d, column %d", pos.Line, pos.Column)
 	}
 
 	value := l.input[start:l.position]
@@ -181,10 +209,11 @@ func (l *Lexer) readString() (Token, error) {
 	value = strings.ReplaceAll(value, "\\t", "\t")
 	value = strings.ReplaceAll(value, "\\\\", "\\")
 
-	return Token{Type: TokenString, Value: value}, nil
+	return Token{Type: TokenString, Value: value, Position: pos}, nil
 }
 
 func (l *Lexer) readKeyword() (Token, error) {
+	pos := l.currentPosition()
 	l.advance() // Skip ':'
 	start := l.position
 
@@ -193,10 +222,11 @@ func (l *Lexer) readKeyword() (Token, error) {
 	}
 
 	value := l.input[start:l.position]
-	return Token{Type: TokenKeyword, Value: value}, nil
+	return Token{Type: TokenKeyword, Value: value, Position: pos}, nil
 }
 
 func (l *Lexer) readNumber() (Token, error) {
+	pos := l.currentPosition()
 	start := l.position
 
 	if l.current() == '-' {
@@ -216,10 +246,11 @@ func (l *Lexer) readNumber() (Token, error) {
 	}
 
 	value := l.input[start:l.position]
-	return Token{Type: TokenNumber, Value: value}, nil
+	return Token{Type: TokenNumber, Value: value, Position: pos}, nil
 }
 
 func (l *Lexer) readSymbol() (Token, error) {
+	pos := l.currentPosition()
 	start := l.position
 
 	for l.position < len(l.input) && isSymbolChar(l.current()) {
@@ -227,7 +258,7 @@ func (l *Lexer) readSymbol() (Token, error) {
 	}
 
 	value := l.input[start:l.position]
-	return Token{Type: TokenSymbol, Value: value}, nil
+	return Token{Type: TokenSymbol, Value: value, Position: pos}, nil
 }
 
 func isSymbolStart(char rune) bool {
@@ -246,6 +277,29 @@ func isSymbolChar(char rune) bool {
 type Parser struct {
 	tokens   []Token
 	position int
+	source   string // Original source code for error reporting
+}
+
+// ParseError represents a parsing error with location information
+type ParseError struct {
+	Message  string
+	Position Position
+	Source   string
+}
+
+func (e *ParseError) Error() string {
+	if e.Source != "" {
+		lines := strings.Split(e.Source, "\n")
+		if e.Position.Line > 0 && e.Position.Line <= len(lines) {
+			line := lines[e.Position.Line-1]
+			// Show the line and point to the error
+			pointer := strings.Repeat(" ", e.Position.Column-1) + "^"
+			return fmt.Sprintf("Parse error at line %d, column %d: %s\n%s\n%s", 
+				e.Position.Line, e.Position.Column, e.Message, line, pointer)
+		}
+	}
+	return fmt.Sprintf("Parse error at line %d, column %d: %s", 
+		e.Position.Line, e.Position.Column, e.Message)
 }
 
 // NewParser creates a new parser
@@ -256,10 +310,27 @@ func NewParser(tokens []Token) *Parser {
 	}
 }
 
+// NewParserWithSource creates a new parser with source code for error reporting
+func NewParserWithSource(tokens []Token, source string) *Parser {
+	return &Parser{
+		tokens:   tokens,
+		position: 0,
+		source:   source,
+	}
+}
+
 // Parse converts tokens to Lisp values
 func (p *Parser) Parse() (Value, error) {
 	if p.position >= len(p.tokens) {
-		return nil, fmt.Errorf("unexpected end of input")
+		pos := Position{Line: 1, Column: 1}
+		if len(p.tokens) > 0 {
+			pos = p.tokens[len(p.tokens)-1].Position
+		}
+		return nil, &ParseError{
+			Message:  "unexpected end of input",
+			Position: pos,
+			Source:   p.source,
+		}
 	}
 
 	return p.parseExpression()
@@ -333,9 +404,17 @@ func (p *Parser) parseExpression() (Value, error) {
 		p.position++
 		return p.parseNumber(token.Value)
 	case TokenEOF:
-		return nil, fmt.Errorf("unexpected end of input")
+		return nil, &ParseError{
+			Message:  "unexpected end of input",
+			Position: token.Position,
+			Source:   p.source,
+		}
 	default:
-		return nil, fmt.Errorf("unexpected token: %s", token.Value)
+		return nil, &ParseError{
+			Message:  fmt.Sprintf("unexpected token: %s", token.Value),
+			Position: token.Position,
+			Source:   p.source,
+		}
 	}
 }
 
@@ -353,7 +432,16 @@ func (p *Parser) parseList() (Value, error) {
 	}
 
 	if p.position >= len(p.tokens) {
-		return nil, fmt.Errorf("unterminated list")
+		// Get position of the opening paren
+		openParenPos := p.tokens[0].Position // This is approximate - we could track better
+		if len(p.tokens) > 1 {
+			openParenPos = p.tokens[len(p.tokens)-1].Position
+		}
+		return nil, &ParseError{
+			Message:  "unterminated list",
+			Position: openParenPos,
+			Source:   p.source,
+		}
 	}
 
 	p.position++ // Skip ')'
@@ -457,6 +545,6 @@ func ReadString(input string) (Value, error) {
 		return nil, err
 	}
 
-	parser := NewParser(tokens)
+	parser := NewParserWithSource(tokens, input)
 	return parser.Parse()
 }

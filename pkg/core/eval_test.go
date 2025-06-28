@@ -2,6 +2,7 @@ package core_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/leinonen/go-lisp/pkg/core"
@@ -551,6 +552,33 @@ func TestEvalVariadicFunctions(t *testing.T) {
 	expected = "(if false nil (do (println \"hello\") (+ 1 2)))"
 	if result.String() != expected {
 		t.Errorf("Expected '%s' for unless macro expansion, got '%s'", expected, result.String())
+	}
+}
+
+func TestEvalErrorReporting(t *testing.T) {
+	// Test parse errors with location information
+	parseErrorTests := []struct {
+		input    string
+		contains []string // Substrings that should be in the error message
+	}{
+		{"(+ 1 2", []string{"Parse error", "line 1", "column"}},
+		{"(def x \"unterminated", []string{"unterminated string", "line 1", "column"}},
+		{")", []string{"unexpected token", "line 1", "column"}},
+	}
+
+	for _, test := range parseErrorTests {
+		_, err := core.ReadString(test.input)
+		if err == nil {
+			t.Errorf("Expected parse error for input '%s', but got none", test.input)
+			continue
+		}
+
+		errorMsg := err.Error()
+		for _, substr := range test.contains {
+			if !strings.Contains(errorMsg, substr) {
+				t.Errorf("Expected error message to contain '%s' for input '%s', got: %s", substr, test.input, errorMsg)
+			}
+		}
 	}
 }
 

@@ -31,11 +31,13 @@ Your GoLisp implementation already has a strong foundation for self-hosting:
 - ✅ Type predicates: `symbol?`, `string?`, `keyword?`, `list?`, `vector?`
 - ✅ Symbol manipulation: `symbol`, `keyword`, `name`
 - ✅ `macroexpand` - Expand macros for inspection
-- ✅ `gensym` - Generate unique symbols  
+- ✅ `gensym` - Generate unique symbols with atomic counter
 - ✅ `list*` - List construction with spread
 
-### Still Needed
-- [ ] Error handling improvements
+### ✅ Recently Completed
+- ✅ **Enhanced Error Reporting** - Source location tracking with line/column information
+- ✅ **Variadic Parameters** - Support for `& rest` parameters in functions and macros
+- ✅ **Enhanced Macro System** - `when` and `unless` converted to proper macros
 
 ## Phase 2: Enhanced Standard Library ✅ COMPLETED
 
@@ -82,7 +84,7 @@ Your GoLisp implementation already has a strong foundation for self-hosting:
 - [ ] Macro expansion during compilation
 - [ ] Improved multi-expression parsing (read-all)
 - [ ] Optimization passes
-- [ ] Error reporting with source locations
+- ✅ **Error reporting with source locations** - Parse errors show exact line/column
 
 ### Code Generation
 - [ ] Generate optimized Lisp code
@@ -171,34 +173,28 @@ make build
 
 ### ✅ COMPLETED: Phase 0 - Minimal Core Refactoring 
 
-**Goal Achieved**: Reduced kernel from 8,822 lines to **1,512 lines** (83% reduction) with a truly minimal, self-hosting core.
+**Goal Achieved**: Reduced kernel with truly minimal, self-hosting core focused on essential primitives.
 
 ### Current Minimal Core Status
-The minimal core is now **fully implemented and tested**:
-- `pkg/core/types.go`: 224 lines (essential data types)
-- `pkg/core/reader.go`: 358 lines (minimal parser)
-- `pkg/core/eval.go`: 736 lines (core evaluator + 25 primitives)
-- `pkg/core/repl.go`: 117 lines (basic REPL)
-- `pkg/core/bootstrap.go`: 77 lines (stdlib loader)
-- **Total: 1,512 lines** vs original 8,822 lines
+The minimal core is now **fully implemented and tested** with modular architecture separating concerns into focused modules for maintainability and clarity.
 
 #### ✅ Completed: Modular Core Architecture
 
 **Implemented modular core architecture with focused modules:**
 
-**`pkg/core/types.go`** (229 lines) - Essential data types:
+**`pkg/core/types.go`** - Essential data types:
 - Value interface with String() method
 - Core types: Symbol, Keyword, List, Vector, Number, String, Nil, Set
 - Environment with lexical scoping
 - Type constructors and utilities
 
-**`pkg/core/reader.go`** (359 lines) - Minimal parser:
+**`pkg/core/reader.go`** - Parser with error reporting:
 - Lexer with tokenization for all core types
 - Parser with support for lists, vectors, hash-maps, sets, quotes
 - Error handling and position tracking
 - ReadString function for meta-programming
 
-**`pkg/core/eval_*.go`** (1,283 lines total) - Modular evaluator:
+**`pkg/core/eval_*.go`** - Modular evaluator:
 - `eval_core.go` - Core evaluation logic and environment management
 - `eval_arithmetic.go` - Arithmetic and comparison operations
 - `eval_collections.go` - Collection operations and predicates
@@ -207,12 +203,12 @@ The minimal core is now **fully implemented and tested**:
 - `eval_meta.go` - Meta-programming and reflection
 - `eval_special_forms.go` - Special forms (if, fn, def, etc.)
 
-**`pkg/core/repl.go`** (118 lines) - Interactive REPL:
+**`pkg/core/repl.go`** - Interactive REPL:
 - Read-Eval-Print-Loop with error handling
 - File loading capabilities
 - Command-line interface
 
-**`pkg/core/bootstrap.go`** (95 lines) - Standard library loader:
+**`pkg/core/bootstrap.go`** - Standard library loader:
 - Automatic loading of self-hosted stdlib
 - Environment initialization and setup
 
@@ -232,7 +228,7 @@ The minimal core is now **fully implemented and tested**:
 - ✅ **Types**: `symbol?`, `string?`, `number?`, `list?`, `vector?`, `hash-map?`, `set?`, `keyword?`, `fn?`, `nil?`
 - ✅ **Strings**: `str`, `string-split`, `substring`, `string-trim`, `string-replace`
 - ✅ **I/O**: `slurp`, `spit`, `println`, `prn`, `file-exists?`, `list-dir`
-- ✅ **Meta**: `eval`, `read-string`, `macroexpand`, `gensym`
+- ✅ **Meta**: `eval`, `read-string`, `read-all-string`, `macroexpand`, `gensym`, `throw`
 - ✅ **Special**: `symbol`, `keyword`, `name`, `throw`
 
 #### ✅ Completed: Modular Extension System
@@ -241,18 +237,18 @@ The minimal core is now **fully implemented and tested**:
 
 ```
 pkg/
-├── core/                    # Minimal kernel (2,719 lines)
-│   ├── types.go             # Core data types (229 lines)
-│   ├── reader.go            # Parser/lexer (359 lines)  
-│   ├── eval_core.go         # Core evaluation logic (206 lines)
-│   ├── eval_arithmetic.go   # Arithmetic operations (291 lines)
-│   ├── eval_collections.go  # Collection operations (282 lines)
-│   ├── eval_strings.go      # String operations (186 lines)
-│   ├── eval_io.go          # I/O operations (145 lines)
-│   ├── eval_meta.go        # Meta-programming (110 lines)
-│   ├── eval_special_forms.go # Special forms (163 lines)
-│   ├── repl.go             # REPL interface (118 lines)
-│   └── bootstrap.go        # Stdlib loader (95 lines)
+├── core/                    # Minimal kernel
+│   ├── types.go             # Core data types
+│   ├── reader.go            # Parser/lexer with error reporting
+│   ├── eval_core.go         # Core evaluation logic
+│   ├── eval_arithmetic.go   # Arithmetic operations
+│   ├── eval_collections.go  # Collection operations
+│   ├── eval_strings.go      # String operations
+│   ├── eval_io.go          # I/O operations
+│   ├── eval_meta.go        # Meta-programming
+│   ├── eval_special_forms.go # Special forms
+│   ├── repl.go             # REPL interface
+│   └── bootstrap.go        # Stdlib loader
 cmd/
 ├── golisp/                 # GoLisp interpreter
 │   └── main.go
@@ -295,14 +291,14 @@ lisp/
 - ✅ **Maintainability**: Modular architecture easy to understand and modify
 - ✅ **Educational**: Demonstrates true Lisp capabilities with minimal Go core
 - ✅ **Bootstrapping**: True self-hosting foundation established
-- ✅ **Comprehensive testing**: 4,319 lines of tests ensure reliability
+- ✅ **Comprehensive testing**: Extensive test suite ensures reliability
 - ✅ **Rich functionality**: ~50 core primitives + self-hosted standard library
 
 #### ✅ Completed: Migration Strategy
 
 1. ✅ **Backward Compatibility**: Original kernel maintained in `pkg/kernel/`
 2. ✅ **Parallel Implementation**: Minimal core in `pkg/core/` alongside original
-3. ✅ **Comprehensive Testing**: 46 tests ensure self-hosted functions work correctly
+3. ✅ **Comprehensive Testing**: Extensive test suite ensures self-hosted functions work correctly
 4. ✅ **Performance Validated**: Recursive functions (factorial) and closures working
 5. ✅ **Dual Build System**: Both `golisp` (full) and `golisp-core` (minimal) available
 
@@ -320,10 +316,10 @@ Your current architecture is excellent for self-hosting:
 ## 🎯 Current Status & Next Steps
 
 ### ✅ Phase 0 Complete: Minimal Core Foundation (DONE)
-- **Minimal Core**: 2,719 lines of focused Go code
+- **Minimal Core**: Focused Go code with essential primitives
 - **~50 Core Primitives**: Essential functions in modular Go packages
 - **Self-Hosted Stdlib**: Standard library functions implemented in Lisp  
-- **Comprehensive Testing**: 4,319 lines of tests, all passing
+- **Comprehensive Testing**: Extensive test suite, all passing
 - **Modular Architecture**: Clean separation of concerns across focused modules
 
 ### ✅ Phase 2 Complete: Enhanced Standard Library (DONE)
@@ -373,10 +369,11 @@ Your current architecture is excellent for self-hosting:
   - Add macro expansion during compilation phase
   - Integrate with existing `macroexpand` function  
   - Handle recursive macro expansion
-- [ ] **Step 3.2.3**: Enhanced error reporting
-  - Add source location tracking during compilation
-  - Improve error messages with context
-  - Add compilation phase information to errors
+- [x] **Step 3.2.3**: Enhanced error reporting ✅ **COMPLETED**
+  - ✅ Add source location tracking during parsing
+  - ✅ Enhanced error messages with exact line/column information
+  - ✅ Source context display with visual error indicators
+  - ✅ Comprehensive parse error coverage (lexer and parser)
 
 #### Phase 3.3: Optimization and Advanced Features
 - [ ] **Step 3.3.1**: Basic optimization passes
@@ -432,7 +429,7 @@ Your current architecture is excellent for self-hosting:
    ```
 5. **✅ Step 3.2.1** - ✅ DONE: Add missing `let` compilation
 6. **🎯 NEXT: Step 3.2.2** - Implement macro expansion during compilation
-7. **Step 3.2.3** - Enhanced error reporting
+7. **✅ Step 3.2.3** - ✅ DONE: Enhanced error reporting with source locations
 8. **Step 3.3.1** - Basic optimization passes
 9. **Step 3.3.2** - Testing and validation
 10. **Step 3.3.3** - Documentation
@@ -478,8 +475,11 @@ Your current architecture is excellent for self-hosting:
 **✅ Step 3.1.1 Complete**: Self-hosting.lisp loads without errors
 **✅ Step 3.1.2 Complete**: All missing functions implemented and tested
 **✅ Step 3.1.3 Complete**: Multi-expression parsing works correctly
+**✅ Step 3.2.1 Complete**: Let compilation fully implemented
+**✅ Step 3.2.3 Complete**: Enhanced error reporting with source locations
 
 **Phase 3.1 Progress**: 3/3 steps complete - ✅ **PHASE 3.1 COMPLETED!**
+**Phase 3.2 Progress**: 2/3 steps complete - 🎯 **PHASE 3.2 IN PROGRESS**
 
 ### 🏆 Achievement Summary
 
@@ -494,13 +494,29 @@ The Phase 3.1 Self-Hosting Compiler Integration is now **COMPLETE**:
 - **✅ Production-ready interpreter** with 60+ comprehensive tests including integration tests
 - **✅ True self-hosting foundation** with Go core + Lisp stdlib + compiler architecture
 
-**🎉 Phase 3.1 COMPLETED! Phase 3.2.1 COMPLETED!** 
+**🎉 Phase 3.1 COMPLETED! Phase 3.2 MAJOR PROGRESS!** 
 
-**✅ Step 3.2.1 Achievement Summary:**
+**✅ Recent Achievements (2024 Updates):**
+
+### ✅ Step 3.2.1: Let Compilation (COMPLETED)
 - **✅ `compile-let` function implemented** with full local scope tracking
 - **✅ Context architecture fixed** - migrated from sets to lists for compatibility  
 - **✅ Symbol resolution enhanced** - `any?`-based lookup for list-based locals
 - **✅ Comprehensive testing** - simple and complex let expressions working
 - **✅ Self-hosting compiler integration** - can now compile realistic Lisp code with local bindings
+
+### ✅ Step 3.2.3: Enhanced Error Reporting (COMPLETED)
+- **✅ Source location tracking** - Every token includes line/column/offset position
+- **✅ Enhanced lexer errors** - "unterminated string at line X, column Y"
+- **✅ Enhanced parse errors** - "Parse error at line X, column Y: message"
+- **✅ Visual error indicators** - Show exact error location with context
+- **✅ Comprehensive error coverage** - All lexer and parser error paths enhanced
+- **✅ Testing framework** - Unit tests verify error message formats
+
+### ✅ Meta-Programming Enhancements (COMPLETED)
+- **✅ `macroexpand` function** - Inspect macro expansion for debugging
+- **✅ `gensym` function** - Generate unique symbols with thread-safe counter
+- **✅ Variadic parameters** - Support for `& rest` in functions and macros
+- **✅ Enhanced macros** - `when` and `unless` now proper macros with variadic bodies
 
 **🎯 Next milestone: Phase 3.2.2 - Implement macro expansion during compilation** 🚀

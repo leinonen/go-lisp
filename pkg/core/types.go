@@ -7,6 +7,12 @@ type Value interface {
 	String() string
 }
 
+// SourceLocated is an optional interface for values that have source location
+type SourceLocated interface {
+	GetPosition() Position
+	SetPosition(Position)
+}
+
 // Symbol represents an interned symbol
 type Symbol string
 
@@ -42,7 +48,7 @@ func (k Keyword) Call(args []Value, env *Environment) (Value, error) {
 
 // Number represents both integers and floats
 type Number struct {
-	Value interface{} // int64 or float64
+	Value any // int64 or float64
 }
 
 func (n Number) String() string {
@@ -350,7 +356,7 @@ func NewSetWithElements(elements ...Value) *Set {
 	return s
 }
 
-func NewNumber(value interface{}) Number {
+func NewNumber(value any) Number {
 	return Number{Value: value}
 }
 
