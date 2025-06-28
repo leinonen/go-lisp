@@ -14,11 +14,11 @@ func TestSymbol(t *testing.T) {
 func TestIntern(t *testing.T) {
 	sym1 := Intern("test")
 	sym2 := Intern("test")
-	
+
 	if sym1 != sym2 {
 		t.Error("Intern should return the same symbol for the same string")
 	}
-	
+
 	if sym1.String() != "test" {
 		t.Errorf("Expected 'test', got '%s'", sym1.String())
 	}
@@ -34,11 +34,11 @@ func TestKeyword(t *testing.T) {
 func TestInternKeyword(t *testing.T) {
 	kw1 := InternKeyword("test")
 	kw2 := InternKeyword("test")
-	
+
 	if kw1 != kw2 {
 		t.Error("InternKeyword should return the same keyword for the same string")
 	}
-	
+
 	if kw1.String() != ":test" {
 		t.Errorf("Expected ':test', got '%s'", kw1.String())
 	}
@@ -62,7 +62,7 @@ func TestNumber(t *testing.T) {
 	if intNum.String() != "42" {
 		t.Errorf("Expected '42', got '%s'", intNum.String())
 	}
-	
+
 	// Test float
 	floatNum := NewNumber(3.14)
 	if floatNum.IsInteger() {
@@ -90,11 +90,11 @@ func TestString(t *testing.T) {
 func TestNil(t *testing.T) {
 	nil1 := Nil{}
 	nil2 := Nil{}
-	
+
 	if nil1.String() != "nil" {
 		t.Errorf("Expected 'nil', got '%s'", nil1.String())
 	}
-	
+
 	// Test equality
 	if nil1 != nil2 {
 		t.Error("Nil values should be equal")
@@ -107,7 +107,7 @@ func TestList(t *testing.T) {
 	if emptyList != nil {
 		t.Error("Empty list should be nil")
 	}
-	
+
 	// Test single element list
 	singleList := NewList(NewNumber(int64(1)))
 	if singleList.IsEmpty() {
@@ -119,7 +119,7 @@ func TestList(t *testing.T) {
 	if singleList.Rest() != nil {
 		t.Error("Single element list rest should be nil")
 	}
-	
+
 	// Test multi-element list
 	multiList := NewList(NewNumber(int64(1)), NewNumber(int64(2)), NewNumber(int64(3)))
 	if multiList.IsEmpty() {
@@ -128,12 +128,12 @@ func TestList(t *testing.T) {
 	if multiList.First().String() != "1" {
 		t.Errorf("Expected '1', got '%s'", multiList.First().String())
 	}
-	
+
 	rest := multiList.Rest()
 	if rest.First().String() != "2" {
 		t.Errorf("Expected '2', got '%s'", rest.First().String())
 	}
-	
+
 	// Test string representation
 	expected := "(1 2 3)"
 	if multiList.String() != expected {
@@ -150,13 +150,13 @@ func TestVector(t *testing.T) {
 	if emptyVec.String() != "[]" {
 		t.Errorf("Expected '[]', got '%s'", emptyVec.String())
 	}
-	
+
 	// Test vector with elements
 	vec := NewVector(NewNumber(int64(1)), NewNumber(int64(2)), NewNumber(int64(3)))
 	if vec.Count() != 3 {
 		t.Errorf("Expected count 3, got %d", vec.Count())
 	}
-	
+
 	if vec.Get(0).String() != "1" {
 		t.Errorf("Expected '1', got '%s'", vec.Get(0).String())
 	}
@@ -166,7 +166,7 @@ func TestVector(t *testing.T) {
 	if vec.Get(2).String() != "3" {
 		t.Errorf("Expected '3', got '%s'", vec.Get(2).String())
 	}
-	
+
 	// Test out of bounds
 	if vec.Get(-1).String() != "nil" {
 		t.Error("Out of bounds access should return nil")
@@ -174,7 +174,7 @@ func TestVector(t *testing.T) {
 	if vec.Get(10).String() != "nil" {
 		t.Error("Out of bounds access should return nil")
 	}
-	
+
 	// Test string representation
 	expected := "[1 2 3]"
 	if vec.String() != expected {
@@ -185,12 +185,12 @@ func TestVector(t *testing.T) {
 func TestEnvironment(t *testing.T) {
 	// Test basic environment
 	env := NewEnvironment(nil)
-	
+
 	// Test setting and getting
 	sym := Intern("test")
 	val := NewNumber(int64(42))
 	env.Set(sym, val)
-	
+
 	result, err := env.Get(sym)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -198,20 +198,20 @@ func TestEnvironment(t *testing.T) {
 	if result.String() != "42" {
 		t.Errorf("Expected '42', got '%s'", result.String())
 	}
-	
+
 	// Test undefined symbol
 	undefinedSym := Intern("undefined")
 	_, err = env.Get(undefinedSym)
 	if err == nil {
 		t.Error("Expected error for undefined symbol")
 	}
-	
+
 	// Test parent environment
 	parentEnv := NewEnvironment(nil)
 	parentSym := Intern("parent")
 	parentVal := String("parent-value")
 	parentEnv.Set(parentSym, parentVal)
-	
+
 	childEnv := NewEnvironment(parentEnv)
 	result, err = childEnv.Get(parentSym)
 	if err != nil {
@@ -220,12 +220,12 @@ func TestEnvironment(t *testing.T) {
 	if result.String() != "\"parent-value\"" {
 		t.Errorf("Expected '\"parent-value\"', got '%s'", result.String())
 	}
-	
+
 	// Test shadowing
 	childSym := Intern("test")
 	childVal := String("child-value")
 	childEnv.Set(childSym, childVal)
-	
+
 	result, err = childEnv.Get(childSym)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -246,7 +246,7 @@ func TestValueInterface(t *testing.T) {
 		NewList(NewNumber(int64(1))),
 		NewVector(NewNumber(int64(1))),
 	}
-	
+
 	for _, val := range values {
 		// Just calling String() should not panic
 		_ = val.String()

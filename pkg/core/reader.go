@@ -134,53 +134,53 @@ func (l *Lexer) peek() rune {
 func (l *Lexer) readString() (Token, error) {
 	l.advance() // Skip opening quote
 	start := l.position
-	
+
 	for l.position < len(l.input) && l.current() != '"' {
 		if l.current() == '\\' {
 			l.advance() // Skip escape character
 		}
 		l.advance()
 	}
-	
+
 	if l.position >= len(l.input) {
 		return Token{}, fmt.Errorf("unterminated string")
 	}
-	
+
 	value := l.input[start:l.position]
 	l.advance() // Skip closing quote
-	
+
 	// Basic escape handling
 	value = strings.ReplaceAll(value, "\\\"", "\"")
 	value = strings.ReplaceAll(value, "\\n", "\n")
 	value = strings.ReplaceAll(value, "\\t", "\t")
 	value = strings.ReplaceAll(value, "\\\\", "\\")
-	
+
 	return Token{Type: TokenString, Value: value}, nil
 }
 
 func (l *Lexer) readKeyword() (Token, error) {
 	l.advance() // Skip ':'
 	start := l.position
-	
+
 	for l.position < len(l.input) && isSymbolChar(l.current()) {
 		l.advance()
 	}
-	
+
 	value := l.input[start:l.position]
 	return Token{Type: TokenKeyword, Value: value}, nil
 }
 
 func (l *Lexer) readNumber() (Token, error) {
 	start := l.position
-	
+
 	if l.current() == '-' {
 		l.advance()
 	}
-	
+
 	for l.position < len(l.input) && unicode.IsDigit(l.current()) {
 		l.advance()
 	}
-	
+
 	// Handle decimal point
 	if l.position < len(l.input) && l.current() == '.' {
 		l.advance()
@@ -188,32 +188,32 @@ func (l *Lexer) readNumber() (Token, error) {
 			l.advance()
 		}
 	}
-	
+
 	value := l.input[start:l.position]
 	return Token{Type: TokenNumber, Value: value}, nil
 }
 
 func (l *Lexer) readSymbol() (Token, error) {
 	start := l.position
-	
+
 	for l.position < len(l.input) && isSymbolChar(l.current()) {
 		l.advance()
 	}
-	
+
 	value := l.input[start:l.position]
 	return Token{Type: TokenSymbol, Value: value}, nil
 }
 
 func isSymbolStart(char rune) bool {
-	return unicode.IsLetter(char) || char == '_' || char == '+' || char == '-' || 
-		   char == '*' || char == '/' || char == '=' || char == '<' || char == '>' ||
-		   char == '!' || char == '?' || char == '%'
+	return unicode.IsLetter(char) || char == '_' || char == '+' || char == '-' ||
+		char == '*' || char == '/' || char == '=' || char == '<' || char == '>' ||
+		char == '!' || char == '?' || char == '%'
 }
 
 func isSymbolChar(char rune) bool {
-	return unicode.IsLetter(char) || unicode.IsDigit(char) || char == '_' || 
-		   char == '-' || char == '+' || char == '*' || char == '/' || char == '=' ||
-		   char == '<' || char == '>' || char == '!' || char == '?' || char == '%'
+	return unicode.IsLetter(char) || unicode.IsDigit(char) || char == '_' ||
+		char == '-' || char == '+' || char == '*' || char == '/' || char == '=' ||
+		char == '<' || char == '>' || char == '!' || char == '?' || char == '%'
 }
 
 // Parser converts tokens to AST
@@ -235,14 +235,14 @@ func (p *Parser) Parse() (Value, error) {
 	if p.position >= len(p.tokens) {
 		return nil, fmt.Errorf("unexpected end of input")
 	}
-	
+
 	return p.parseExpression()
 }
 
 // ParseAll parses all expressions from tokens
 func (p *Parser) ParseAll() ([]Value, error) {
 	var expressions []Value
-	
+
 	for p.position < len(p.tokens) && p.tokens[p.position].Type != TokenEOF {
 		expr, err := p.parseExpression()
 		if err != nil {
@@ -250,13 +250,13 @@ func (p *Parser) ParseAll() ([]Value, error) {
 		}
 		expressions = append(expressions, expr)
 	}
-	
+
 	return expressions, nil
 }
 
 func (p *Parser) parseExpression() (Value, error) {
 	token := p.tokens[p.position]
-	
+
 	switch token.Type {
 	case TokenLeftParen:
 		return p.parseList()
@@ -290,9 +290,9 @@ func (p *Parser) parseExpression() (Value, error) {
 
 func (p *Parser) parseList() (Value, error) {
 	p.position++ // Skip '('
-	
+
 	var elements []Value
-	
+
 	for p.position < len(p.tokens) && p.tokens[p.position].Type != TokenRightParen {
 		expr, err := p.parseExpression()
 		if err != nil {
@@ -300,20 +300,20 @@ func (p *Parser) parseList() (Value, error) {
 		}
 		elements = append(elements, expr)
 	}
-	
+
 	if p.position >= len(p.tokens) {
 		return nil, fmt.Errorf("unterminated list")
 	}
-	
+
 	p.position++ // Skip ')'
 	return NewList(elements...), nil
 }
 
 func (p *Parser) parseVector() (Value, error) {
 	p.position++ // Skip '['
-	
+
 	var elements []Value
-	
+
 	for p.position < len(p.tokens) && p.tokens[p.position].Type != TokenRightBracket {
 		expr, err := p.parseExpression()
 		if err != nil {
@@ -321,11 +321,11 @@ func (p *Parser) parseVector() (Value, error) {
 		}
 		elements = append(elements, expr)
 	}
-	
+
 	if p.position >= len(p.tokens) {
 		return nil, fmt.Errorf("unterminated vector")
 	}
-	
+
 	p.position++ // Skip ']'
 	return NewVector(elements...), nil
 }
@@ -338,7 +338,7 @@ func (p *Parser) parseNumber(value string) (Value, error) {
 		}
 		return NewNumber(f), nil
 	}
-	
+
 	i, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("invalid integer: %s", value)
@@ -353,7 +353,7 @@ func ReadString(input string) (Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	parser := NewParser(tokens)
 	return parser.Parse()
 }

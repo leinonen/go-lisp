@@ -7,7 +7,7 @@ import (
 
 func TestEvalBasicValues(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	tests := []struct {
 		input    string
 		expected string
@@ -20,20 +20,20 @@ func TestEvalBasicValues(t *testing.T) {
 		{"nil", "nil"},
 		{"true", "true"},
 	}
-	
+
 	for _, test := range tests {
 		expr, err := ReadString(test.input)
 		if err != nil {
 			t.Errorf("Parse error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		result, err := Eval(expr, env)
 		if err != nil {
 			t.Errorf("Eval error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		if result.String() != test.expected {
 			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
 		}
@@ -42,7 +42,7 @@ func TestEvalBasicValues(t *testing.T) {
 
 func TestEvalArithmetic(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	tests := []struct {
 		input    string
 		expected string
@@ -60,20 +60,20 @@ func TestEvalArithmetic(t *testing.T) {
 		{"(+ 1.5 2.5)", "4"},
 		{"(* 2.5 4)", "10"},
 	}
-	
+
 	for _, test := range tests {
 		expr, err := ReadString(test.input)
 		if err != nil {
 			t.Errorf("Parse error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		result, err := Eval(expr, env)
 		if err != nil {
 			t.Errorf("Eval error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		if result.String() != test.expected {
 			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
 		}
@@ -82,7 +82,7 @@ func TestEvalArithmetic(t *testing.T) {
 
 func TestEvalComparison(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	tests := []struct {
 		input    string
 		expected string
@@ -98,20 +98,20 @@ func TestEvalComparison(t *testing.T) {
 		{"(= \"hello\" \"hello\")", "true"},
 		{"(= \"hello\" \"world\")", "nil"},
 	}
-	
+
 	for _, test := range tests {
 		expr, err := ReadString(test.input)
 		if err != nil {
 			t.Errorf("Parse error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		result, err := Eval(expr, env)
 		if err != nil {
 			t.Errorf("Eval error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		if result.String() != test.expected {
 			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
 		}
@@ -120,7 +120,7 @@ func TestEvalComparison(t *testing.T) {
 
 func TestEvalListOperations(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	tests := []struct {
 		input    string
 		expected string
@@ -134,20 +134,20 @@ func TestEvalListOperations(t *testing.T) {
 		{"(first [1 2 3])", "1"},
 		{"(first [])", "nil"},
 	}
-	
+
 	for _, test := range tests {
 		expr, err := ReadString(test.input)
 		if err != nil {
 			t.Errorf("Parse error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		result, err := Eval(expr, env)
 		if err != nil {
 			t.Errorf("Eval error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		if result.String() != test.expected {
 			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
 		}
@@ -156,7 +156,7 @@ func TestEvalListOperations(t *testing.T) {
 
 func TestEvalTypePredicates(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	tests := []struct {
 		input    string
 		expected string
@@ -172,20 +172,20 @@ func TestEvalTypePredicates(t *testing.T) {
 		{"(vector? [1 2 3])", "true"},
 		{"(vector? '(1 2 3))", "nil"},
 	}
-	
+
 	for _, test := range tests {
 		expr, err := ReadString(test.input)
 		if err != nil {
 			t.Errorf("Parse error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		result, err := Eval(expr, env)
 		if err != nil {
 			t.Errorf("Eval error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		if result.String() != test.expected {
 			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
 		}
@@ -194,7 +194,7 @@ func TestEvalTypePredicates(t *testing.T) {
 
 func TestEvalSpecialForms(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	// Test quote
 	expr, _ := ReadString("(quote x)")
 	result, err := Eval(expr, env)
@@ -204,7 +204,7 @@ func TestEvalSpecialForms(t *testing.T) {
 	if result.String() != "x" {
 		t.Errorf("Expected 'x' for quote, got '%s'", result.String())
 	}
-	
+
 	// Test shorthand quote
 	expr, _ = ReadString("'x")
 	result, err = Eval(expr, env)
@@ -214,7 +214,7 @@ func TestEvalSpecialForms(t *testing.T) {
 	if result.String() != "x" {
 		t.Errorf("Expected 'x' for shorthand quote, got '%s'", result.String())
 	}
-	
+
 	// Test if - true case
 	expr, _ = ReadString("(if true 1 2)")
 	result, err = Eval(expr, env)
@@ -224,7 +224,7 @@ func TestEvalSpecialForms(t *testing.T) {
 	if result.String() != "1" {
 		t.Errorf("Expected '1' for if true, got '%s'", result.String())
 	}
-	
+
 	// Test if - false case
 	expr, _ = ReadString("(if nil 1 2)")
 	result, err = Eval(expr, env)
@@ -234,7 +234,7 @@ func TestEvalSpecialForms(t *testing.T) {
 	if result.String() != "2" {
 		t.Errorf("Expected '2' for if false, got '%s'", result.String())
 	}
-	
+
 	// Test if - no else
 	expr, _ = ReadString("(if nil 1)")
 	result, err = Eval(expr, env)
@@ -244,7 +244,7 @@ func TestEvalSpecialForms(t *testing.T) {
 	if result.String() != "nil" {
 		t.Errorf("Expected 'nil' for if no else, got '%s'", result.String())
 	}
-	
+
 	// Test do
 	expr, _ = ReadString("(do 1 2 3)")
 	result, err = Eval(expr, env)
@@ -258,7 +258,7 @@ func TestEvalSpecialForms(t *testing.T) {
 
 func TestEvalDefAndSymbolLookup(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	// Test def
 	expr, _ := ReadString("(def x 42)")
 	result, err := Eval(expr, env)
@@ -268,7 +268,7 @@ func TestEvalDefAndSymbolLookup(t *testing.T) {
 	if result.String() != "x" {
 		t.Errorf("Expected 'x' for def, got '%s'", result.String())
 	}
-	
+
 	// Test symbol lookup
 	expr, _ = ReadString("x")
 	result, err = Eval(expr, env)
@@ -278,7 +278,7 @@ func TestEvalDefAndSymbolLookup(t *testing.T) {
 	if result.String() != "42" {
 		t.Errorf("Expected '42' for symbol lookup, got '%s'", result.String())
 	}
-	
+
 	// Test undefined symbol
 	expr, _ = ReadString("undefined")
 	_, err = Eval(expr, env)
@@ -289,14 +289,14 @@ func TestEvalDefAndSymbolLookup(t *testing.T) {
 
 func TestEvalFunctionDefinitionAndCall(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	// Define a function
 	expr, _ := ReadString("(def add (fn [a b] (+ a b)))")
 	_, err := Eval(expr, env)
 	if err != nil {
 		t.Errorf("Eval error for function definition: %v", err)
 	}
-	
+
 	// Call the function
 	expr, _ = ReadString("(add 3 4)")
 	result, err := Eval(expr, env)
@@ -306,14 +306,14 @@ func TestEvalFunctionDefinitionAndCall(t *testing.T) {
 	if result.String() != "7" {
 		t.Errorf("Expected '7' for function call, got '%s'", result.String())
 	}
-	
+
 	// Test function with vector parameters
 	expr, _ = ReadString("(def mult (fn [x y] (* x y)))")
 	_, err = Eval(expr, env)
 	if err != nil {
 		t.Errorf("Eval error for function definition with vector: %v", err)
 	}
-	
+
 	expr, _ = ReadString("(mult 5 6)")
 	result, err = Eval(expr, env)
 	if err != nil {
@@ -326,14 +326,14 @@ func TestEvalFunctionDefinitionAndCall(t *testing.T) {
 
 func TestEvalRecursiveFunction(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	// Define factorial function
 	expr, _ := ReadString("(def factorial (fn [n] (if (= n 0) 1 (* n (factorial (- n 1))))))")
 	_, err := Eval(expr, env)
 	if err != nil {
 		t.Errorf("Eval error for recursive function definition: %v", err)
 	}
-	
+
 	// Test factorial(5)
 	expr, _ = ReadString("(factorial 5)")
 	result, err := Eval(expr, env)
@@ -343,7 +343,7 @@ func TestEvalRecursiveFunction(t *testing.T) {
 	if result.String() != "120" {
 		t.Errorf("Expected '120' for factorial(5), got '%s'", result.String())
 	}
-	
+
 	// Test factorial(0)
 	expr, _ = ReadString("(factorial 0)")
 	result, err = Eval(expr, env)
@@ -357,28 +357,28 @@ func TestEvalRecursiveFunction(t *testing.T) {
 
 func TestEvalLexicalScoping(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	// Define outer variable
 	expr, _ := ReadString("(def x 10)")
 	_, err := Eval(expr, env)
 	if err != nil {
 		t.Errorf("Eval error for outer variable: %v", err)
 	}
-	
+
 	// Define function that captures outer variable
 	expr, _ = ReadString("(def make-adder (fn [y] (fn [z] (+ x y z))))")
 	_, err = Eval(expr, env)
 	if err != nil {
 		t.Errorf("Eval error for closure definition: %v", err)
 	}
-	
+
 	// Create adder function
 	expr, _ = ReadString("(def add-5 (make-adder 5))")
 	_, err = Eval(expr, env)
 	if err != nil {
 		t.Errorf("Eval error for creating closure: %v", err)
 	}
-	
+
 	// Call the closure
 	expr, _ = ReadString("(add-5 3)")
 	result, err := Eval(expr, env)
@@ -392,7 +392,7 @@ func TestEvalLexicalScoping(t *testing.T) {
 
 func TestEvalMetaProgramming(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	// Test eval
 	expr, _ := ReadString("(eval '(+ 1 2))")
 	result, err := Eval(expr, env)
@@ -402,7 +402,7 @@ func TestEvalMetaProgramming(t *testing.T) {
 	if result.String() != "3" {
 		t.Errorf("Expected '3' for eval, got '%s'", result.String())
 	}
-	
+
 	// Test read-string
 	expr, _ = ReadString("(read-string \"(+ 1 2)\")")
 	result, err = Eval(expr, env)
@@ -412,7 +412,7 @@ func TestEvalMetaProgramming(t *testing.T) {
 	if result.String() != "(+ 1 2)" {
 		t.Errorf("Expected '(+ 1 2)' for read-string, got '%s'", result.String())
 	}
-	
+
 	// Test eval + read-string
 	expr, _ = ReadString("(eval (read-string \"(+ 1 2)\"))")
 	result, err = Eval(expr, env)
@@ -426,29 +426,29 @@ func TestEvalMetaProgramming(t *testing.T) {
 
 func TestEvalErrors(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	tests := []string{
-		"(+ 1 \"hello\")",        // Type error
-		"(/ 1 0)",                // Division by zero
-		"(unknown-function)",     // Unknown function
-		"(def)",                  // Wrong number of arguments
-		"(fn)",                   // Wrong number of arguments
-		"(if)",                   // Wrong number of arguments
-		"(quote)",                // Wrong number of arguments
-		"(= 1)",                  // Wrong number of arguments for =
-		"(< 1)",                  // Wrong number of arguments for <
-		"(> 1)",                  // Wrong number of arguments for >
-		"(cons 1)",               // Wrong number of arguments for cons
-		"(first)",                // Wrong number of arguments for first
-		"(rest)",                 // Wrong number of arguments for rest
+		"(+ 1 \"hello\")",    // Type error
+		"(/ 1 0)",            // Division by zero
+		"(unknown-function)", // Unknown function
+		"(def)",              // Wrong number of arguments
+		"(fn)",               // Wrong number of arguments
+		"(if)",               // Wrong number of arguments
+		"(quote)",            // Wrong number of arguments
+		"(= 1)",              // Wrong number of arguments for =
+		"(< 1)",              // Wrong number of arguments for <
+		"(> 1)",              // Wrong number of arguments for >
+		"(cons 1)",           // Wrong number of arguments for cons
+		"(first)",            // Wrong number of arguments for first
+		"(rest)",             // Wrong number of arguments for rest
 	}
-	
+
 	for _, test := range tests {
 		expr, err := ReadString(test)
 		if err != nil {
 			continue // Skip parse errors for this test
 		}
-		
+
 		_, err = Eval(expr, env)
 		if err == nil {
 			t.Errorf("Expected error for '%s', but got none", test)
@@ -458,7 +458,7 @@ func TestEvalErrors(t *testing.T) {
 
 func TestUserFunctionInterface(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	// Create a user function
 	params := NewList(Intern("x"))
 	body, _ := ReadString("(+ x 1)")
@@ -467,7 +467,7 @@ func TestUserFunctionInterface(t *testing.T) {
 		Body:   body,
 		Env:    env,
 	}
-	
+
 	// Test Call method
 	args := []Value{NewNumber(int64(5))}
 	result, err := userFn.Call(args, env)
@@ -477,12 +477,12 @@ func TestUserFunctionInterface(t *testing.T) {
 	if result.String() != "6" {
 		t.Errorf("Expected '6', got '%s'", result.String())
 	}
-	
+
 	// Test String method
 	if userFn.String() != "#<function>" {
 		t.Errorf("Expected '#<function>', got '%s'", userFn.String())
 	}
-	
+
 	// Test wrong number of arguments
 	wrongArgs := []Value{NewNumber(int64(1)), NewNumber(int64(2))}
 	_, err = userFn.Call(wrongArgs, env)
@@ -504,7 +504,7 @@ func TestBuiltinFunctionInterface(t *testing.T) {
 			return NewNumber(n1.ToInt() + n2.ToInt()), nil
 		},
 	}
-	
+
 	// Test Call method
 	args := []Value{NewNumber(int64(3)), NewNumber(int64(4))}
 	result, err := addFn.Call(args, nil)
@@ -514,7 +514,7 @@ func TestBuiltinFunctionInterface(t *testing.T) {
 	if result.String() != "7" {
 		t.Errorf("Expected '7', got '%s'", result.String())
 	}
-	
+
 	// Test String method
 	if addFn.String() != "#<builtin:test-add>" {
 		t.Errorf("Expected '#<builtin:test-add>', got '%s'", addFn.String())
@@ -523,7 +523,7 @@ func TestBuiltinFunctionInterface(t *testing.T) {
 
 func TestNewCoreFunctions(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	tests := []struct {
 		input    string
 		expected string
@@ -533,45 +533,45 @@ func TestNewCoreFunctions(t *testing.T) {
 		{"(list 1)", "(1)"},
 		{"(list 1 2 3)", "(1 2 3)"},
 		{"(list \"a\" \"b\" \"c\")", "(\"a\" \"b\" \"c\")"},
-		
+
 		// Test count function
 		{"(count (list 1 2 3))", "3"},
 		{"(count [])", "0"},
 		{"(count [1 2 3 4])", "4"},
 		{"(count nil)", "0"},
-		
+
 		// Test empty? function
 		{"(empty? (list))", "true"},
 		{"(empty? [])", "true"},
 		{"(empty? (list 1))", "nil"},
 		{"(empty? [1])", "nil"},
 		{"(empty? nil)", "true"},
-		
+
 		// Test nth function
 		{"(nth [1 2 3] 0)", "1"},
 		{"(nth [1 2 3] 1)", "2"},
 		{"(nth [1 2 3] 2)", "3"},
 		{"(nth (list 1 2 3) 1)", "2"},
-		
+
 		// Test conj function
 		{"(conj [1 2] 3)", "[1 2 3]"},
 		{"(conj [] 1)", "[1]"},
 		{"(conj (list 1 2) 3)", "(3 1 2)"},
 	}
-	
+
 	for _, test := range tests {
 		expr, err := ReadString(test.input)
 		if err != nil {
 			t.Errorf("Parse error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		result, err := Eval(expr, env)
 		if err != nil {
 			t.Errorf("Eval error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		if result.String() != test.expected {
 			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
 		}
@@ -580,7 +580,7 @@ func TestNewCoreFunctions(t *testing.T) {
 
 func TestStringOperations(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	tests := []struct {
 		input    string
 		expected string
@@ -590,40 +590,40 @@ func TestStringOperations(t *testing.T) {
 		{"(str \"hello\" \" \" \"world\")", "\"hello world\""},
 		{"(str 1 2 3)", "\"123\""},
 		{"(str)", "\"\""},
-		
+
 		// Test substring function
 		{"(substring \"hello\" 1 4)", "\"ell\""},
 		{"(substring \"world\" 0 5)", "\"world\""},
 		{"(substring \"test\" 2 4)", "\"st\""},
-		
+
 		// Test string-split function
 		{"(string-split \"a,b,c\" \",\")", "[\"a\" \"b\" \"c\"]"},
 		{"(string-split \"hello world\" \" \")", "[\"hello\" \"world\"]"},
 		{"(string-split \"test\" \",\")", "[\"test\"]"},
-		
+
 		// Test string-trim function
 		{"(string-trim \"  hello  \")", "\"hello\""},
 		{"(string-trim \"\\n\\ttest\\n\")", "\"test\""},
 		{"(string-trim \"normal\")", "\"normal\""},
-		
+
 		// Test string-replace function
 		{"(string-replace \"hello world\" \"world\" \"universe\")", "\"hello universe\""},
 		{"(string-replace \"test test\" \"test\" \"demo\")", "\"demo demo\""},
 	}
-	
+
 	for _, test := range tests {
 		expr, err := ReadString(test.input)
 		if err != nil {
 			t.Errorf("Parse error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		result, err := Eval(expr, env)
 		if err != nil {
 			t.Errorf("Eval error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		if result.String() != test.expected {
 			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
 		}
@@ -632,7 +632,7 @@ func TestStringOperations(t *testing.T) {
 
 func TestLetSpecialForm(t *testing.T) {
 	env := NewCoreEnvironment()
-	
+
 	tests := []struct {
 		input    string
 		expected string
@@ -641,29 +641,187 @@ func TestLetSpecialForm(t *testing.T) {
 		{"(let [x 1] x)", "1"},
 		{"(let [x 1 y 2] (+ x y))", "3"},
 		{"(let [x 10] (let [y 20] (+ x y)))", "30"},
-		
+
 		// Let with function calls
 		{"(let [x (+ 1 2)] (* x 3))", "9"},
-		
+
 		// Let with multiple expressions in body
 		{"(let [x 1] x x)", "1"},
 	}
-	
+
 	for _, test := range tests {
 		expr, err := ReadString(test.input)
 		if err != nil {
 			t.Errorf("Parse error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		result, err := Eval(expr, env)
 		if err != nil {
 			t.Errorf("Eval error for '%s': %v", test.input, err)
 			continue
 		}
-		
+
 		if result.String() != test.expected {
 			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
 		}
+	}
+}
+
+func TestFileSystemOperations(t *testing.T) {
+	env := NewCoreEnvironment()
+
+	// Test file-exists? with existing file (from project root)
+	expr, err := ReadString("(file-exists? \"../../README.md\")")
+	if err != nil {
+		t.Errorf("Parse error for file-exists?: %v", err)
+		return
+	}
+
+	result, err := Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for file-exists?: %v", err)
+		return
+	}
+
+	if result.String() != "true" {
+		t.Errorf("Expected 'true' for existing file, got '%s'", result.String())
+	}
+
+	// Test file-exists? with non-existing file
+	expr, err = ReadString("(file-exists? \"nonexistent-file.txt\")")
+	if err != nil {
+		t.Errorf("Parse error for file-exists? non-existing: %v", err)
+		return
+	}
+
+	result, err = Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for file-exists? non-existing: %v", err)
+		return
+	}
+
+	if result.String() != "nil" {
+		t.Errorf("Expected 'nil' for non-existing file, got '%s'", result.String())
+	}
+
+	// Test list-dir with current directory
+	expr, err = ReadString("(list-dir \"../..\")")
+	if err != nil {
+		t.Errorf("Parse error for list-dir: %v", err)
+		return
+	}
+
+	result, err = Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for list-dir: %v", err)
+		return
+	}
+
+	// Check that result is a vector and contains expected files
+	if vector, ok := result.(*Vector); ok {
+		found := false
+		for _, item := range vector.elements {
+			if str, ok := item.(String); ok && string(str) == "README.md" {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Error("Expected README.md to be in directory listing")
+		}
+	} else {
+		t.Errorf("Expected vector result from list-dir, got %T", result)
+	}
+}
+
+func TestCoreFunctionsOnly(t *testing.T) {
+	env := NewCoreEnvironment()
+
+	// Test only core functions that don't require stdlib loading
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Test that core environment is working
+		{"(+ 1 2 3)", "6"},
+		{"(* 2 3 4)", "24"},
+		{"(str \"hello\" \" \" \"world\")", "\"hello world\""},
+
+		// Test that string operations work
+		{"(string-split \"a,b,c\" \",\")", "[\"a\" \"b\" \"c\"]"},
+		{"(string-trim \"  hello  \")", "\"hello\""},
+		{"(string-replace \"hello world\" \"world\" \"test\")", "\"hello test\""},
+
+		// Test type predicates
+		{"(string? \"hello\")", "true"},
+		{"(number? 42)", "true"},
+		{"(symbol? 'test)", "true"},
+
+		// Test collection operations
+		{"(cons 1 '(2 3))", "(1 2 3)"},
+		{"(first '(1 2 3))", "1"},
+		{"(rest '(1 2 3))", "(2 3)"},
+		{"(count [1 2 3 4])", "4"},
+		{"(empty? [])", "true"},
+		{"(empty? [1])", "nil"},
+	}
+
+	for _, test := range tests {
+		expr, err := ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}
+
+func TestIOOperations(t *testing.T) {
+	env := NewCoreEnvironment()
+
+	// Test println - capture output would require more complex setup
+	// For now just test that it doesn't error
+	expr, err := ReadString("(println \"test\")")
+	if err != nil {
+		t.Errorf("Parse error for println: %v", err)
+		return
+	}
+
+	result, err := Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for println: %v", err)
+		return
+	}
+
+	// println should return nil
+	if result.String() != "nil" {
+		t.Errorf("Expected 'nil' for println return, got '%s'", result.String())
+	}
+
+	// Test prn similarly
+	expr, err = ReadString("(prn \"test\")")
+	if err != nil {
+		t.Errorf("Parse error for prn: %v", err)
+		return
+	}
+
+	result, err = Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for prn: %v", err)
+		return
+	}
+
+	if result.String() != "nil" {
+		t.Errorf("Expected 'nil' for prn return, got '%s'", result.String())
 	}
 }

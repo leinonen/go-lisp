@@ -84,11 +84,11 @@ func (l *List) String() string {
 	if l == nil {
 		return "()"
 	}
-	
+
 	result := "("
 	current := l
 	first := true
-	
+
 	for current != nil {
 		if !first {
 			result += " "
@@ -101,7 +101,7 @@ func (l *List) String() string {
 		current = current.tail
 		first = false
 	}
-	
+
 	result += ")"
 	return result
 }
@@ -169,11 +169,11 @@ func (env *Environment) Get(sym Symbol) (Value, error) {
 	if value, exists := env.bindings[sym]; exists {
 		return value, nil
 	}
-	
+
 	if env.parent != nil {
 		return env.parent.Get(sym)
 	}
-	
+
 	return nil, fmt.Errorf("undefined symbol: %s", sym)
 }
 
@@ -186,7 +186,7 @@ func NewList(elements ...Value) *List {
 	if len(elements) == 0 {
 		return nil
 	}
-	
+
 	var result *List
 	for i := len(elements) - 1; i >= 0; i-- {
 		result = &List{head: elements[i], tail: result}

@@ -18,7 +18,7 @@ func NewREPL() (*REPL, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &REPL{env: env}, nil
 }
 
@@ -26,39 +26,39 @@ func NewREPL() (*REPL, error) {
 func (r *REPL) Run() error {
 	fmt.Println("GoLisp Minimal Core REPL")
 	fmt.Println("Type 'exit' to quit")
-	
+
 	scanner := bufio.NewScanner(os.Stdin)
-	
+
 	for {
 		fmt.Print("core> ")
-		
+
 		if !scanner.Scan() {
 			break
 		}
-		
+
 		input := strings.TrimSpace(scanner.Text())
-		
+
 		if input == "" {
 			continue
 		}
-		
+
 		if input == "exit" || input == "quit" {
 			break
 		}
-		
+
 		result, err := r.Eval(input)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			continue
 		}
-		
+
 		fmt.Printf("%s\n", result.String())
 	}
-	
+
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("REPL error: %v", err)
 	}
-	
+
 	return nil
 }
 
@@ -70,13 +70,13 @@ func (r *REPL) Eval(input string) (Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	parser := NewParser(tokens)
 	expr, err := parser.Parse()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Evaluate the expression
 	return Eval(expr, r.env)
 }
@@ -87,20 +87,20 @@ func (r *REPL) LoadFile(filename string) error {
 	if err != nil {
 		return fmt.Errorf("failed to read file %s: %v", filename, err)
 	}
-	
+
 	// Parse the file content
 	lexer := NewLexer(string(content))
 	tokens, err := lexer.Tokenize()
 	if err != nil {
 		return fmt.Errorf("failed to tokenize file %s: %v", filename, err)
 	}
-	
+
 	parser := NewParser(tokens)
 	expressions, err := parser.ParseAll()
 	if err != nil {
 		return fmt.Errorf("failed to parse file %s: %v", filename, err)
 	}
-	
+
 	// Evaluate each expression
 	for _, expr := range expressions {
 		_, err := Eval(expr, r.env)
@@ -108,7 +108,7 @@ func (r *REPL) LoadFile(filename string) error {
 			return fmt.Errorf("failed to evaluate expression in file %s: %v", filename, err)
 		}
 	}
-	
+
 	return nil
 }
 
