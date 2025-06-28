@@ -1,12 +1,14 @@
-package core
+package core_test
 
 import (
 	"os"
 	"testing"
+
+	"github.com/leinonen/go-lisp/pkg/core"
 )
 
 func TestCoreEnvironmentBootstrap(t *testing.T) {
-	env, err := CreateBootstrappedEnvironment()
+	env, err := core.CreateBootstrappedEnvironment()
 	if err != nil {
 		t.Errorf("Failed to create bootstrapped environment: %v", err)
 	}
@@ -22,7 +24,7 @@ func TestCoreEnvironmentBootstrap(t *testing.T) {
 	}
 
 	for _, primitive := range primitives {
-		sym := Intern(primitive)
+		sym := core.Intern(primitive)
 		_, err := env.Get(sym)
 		if err != nil {
 			t.Errorf("Core primitive '%s' not found in environment: %v", primitive, err)
@@ -31,7 +33,7 @@ func TestCoreEnvironmentBootstrap(t *testing.T) {
 }
 
 func TestREPLEvaluation(t *testing.T) {
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 	}
@@ -63,7 +65,7 @@ func TestREPLEvaluation(t *testing.T) {
 }
 
 func TestComplexPrograms(t *testing.T) {
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 	}
@@ -74,7 +76,7 @@ func TestComplexPrograms(t *testing.T) {
 		"(factorial 5)",
 	}
 
-	var result Value
+	var result core.Value
 	for _, expr := range program {
 		result, err = repl.EvalString(expr)
 		if err != nil {
@@ -126,7 +128,7 @@ func TestFileLoading(t *testing.T) {
 	tmpFile.Close()
 
 	// Test loading the file
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 		return
@@ -159,7 +161,7 @@ func TestFileLoading(t *testing.T) {
 }
 
 func TestFileIO(t *testing.T) {
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 		return
@@ -197,7 +199,7 @@ func TestFileIO(t *testing.T) {
 }
 
 func TestMetaProgramming(t *testing.T) {
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 		return
@@ -209,7 +211,7 @@ func TestMetaProgramming(t *testing.T) {
 		"(eval code)",
 	}
 
-	var result Value
+	var result core.Value
 	for _, expr := range program {
 		result, err = repl.EvalString(expr)
 		if err != nil {
@@ -235,7 +237,7 @@ func TestMetaProgramming(t *testing.T) {
 }
 
 func TestDataStructures(t *testing.T) {
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 		return
@@ -276,7 +278,7 @@ func TestDataStructures(t *testing.T) {
 }
 
 func TestClosuresAndLexicalScoping(t *testing.T) {
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 		return
@@ -290,7 +292,7 @@ func TestClosuresAndLexicalScoping(t *testing.T) {
 		"(add-5 3)",
 	}
 
-	var result Value
+	var result core.Value
 	for _, expr := range program {
 		result, err = repl.EvalString(expr)
 		if err != nil {
@@ -322,7 +324,7 @@ func TestClosuresAndLexicalScoping(t *testing.T) {
 }
 
 func TestErrorHandling(t *testing.T) {
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 		return
@@ -355,7 +357,7 @@ func TestErrorHandling(t *testing.T) {
 
 func TestCoreMinimalFootprint(t *testing.T) {
 	// Verify that the core has minimal dependencies
-	env := NewCoreEnvironment()
+	env := core.NewCoreEnvironment()
 
 	// Count the number of built-in functions
 	builtinCount := 0
@@ -370,7 +372,7 @@ func TestCoreMinimalFootprint(t *testing.T) {
 	}
 
 	for _, primitive := range essentialPrimitives {
-		sym := Intern(primitive)
+		sym := core.Intern(primitive)
 		_, err := env.Get(sym)
 		if err != nil {
 			t.Errorf("Essential primitive '%s' missing from core", primitive)
@@ -417,7 +419,7 @@ func TestEndToEndProgram(t *testing.T) {
 	tmpFile.Close()
 
 	// Load and execute the program
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 		return
@@ -474,7 +476,7 @@ func TestCoreVsFullComparison(t *testing.T) {
 		{"(eval '(+ 20 22))", "42"},
 	}
 
-	repl, err := NewREPL()
+	repl, err := core.NewREPL()
 	if err != nil {
 		t.Errorf("Failed to create REPL: %v", err)
 		return

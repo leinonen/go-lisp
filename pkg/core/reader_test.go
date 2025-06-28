@@ -1,31 +1,33 @@
-package core
+package core_test
 
 import (
 	"testing"
+
+	"github.com/leinonen/go-lisp/pkg/core"
 )
 
 func TestLexerTokenization(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected []TokenType
+		expected []core.TokenType
 	}{
-		{"(", []TokenType{TokenLeftParen, TokenEOF}},
-		{")", []TokenType{TokenRightParen, TokenEOF}},
-		{"[", []TokenType{TokenLeftBracket, TokenEOF}},
-		{"]", []TokenType{TokenRightBracket, TokenEOF}},
-		{"'", []TokenType{TokenQuote, TokenEOF}},
-		{"42", []TokenType{TokenNumber, TokenEOF}},
-		{"-42", []TokenType{TokenNumber, TokenEOF}},
-		{"3.14", []TokenType{TokenNumber, TokenEOF}},
-		{"hello", []TokenType{TokenSymbol, TokenEOF}},
-		{":keyword", []TokenType{TokenKeyword, TokenEOF}},
-		{"\"string\"", []TokenType{TokenString, TokenEOF}},
-		{"(+ 1 2)", []TokenType{TokenLeftParen, TokenSymbol, TokenNumber, TokenNumber, TokenRightParen, TokenEOF}},
-		{"[1 2 3]", []TokenType{TokenLeftBracket, TokenNumber, TokenNumber, TokenNumber, TokenRightBracket, TokenEOF}},
+		{"(", []core.TokenType{core.TokenLeftParen, core.TokenEOF}},
+		{")", []core.TokenType{core.TokenRightParen, core.TokenEOF}},
+		{"[", []core.TokenType{core.TokenLeftBracket, core.TokenEOF}},
+		{"]", []core.TokenType{core.TokenRightBracket, core.TokenEOF}},
+		{"'", []core.TokenType{core.TokenQuote, core.TokenEOF}},
+		{"42", []core.TokenType{core.TokenNumber, core.TokenEOF}},
+		{"-42", []core.TokenType{core.TokenNumber, core.TokenEOF}},
+		{"3.14", []core.TokenType{core.TokenNumber, core.TokenEOF}},
+		{"hello", []core.TokenType{core.TokenSymbol, core.TokenEOF}},
+		{":keyword", []core.TokenType{core.TokenKeyword, core.TokenEOF}},
+		{"\"string\"", []core.TokenType{core.TokenString, core.TokenEOF}},
+		{"(+ 1 2)", []core.TokenType{core.TokenLeftParen, core.TokenSymbol, core.TokenNumber, core.TokenNumber, core.TokenRightParen, core.TokenEOF}},
+		{"[1 2 3]", []core.TokenType{core.TokenLeftBracket, core.TokenNumber, core.TokenNumber, core.TokenNumber, core.TokenRightBracket, core.TokenEOF}},
 	}
 
 	for _, test := range tests {
-		lexer := NewLexer(test.input)
+		lexer := core.NewLexer(test.input)
 		tokens, err := lexer.Tokenize()
 		if err != nil {
 			t.Errorf("Unexpected error for input '%s': %v", test.input, err)
@@ -49,21 +51,21 @@ func TestLexerTokenValues(t *testing.T) {
 	tests := []struct {
 		input         string
 		expectedValue string
-		expectedType  TokenType
+		expectedType  core.TokenType
 	}{
-		{"42", "42", TokenNumber},
-		{"-42", "-42", TokenNumber},
-		{"3.14", "3.14", TokenNumber},
-		{"hello", "hello", TokenSymbol},
-		{":keyword", "keyword", TokenKeyword},
-		{"\"hello world\"", "hello world", TokenString},
-		{"+", "+", TokenSymbol},
-		{"test-symbol", "test-symbol", TokenSymbol},
-		{"*special*", "*special*", TokenSymbol},
+		{"42", "42", core.TokenNumber},
+		{"-42", "-42", core.TokenNumber},
+		{"3.14", "3.14", core.TokenNumber},
+		{"hello", "hello", core.TokenSymbol},
+		{":keyword", "keyword", core.TokenKeyword},
+		{"\"hello world\"", "hello world", core.TokenString},
+		{"+", "+", core.TokenSymbol},
+		{"test-symbol", "test-symbol", core.TokenSymbol},
+		{"*special*", "*special*", core.TokenSymbol},
 	}
 
 	for _, test := range tests {
-		lexer := NewLexer(test.input)
+		lexer := core.NewLexer(test.input)
 		tokens, err := lexer.Tokenize()
 		if err != nil {
 			t.Errorf("Unexpected error for input '%s': %v", test.input, err)
@@ -97,14 +99,14 @@ func TestLexerStringEscapes(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lexer := NewLexer(test.input)
+		lexer := core.NewLexer(test.input)
 		tokens, err := lexer.Tokenize()
 		if err != nil {
 			t.Errorf("Unexpected error for input '%s': %v", test.input, err)
 			continue
 		}
 
-		if len(tokens) < 1 || tokens[0].Type != TokenString {
+		if len(tokens) < 1 || tokens[0].Type != core.TokenString {
 			t.Errorf("Expected string token for '%s'", test.input)
 			continue
 		}
@@ -117,13 +119,13 @@ func TestLexerStringEscapes(t *testing.T) {
 
 func TestLexerComments(t *testing.T) {
 	input := "; This is a comment\n(+ 1 2) ; Another comment\n"
-	lexer := NewLexer(input)
+	lexer := core.NewLexer(input)
 	tokens, err := lexer.Tokenize()
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	expected := []TokenType{TokenLeftParen, TokenSymbol, TokenNumber, TokenNumber, TokenRightParen, TokenEOF}
+	expected := []core.TokenType{core.TokenLeftParen, core.TokenSymbol, core.TokenNumber, core.TokenNumber, core.TokenRightParen, core.TokenEOF}
 	if len(tokens) != len(expected) {
 		t.Errorf("Expected %d tokens, got %d", len(expected), len(tokens))
 	}
@@ -155,7 +157,7 @@ func TestParserBasicExpressions(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result, err := ReadString(test.input)
+		result, err := core.ReadString(test.input)
 		if err != nil {
 			t.Errorf("Unexpected error for input '%s': %v", test.input, err)
 			continue
@@ -180,7 +182,7 @@ func TestParserNestedExpressions(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result, err := ReadString(test.input)
+		result, err := core.ReadString(test.input)
 		if err != nil {
 			t.Errorf("Unexpected error for input '%s': %v", test.input, err)
 			continue
@@ -195,13 +197,13 @@ func TestParserNestedExpressions(t *testing.T) {
 func TestParserParseAll(t *testing.T) {
 	input := "(def x 42) (+ x 1) (* x 2)"
 
-	lexer := NewLexer(input)
+	lexer := core.NewLexer(input)
 	tokens, err := lexer.Tokenize()
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	parser := NewParser(tokens)
+	parser := core.NewParser(tokens)
 	expressions, err := parser.ParseAll()
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -230,7 +232,7 @@ func TestParserErrors(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		_, err := ReadString(test)
+		_, err := core.ReadString(test)
 		if err == nil {
 			t.Errorf("Expected error for input '%s', but got none", test)
 		}
@@ -253,13 +255,13 @@ func TestNumberParsing(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result, err := ReadString(test.input)
+		result, err := core.ReadString(test.input)
 		if err != nil {
 			t.Errorf("Unexpected error for input '%s': %v", test.input, err)
 			continue
 		}
 
-		num, ok := result.(Number)
+		num, ok := result.(core.Number)
 		if !ok {
 			t.Errorf("Expected Number for input '%s', got %T", test.input, result)
 			continue

@@ -1,12 +1,14 @@
-package core
+package core_test
 
 import (
 	"testing"
+
+	"github.com/leinonen/go-lisp/pkg/core"
 )
 
 func TestStdlibCoreLibrary(t *testing.T) {
 	// Create bootstrapped environment with stdlib loaded
-	env, err := CreateBootstrappedEnvironment()
+	env, err := core.CreateBootstrappedEnvironment()
 	if err != nil {
 		t.Fatalf("Failed to create bootstrapped environment: %v", err)
 	}
@@ -52,13 +54,13 @@ func TestStdlibCoreLibrary(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			expr, err := ReadString(test.input)
+			expr, err := core.ReadString(test.input)
 			if err != nil {
 				t.Errorf("Parse error for '%s': %v", test.input, err)
 				return
 			}
 
-			result, err := Eval(expr, env)
+			result, err := core.Eval(expr, env)
 			if err != nil {
 				t.Errorf("Eval error for '%s': %v", test.input, err)
 				return
@@ -73,7 +75,7 @@ func TestStdlibCoreLibrary(t *testing.T) {
 
 func TestStdlibEnhancedLibrary(t *testing.T) {
 	// Create bootstrapped environment with stdlib loaded
-	env, err := CreateBootstrappedEnvironment()
+	env, err := core.CreateBootstrappedEnvironment()
 	if err != nil {
 		t.Fatalf("Failed to create bootstrapped environment: %v", err)
 	}
@@ -142,13 +144,13 @@ func TestStdlibEnhancedLibrary(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			expr, err := ReadString(test.input)
+			expr, err := core.ReadString(test.input)
 			if err != nil {
 				t.Errorf("Parse error for '%s': %v", test.input, err)
 				return
 			}
 
-			result, err := Eval(expr, env)
+			result, err := core.Eval(expr, env)
 			if err != nil {
 				t.Errorf("Eval error for '%s': %v", test.input, err)
 				return
@@ -163,7 +165,7 @@ func TestStdlibEnhancedLibrary(t *testing.T) {
 
 func TestStdlibComplexOperations(t *testing.T) {
 	// Create bootstrapped environment with stdlib loaded
-	env, err := CreateBootstrappedEnvironment()
+	env, err := core.CreateBootstrappedEnvironment()
 	if err != nil {
 		t.Fatalf("Failed to create bootstrapped environment: %v", err)
 	}
@@ -209,13 +211,13 @@ func TestStdlibComplexOperations(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			expr, err := ReadString(test.input)
+			expr, err := core.ReadString(test.input)
 			if err != nil {
 				t.Errorf("Parse error for '%s': %v", test.input, err)
 				return
 			}
 
-			result, err := Eval(expr, env)
+			result, err := core.Eval(expr, env)
 			if err != nil {
 				t.Errorf("Eval error for '%s': %v", test.input, err)
 				return
@@ -230,7 +232,7 @@ func TestStdlibComplexOperations(t *testing.T) {
 
 func TestStdlibErrorHandling(t *testing.T) {
 	// Create bootstrapped environment with stdlib loaded
-	env, err := CreateBootstrappedEnvironment()
+	env, err := core.CreateBootstrappedEnvironment()
 	if err != nil {
 		t.Fatalf("Failed to create bootstrapped environment: %v", err)
 	}
@@ -255,12 +257,12 @@ func TestStdlibErrorHandling(t *testing.T) {
 
 	for _, test := range errorTests {
 		t.Run(test.name, func(t *testing.T) {
-			expr, err := ReadString(test.input)
+			expr, err := core.ReadString(test.input)
 			if err != nil {
 				return // Skip parse errors for this test
 			}
 
-			_, err = Eval(expr, env)
+			_, err = core.Eval(expr, env)
 			if err == nil {
 				t.Errorf("Expected error for '%s', but got none", test.input)
 			}
