@@ -1,6 +1,10 @@
 ;; Core standard library functions implemented in Lisp
 ;; These complement the Go core primitives
 
+;; Note: defn is implemented as a special form in the core evaluator
+
+;; Note: cond is implemented as a special form in the core evaluator
+
 ;; Logical operations
 (def not (fn [x] (if x nil true)))
 
@@ -15,6 +19,15 @@
 
 ;; Collection operations that complement core functions
 ;; Note: count, empty?, nth, conj are already in core
+
+;; Length alias for count (common in self-hosting compiler)
+(def length count)
+
+;; Hash-map mutation (for self-hosting compiler)
+;; Note: This is not truly mutable, but works with reassignment
+(def hash-map-put 
+  (fn [map key value]
+    (assoc map key value)))
 
 ;; Second, third helpers
 (def second (fn [coll] (first (rest coll))))

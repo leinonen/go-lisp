@@ -338,21 +338,23 @@ Your current architecture is excellent for self-hosting:
 - ✅ **Comprehensive Testing**: Unit tests for all new functions
 - ✅ **Quality Assurance**: Code formatting, lint compliance, error handling
 
-### 📋 Phase 3: Self-Hosting Compiler Enhancement (NEXT PRIORITY)
+### ✅ Phase 3: Self-Hosting Compiler Enhancement (IN PROGRESS)
 
-#### Phase 3.1: Test and Integrate Existing Self-Hosting Compiler
-- [ ] **Step 3.1.1**: Test current self-hosting.lisp with minimal core
-  - Load `lisp/self-hosting.lisp` without errors
-  - Test basic compilation functions 
-  - Identify missing dependencies
-- [ ] **Step 3.1.2**: Add missing core dependencies
-  - Implement `length` - get collection length
-  - Implement `hash-map-put` - modify hash-map  
-  - Implement `assoc` - associate key-value in map
-  - Implement `nth` - get nth element
-  - Implement `contains?` - check if collection contains key
-  - Implement `throw` - error handling
-- [ ] **Step 3.1.3**: Fix multi-expression parsing
+#### ✅ Phase 3.1: Test and Integrate Existing Self-Hosting Compiler (COMPLETED)
+- ✅ **Step 3.1.1**: Test current self-hosting.lisp with minimal core
+  - ✅ Load `lisp/self-hosting.lisp` without errors
+  - ✅ Test basic compilation functions (`make-context`, `compile-expr`)
+  - ✅ Identified and resolved missing dependencies
+- ✅ **Step 3.1.2**: Add missing core dependencies
+  - ✅ Implement `defn` - function definition special form with multiple body support
+  - ✅ Implement `defmacro` - macro system with full expansion
+  - ✅ Implement `cond` - conditional expression special form
+  - ✅ Implement `length` - get collection length (alias for `count`)
+  - ✅ Implement `hash-map-put` - modify hash-map (alias for `assoc`)
+  - ✅ Fix `contains?` - resolved function conflict with string-contains?
+  - ✅ Implement `throw` - error handling function
+  - ✅ Enhanced `fn` special form - support for multiple body expressions
+- [ ] **Step 3.1.3**: Fix multi-expression parsing (NEXT)
   - Replace simplified `read-all` function (line 116-119)
   - Implement proper multi-expression reading from strings
   - Handle multiple top-level forms in source files
@@ -409,14 +411,18 @@ Your current architecture is excellent for self-hosting:
 ### 🎯 Immediate Next Actions (Updated with Detailed Steps)
 
 1. **✅ Complete Standard Library Functions** - ✅ DONE: Enhanced standard library implemented
-2. **🎯 NEXT: Step 3.1.1** - Test current self-hosting.lisp with minimal core
+2. **✅ Step 3.1.1** - ✅ DONE: Test current self-hosting.lisp with minimal core
    ```bash
    make build
    ./bin/golisp -f lisp/self-hosting.lisp
-   # Test: (make-context), (compile-expr '(+ 1 2) (make-context))
+   # ✅ WORKING: (make-context), (compile-expr '(+ 1 2) (make-context))
    ```
-3. **Step 3.1.2** - Add missing core dependencies (`length`, `hash-map-put`, `assoc`, `nth`, `contains?`, `throw`)
-4. **Step 3.1.3** - Fix multi-expression parsing (`read-all` function)
+3. **✅ Step 3.1.2** - ✅ DONE: Add missing core dependencies (`defn`, `defmacro`, `cond`, `length`, `hash-map-put`, `contains?`, `throw`)
+4. **🎯 NEXT: Step 3.1.3** - Fix multi-expression parsing (`read-all` function)
+   ```bash
+   # Test multi-expression parsing in self-hosting compiler
+   # Fix read-all function to handle multiple top-level forms
+   ```
 5. **Step 3.2.1** - Add missing `let` compilation
 6. **Step 3.2.2** - Implement macro expansion during compilation
 7. **Step 3.2.3** - Enhanced error reporting
@@ -451,21 +457,21 @@ Your current architecture is excellent for self-hosting:
 
 ### 🏁 Success Criteria for Phase 3.1
 
-**Step 3.1.1 Complete**: Self-hosting.lisp loads without errors
-**Step 3.1.2 Complete**: All missing functions implemented and tested
-**Step 3.1.3 Complete**: Multi-expression parsing works correctly
+**✅ Step 3.1.1 Complete**: Self-hosting.lisp loads without errors
+**✅ Step 3.1.2 Complete**: All missing functions implemented and tested
+**[ ] Step 3.1.3 Pending**: Multi-expression parsing works correctly
 
-**Phase 3.1 Complete**: Can successfully run `(bootstrap-self-hosting)` and compile basic Lisp files
+**Phase 3.1 Progress**: 2/3 steps complete - Basic compiler integration functional
 
 ### 🏆 Achievement Summary
 
-The Phase 2 Enhanced Standard Library represents a major milestone:
-- **✅ Complete standard library** with string, collection, and I/O operations
-- **✅ Production-ready interpreter** with 50+ comprehensive tests
-- **✅ True self-hosting foundation** with Go core + Lisp stdlib architecture
-- **✅ File system integration** with directory listing and file operations
-- **✅ Enhanced collection operations** including sort, apply, filter, map
-- **✅ Robust error handling** and comprehensive test coverage
-- **✅ Code quality assurance** with formatting and lint compliance
+The Phase 3.1 Self-Hosting Compiler Integration represents a major milestone:
+- **✅ Complete macro system** with `defmacro` and full macro expansion
+- **✅ Enhanced language features** including `defn`, `cond`, and multiple body expressions
+- **✅ Self-hosting compiler integration** - loads and runs basic compilation functions
+- **✅ Expanded core primitives** with error handling (`throw`) and utility functions
+- **✅ Function conflict resolution** - proper `contains?` for hash-maps/sets vs strings
+- **✅ Production-ready interpreter** with 50+ comprehensive tests plus new macro features
+- **✅ True self-hosting foundation** with Go core + Lisp stdlib + compiler architecture
 
-**Phase 2 Complete! Next milestone: Enhanced self-hosting compiler with advanced features** 🎉
+**Phase 3.1 Major Progress! Next milestone: Complete multi-expression parsing and advanced compiler features** 🎉

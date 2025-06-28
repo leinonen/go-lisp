@@ -53,8 +53,8 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 
 	case "fn":
 		argSlice := listToSlice(args)
-		if len(argSlice) != 2 {
-			return nil, fmt.Errorf("fn expects 2 arguments, got %d", len(argSlice))
+		if len(argSlice) < 2 {
+			return nil, fmt.Errorf("fn expects at least 2 arguments, got %d", len(argSlice))
 		}
 
 		// Handle both lists and vectors for parameters
@@ -73,9 +73,22 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 			return nil, fmt.Errorf("fn expects list or vector as first argument, got %T", argSlice[0])
 		}
 
+		// Handle multiple body expressions by wrapping in 'do'
+		var body Value
+		if len(argSlice) == 2 {
+			body = argSlice[1]
+		} else {
+			// Multiple body expressions - wrap in do
+			bodyExprs := argSlice[1:]
+			doList := make([]Value, len(bodyExprs)+1)
+			doList[0] = Symbol("do")
+			copy(doList[1:], bodyExprs)
+			body = NewList(doList...)
+		}
+
 		return &UserFunction{
 			Params: params,
-			Body:   argSlice[1],
+			Body:   body,
 			Env:    env,
 		}, nil
 
@@ -147,6 +160,131 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 		}
 
 		return result, nil
+
+	case "defmacro":
+		argSlice := listToSlice(args)
+		if len(argSlice) != 3 {
+			return nil, fmt.Errorf("defmacro expects 3 arguments (name params body), got %d", len(argSlice))
+		}
+
+		sym, ok := argSlice[0].(Symbol)
+		if !ok {
+			return nil, fmt.Errorf("defmacro expects symbol as first argument, got %T", argSlice[0])
+		}
+
+		// Handle both lists and vectors for parameters
+		var params *List
+		switch p := argSlice[1].(type) {
+		case *List:
+			params = p
+		case *Vector:
+			// Convert vector to list
+			var elements []Value
+			for i := 0; i < p.Count(); i++ {
+				elements = append(elements, p.Get(i))
+			}
+			params = NewList(elements...)
+		default:
+			return nil, fmt.Errorf("defmacro expects list or vector as second argument, got %T", argSlice[1])
+		}
+
+		macro := &Macro{
+			Name:   sym,
+			Params: params,
+			Body:   argSlice[2],
+			Env:    env,
+		}
+
+		env.Set(sym, macro)
+		return sym, nil
+
+	case "defn":
+		argSlice := listToSlice(args)
+		if len(argSlice) < 3 {
+			return nil, fmt.Errorf("defn expects at least 3 arguments (name params body...), got %d", len(argSlice))
+		}
+
+		sym, ok := argSlice[0].(Symbol)
+		if !ok {
+			return nil, fmt.Errorf("defn expects symbol as first argument, got %T", argSlice[0])
+		}
+
+		// Handle both lists and vectors for parameters
+		var params *List
+		switch p := argSlice[1].(type) {
+		case *List:
+			params = p
+		case *Vector:
+			// Convert vector to list
+			var elements []Value
+			for i := 0; i < p.Count(); i++ {
+				elements = append(elements, p.Get(i))
+			}
+			params = NewList(elements...)
+		default:
+			return nil, fmt.Errorf("defn expects list or vector as second argument, got %T", argSlice[1])
+		}
+
+		// Handle multiple body expressions by wrapping in 'do'
+		var body Value
+		if len(argSlice) == 3 {
+			body = argSlice[2]
+		} else {
+			// Multiple body expressions - wrap in do
+			bodyExprs := argSlice[2:]
+			doList := make([]Value, len(bodyExprs)+1)
+			doList[0] = Symbol("do")
+			copy(doList[1:], bodyExprs)
+			body = NewList(doList...)
+		}
+
+		function := &UserFunction{
+			Params: params,
+			Body:   body,
+			Env:    env,
+		}
+
+		env.Set(sym, function)
+		return sym, nil
+
+	case "cond":
+		argSlice := listToSlice(args)
+		if len(argSlice)%2 != 0 && len(argSlice) > 0 {
+			// Check if last argument is :else
+			if len(argSlice)%2 == 1 {
+				if sym, ok := argSlice[len(argSlice)-2].(Symbol); !ok || sym != ":else" {
+					return nil, fmt.Errorf("cond expects even number of arguments or :else clause")
+				}
+			}
+		}
+
+		// Evaluate condition/expression pairs
+		for i := 0; i < len(argSlice); i += 2 {
+			if i+1 >= len(argSlice) {
+				return nil, fmt.Errorf("cond: missing expression for condition")
+			}
+
+			condition := argSlice[i]
+			
+			// Special case for :else
+			if sym, ok := condition.(Symbol); ok && sym == ":else" {
+				return Eval(argSlice[i+1], env)
+			}
+
+			// Evaluate condition
+			condResult, err := Eval(condition, env)
+			if err != nil {
+				return nil, err
+			}
+
+			// If condition is truthy, evaluate and return the expression
+			if isTruthy(condResult) {
+				return Eval(argSlice[i+1], env)
+			}
+		}
+
+		// No condition matched
+		return Nil{}, nil
 	}
 
 	return nil, fmt.Errorf("unknown special form: %s", sym)
@@ -155,7 +293,7 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 // isSpecialForm checks if a symbol is a special form
 func isSpecialForm(sym Symbol) bool {
 	switch sym {
-	case "quote", "if", "def", "fn", "do", "let":
+	case "quote", "if", "def", "fn", "do", "let", "defmacro", "defn", "cond":
 		return true
 	default:
 		return false

@@ -37,6 +37,25 @@ func setupMetaProgramming(env *Environment) {
 		},
 	})
 
+	env.Set(Intern("throw"), &BuiltinFunction{
+		Name: "throw",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("throw expects 1 argument")
+			}
+
+			// Convert the argument to a string for the error message
+			var msg string
+			if str, ok := args[0].(String); ok {
+				msg = string(str)
+			} else {
+				msg = args[0].String()
+			}
+
+			return nil, fmt.Errorf("%s", msg)
+		},
+	})
+
 	// Basic type predicates
 	env.Set(Intern("symbol?"), &BuiltinFunction{
 		Name: "symbol?",

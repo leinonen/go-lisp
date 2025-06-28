@@ -10,7 +10,10 @@ A minimalist, self-hosting Lisp interpreter written in Go, inspired by Clojure. 
 - **Self-Hosting**: Standard library functions implemented in Lisp
 - **Rich Data Types**: Numbers, strings, symbols, keywords, lists, vectors, hash-maps, sets
 - **Functional Programming**: First-class functions, closures, and higher-order functions
+- **Advanced Language Features**: `defn`, `defmacro`, `cond`, multiple body expressions
+- **Macro System**: Full macro expansion with `defmacro` support
 - **Meta-Programming**: Full `eval`/`read-string` capabilities with macro system
+- **Self-Hosting Compiler**: Integrated compiler for self-compilation capabilities
 - **REPL**: Interactive development environment
 - **File Operations**: Load and execute Lisp files
 - **Comprehensive Testing**: 4,300+ lines of test coverage
@@ -49,11 +52,31 @@ make build
 
 ### Functions and Variables
 ```lisp
-(def square (fn [x] (* x x)))      ; define function
+(defn square [x] (* x x))          ; define function (using defn)
 (square 5)                         ; 25
 
 (def numbers [1 2 3 4 5])          ; vector
 (def person {:name "Alice" :age 30}) ; hash-map
+```
+
+### Advanced Language Features
+```lisp
+;; Conditional expressions
+(cond
+  (< x 0) "negative"
+  (= x 0) "zero"
+  :else   "positive")
+
+;; Macros
+(defmacro when [condition & body]
+  (list 'if condition (cons 'do body) nil))
+
+;; Multiple body expressions
+(defn complex-function [x]
+  (println "Processing" x)
+  (def result (* x x))
+  (println "Result:" result)
+  result)
 ```
 
 ### Higher-Order Functions (Self-Hosted)
@@ -75,6 +98,19 @@ make build
 ```lisp
 (eval '(+ 1 2 3))                  ; 6
 (read-string "(+ 1 2)")            ; (+ 1 2)
+
+;; Macro expansion
+(macroexpand '(when true (println "hello")))
+;; => (if true (do (println "hello")) nil)
+```
+
+### Self-Hosting Compiler
+```lisp
+;; Load the self-hosting compiler
+;; The compiler can compile Lisp code to Lisp code
+(def ctx (make-context))
+(compile-expr '(+ 1 2) ctx)        ; Compile arithmetic expression
+(compile-expr 'my-var ctx)         ; Compile symbol reference
 ```
 
 ## Architecture
@@ -82,14 +118,23 @@ make build
 GoLisp uses a modular architecture with clear separation between the Go core and Lisp standard library:
 
 ### Core (Go Implementation)
-- **Types & Parser**: Essential data types and parsing
-- **Evaluator**: Modular evaluation engine (~50 core primitives)
+- **Types & Parser**: Essential data types and parsing with macro support
+- **Evaluator**: Modular evaluation engine (~60 core primitives including special forms
+- **Special Forms**: `def`, `fn`, `defn`, `defmacro`, `cond`, `if`, `let`, `do`, `quote`
+- **Macro System**: Full macro expansion with `defmacro` and macro call evaluation
 - **REPL**: Interactive environment with file loading
 
 ### Standard Library (Lisp Implementation)
-- **Collections**: `map`, `filter`, `reduce`, `sort`, `apply`
-- **Logic**: `not`, `when`, `unless`
-- **Utilities**: `range`, `join`, `group-by`
+- **Collections**: `map`, `filter`, `reduce`, `sort`, `apply`, `length`
+- **Logic**: `not`, `when`, `unless`, `cond` (enhanced)
+- **Utilities**: `range`, `join`, `group-by`, `hash-map-put`
+- **Error Handling**: `throw` for runtime error generation
+
+### Self-Hosting Compiler (Lisp Implementation)
+- **Compilation Context**: Environment and symbol table management
+- **Expression Compilation**: Handles symbols, lists, vectors with context
+- **Special Form Compilation**: `def`, `fn`, `if`, `quote`, `do`, `let`
+- **Code Generation**: Lisp-to-Lisp compilation with optimization hooks
 
 ## Development
 
@@ -110,9 +155,11 @@ pkg/core/           # Minimal Go core (~2,700 lines)
 ├── repl.go         # Interactive REPL
 └── bootstrap.go    # Standard library loader
 
-lisp/stdlib/        # Self-hosted standard library
-├── core.lisp       # Core functions in Lisp
-└── enhanced.lisp   # Enhanced utilities
+lisp/
+├── stdlib/         # Self-hosted standard library
+│   ├── core.lisp   # Core functions in Lisp
+│   └── enhanced.lisp # Enhanced utilities
+└── self-hosting.lisp # Self-hosting compiler
 
 cmd/golisp/         # CLI entry point
 ```
@@ -120,10 +167,24 @@ cmd/golisp/         # CLI entry point
 ## Self-Hosting
 
 GoLisp is designed for self-hosting with:
-- Minimal Go core providing essential primitives
+- Minimal Go core providing essential primitives (~60 functions)
 - Standard library implemented in Lisp using core primitives
-- Meta-programming capabilities (`eval`, `read-string`, macros)
-- Self-hosting compiler foundation in `lisp/self-hosting.lisp`
+- Advanced language features: `defn`, `defmacro`, `cond`, multiple body expressions
+- Full macro system with `defmacro` and macro expansion
+- Meta-programming capabilities (`eval`, `read-string`, `macroexpand`)
+- Self-hosting compiler in `lisp/self-hosting.lisp` (functional and integrated)
+
+### Current Self-Hosting Status
+- ✅ **Phase 1**: Meta-programming core complete
+- ✅ **Phase 2**: Enhanced standard library complete  
+- ✅ **Phase 3.1**: Basic self-hosting compiler integration complete
+- 🚧 **Phase 3.2**: Advanced compiler features in progress
+
+The self-hosting compiler can currently:
+- Load and compile basic Lisp expressions
+- Handle compilation contexts and symbol tables
+- Compile special forms (`def`, `fn`, `if`, `quote`, `do`)
+- Support for basic optimization hooks
 
 This architecture enables language evolution in Lisp rather than Go, making it easy to extend and modify the language itself.
 

@@ -30,6 +30,14 @@ type UserFunction struct {
 	Env    *Environment
 }
 
+// Macro represents a macro
+type Macro struct {
+	Name   Symbol
+	Params *List
+	Body   Value
+	Env    *Environment
+}
+
 func (uf *UserFunction) Call(args []Value, env *Environment) (Value, error) {
 	// Create new environment for function execution
 	fnEnv := NewEnvironment(uf.Env)
@@ -46,6 +54,10 @@ func (uf *UserFunction) Call(args []Value, env *Environment) (Value, error) {
 
 func (uf *UserFunction) String() string {
 	return "#<function>"
+}
+
+func (m *Macro) String() string {
+	return fmt.Sprintf("#<macro:%s>", m.Name)
 }
 
 // bindParams binds function parameters to arguments
@@ -124,6 +136,11 @@ func evalFunctionCall(list *List, env *Environment) (Value, error) {
 		return nil, err
 	}
 
+	// Check if it's a macro - macros are expanded without evaluating arguments
+	if macro, ok := fn.(*Macro); ok {
+		return expandMacro(macro, list.Rest(), env)
+	}
+
 	// Check if it's callable
 	callable, ok := fn.(Function)
 	if !ok {
@@ -188,6 +205,27 @@ func valuesEqual(a, b Value) bool {
 		return ok
 	}
 	return false
+}
+
+// expandMacro expands a macro call
+func expandMacro(macro *Macro, args *List, env *Environment) (Value, error) {
+	// Create new environment for macro expansion
+	macroEnv := NewEnvironment(macro.Env)
+
+	// Bind macro parameters to arguments (unevaluated)
+	err := bindParams(macro.Params, listToSlice(args), macroEnv)
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate macro body to get expansion
+	expansion, err := Eval(macro.Body, macroEnv)
+	if err != nil {
+		return nil, err
+	}
+
+	// Evaluate the expansion
+	return Eval(expansion, env)
 }
 
 // NewCoreEnvironment creates an environment with core primitives
