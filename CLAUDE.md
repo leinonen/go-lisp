@@ -69,16 +69,26 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
 - Keywords (Clojure-style with `:` prefix)
 - Lists (linked lists)
 - Vectors (indexed collections)
-- HashMaps (key-value mappings)
+- HashMaps (key-value mappings with insertion order preservation)
 - Sets (unique collections)
 - Functions (built-in and user-defined)
 - Nil and boolean values
+
+#### HashMap Features
+- **Literal syntax**: `{}` for empty, `{:key "value" :other 42}` for populated
+- **Constructor**: `(hash-map key1 value1 key2 value2 ...)`
+- **Access**: `(get map key)`, `(get map key default)`, or `(:key map)` (keyword as function)
+- **Immutable operations**: `(assoc map :key value)`, `(dissoc map :key)`
+- **Predicates**: `(hash-map? value)`, `(contains? map key)`, `(empty? map)`
+- **Flexible keys**: Any value type can be used as a key
+- **Insertion order**: Keys maintain their insertion order
 
 ### Core Primitives (Go Implementation)
 The minimal core provides ~50 essential primitives:
 
 **Arithmetic**: `+`, `-`, `*`, `/`, `=`, `<`, `>`, `<=`, `>=`
 **Collections**: `cons`, `first`, `rest`, `nth`, `count`, `empty?`, `conj`, `list`, `vector`, `hash-map`, `set`
+**HashMap**: `get`, `assoc`, `dissoc`, `contains?`
 **Types**: `symbol?`, `string?`, `number?`, `list?`, `vector?`, `hash-map?`, `set?`, `keyword?`, `fn?`, `nil?`
 **Strings**: `str`, `string-split`, `substring`, `string-trim`, `string-replace`
 **I/O**: `slurp`, `spit`, `println`, `prn`, `file-exists?`, `list-dir`

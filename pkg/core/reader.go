@@ -25,6 +25,9 @@ const (
 	TokenRightParen
 	TokenLeftBracket
 	TokenRightBracket
+	TokenLeftBrace
+	TokenRightBrace
+	TokenHash
 	TokenQuote
 	TokenEOF
 )
@@ -106,6 +109,15 @@ func (l *Lexer) nextToken() (Token, error) {
 	case ']':
 		l.advance()
 		return Token{Type: TokenRightBracket, Value: "]"}, nil
+	case '{':
+		l.advance()
+		return Token{Type: TokenLeftBrace, Value: "{"}, nil
+	case '}':
+		l.advance()
+		return Token{Type: TokenRightBrace, Value: "}"}, nil
+	case '#':
+		l.advance()
+		return Token{Type: TokenHash, Value: "#"}, nil
 	case '\'':
 		l.advance()
 		return Token{Type: TokenQuote, Value: "'"}, nil
@@ -262,6 +274,10 @@ func (p *Parser) parseExpression() (Value, error) {
 		return p.parseList()
 	case TokenLeftBracket:
 		return p.parseVector()
+	case TokenLeftBrace:
+		return p.parseHashMap()
+	case TokenHash:
+		return p.parseSet()
 	case TokenQuote:
 		p.position++
 		expr, err := p.parseExpression()
@@ -328,6 +344,58 @@ func (p *Parser) parseVector() (Value, error) {
 
 	p.position++ // Skip ']'
 	return NewVector(elements...), nil
+}
+
+func (p *Parser) parseHashMap() (Value, error) {
+	p.position++ // Skip '{'
+
+	var elements []Value
+
+	for p.position < len(p.tokens) && p.tokens[p.position].Type != TokenRightBrace {
+		expr, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		elements = append(elements, expr)
+	}
+
+	if p.position >= len(p.tokens) {
+		return nil, fmt.Errorf("unterminated hash-map")
+	}
+
+	if len(elements)%2 != 0 {
+		return nil, fmt.Errorf("hash-map literal requires even number of elements")
+	}
+
+	p.position++ // Skip '}'
+	return NewHashMapWithPairs(elements...), nil
+}
+
+func (p *Parser) parseSet() (Value, error) {
+	p.position++ // Skip '#'
+
+	if p.position >= len(p.tokens) || p.tokens[p.position].Type != TokenLeftBrace {
+		return nil, fmt.Errorf("expected '{' after '#'")
+	}
+
+	p.position++ // Skip '{'
+
+	var elements []Value
+
+	for p.position < len(p.tokens) && p.tokens[p.position].Type != TokenRightBrace {
+		expr, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		elements = append(elements, expr)
+	}
+
+	if p.position >= len(p.tokens) {
+		return nil, fmt.Errorf("unterminated set")
+	}
+
+	p.position++ // Skip '}'
+	return NewSetWithElements(elements...), nil
 }
 
 func (p *Parser) parseNumber(value string) (Value, error) {

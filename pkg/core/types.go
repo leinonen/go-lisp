@@ -21,6 +21,25 @@ func (k Keyword) String() string {
 	return ":" + string(k)
 }
 
+// Call makes keywords callable as functions on hash-maps
+func (k Keyword) Call(args []Value, env *Environment) (Value, error) {
+	if len(args) < 1 || len(args) > 2 {
+		return nil, fmt.Errorf("keyword %s expects 1-2 arguments", k)
+	}
+
+	// First argument should be a hash-map
+	if hm, ok := args[0].(*HashMap); ok {
+		value := hm.Get(k)
+		// If value is nil and we have a default value, return the default
+		if _, isNil := value.(Nil); isNil && len(args) == 2 {
+			return args[1], nil
+		}
+		return value, nil
+	}
+
+	return nil, fmt.Errorf("keyword %s can only be called on hash-maps, got %T", k, args[0])
+}
+
 // Number represents both integers and floats
 type Number struct {
 	Value interface{} // int64 or float64
@@ -152,6 +171,109 @@ func (v *Vector) Count() int {
 	return len(v.elements)
 }
 
+// HashMap represents a key-value mapping
+type HashMap struct {
+	pairs map[string]Value
+	keys  []Value // Maintain insertion order
+}
+
+func (h *HashMap) String() string {
+	result := "{"
+	first := true
+	for _, key := range h.keys {
+		if !first {
+			result += " "
+		}
+		result += key.String() + " " + h.pairs[h.keyToString(key)].String()
+		first = false
+	}
+	result += "}"
+	return result
+}
+
+func (h *HashMap) keyToString(key Value) string {
+	return key.String()
+}
+
+func (h *HashMap) Get(key Value) Value {
+	if value, exists := h.pairs[h.keyToString(key)]; exists {
+		return value
+	}
+	return Nil{}
+}
+
+func (h *HashMap) Set(key Value, value Value) {
+	keyStr := h.keyToString(key)
+	if _, exists := h.pairs[keyStr]; !exists {
+		h.keys = append(h.keys, key)
+	}
+	h.pairs[keyStr] = value
+}
+
+func (h *HashMap) Count() int {
+	return len(h.keys)
+}
+
+func (h *HashMap) ContainsKey(key Value) bool {
+	_, exists := h.pairs[h.keyToString(key)]
+	return exists
+}
+
+// Set represents a collection of unique values
+type Set struct {
+	elements map[string]Value
+	order    []Value // Maintain insertion order
+}
+
+func (s *Set) String() string {
+	result := "#{"
+	first := true
+	for _, elem := range s.order {
+		if !first {
+			result += " "
+		}
+		result += elem.String()
+		first = false
+	}
+	result += "}"
+	return result
+}
+
+func (s *Set) elemToString(elem Value) string {
+	return elem.String()
+}
+
+func (s *Set) Add(elem Value) {
+	elemStr := s.elemToString(elem)
+	if _, exists := s.elements[elemStr]; !exists {
+		s.elements[elemStr] = elem
+		s.order = append(s.order, elem)
+	}
+}
+
+func (s *Set) Contains(elem Value) bool {
+	_, exists := s.elements[s.elemToString(elem)]
+	return exists
+}
+
+func (s *Set) Count() int {
+	return len(s.order)
+}
+
+func (s *Set) Remove(elem Value) {
+	elemStr := s.elemToString(elem)
+	if _, exists := s.elements[elemStr]; exists {
+		delete(s.elements, elemStr)
+		// Remove from order slice
+		for i, e := range s.order {
+			if s.elemToString(e) == elemStr {
+				s.order = append(s.order[:i], s.order[i+1:]...)
+				break
+			}
+		}
+	}
+}
+
 // Environment represents a lexical environment for variable bindings
 type Environment struct {
 	bindings map[Symbol]Value
@@ -196,6 +318,36 @@ func NewList(elements ...Value) *List {
 
 func NewVector(elements ...Value) *Vector {
 	return &Vector{elements: elements}
+}
+
+func NewHashMap() *HashMap {
+	return &HashMap{
+		pairs: make(map[string]Value),
+		keys:  make([]Value, 0),
+	}
+}
+
+func NewHashMapWithPairs(pairs ...Value) *HashMap {
+	hm := NewHashMap()
+	for i := 0; i < len(pairs)-1; i += 2 {
+		hm.Set(pairs[i], pairs[i+1])
+	}
+	return hm
+}
+
+func NewSet() *Set {
+	return &Set{
+		elements: make(map[string]Value),
+		order:    make([]Value, 0),
+	}
+}
+
+func NewSetWithElements(elements ...Value) *Set {
+	s := NewSet()
+	for _, elem := range elements {
+		s.Add(elem)
+	}
+	return s
 }
 
 func NewNumber(value interface{}) Number {

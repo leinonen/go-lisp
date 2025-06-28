@@ -828,3 +828,173 @@ func TestIOOperations(t *testing.T) {
 		t.Errorf("Expected 'nil' for prn return, got '%s'", result.String())
 	}
 }
+
+func TestHashMapOperations(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Test hash-map constructor
+		{"(hash-map)", "{}"},
+		{"(hash-map :name \"Alice\")", "{:name \"Alice\"}"},
+		{"(hash-map :name \"Alice\" :age 30)", "{:name \"Alice\" :age 30}"},
+
+		// Test hash-map literal syntax
+		{"{}", "{}"},
+		{"{:name \"Bob\"}", "{:name \"Bob\"}"},
+		{"{:name \"Bob\" :age 25}", "{:name \"Bob\" :age 25}"},
+
+		// Test get function
+		{"(get {:name \"Alice\" :age 30} :name)", "\"Alice\""},
+		{"(get {:name \"Alice\" :age 30} :age)", "30"},
+		{"(get {:name \"Alice\"} :nonexistent)", "nil"},
+		{"(get {:name \"Alice\"} :nonexistent \"default\")", "\"default\""},
+
+		// Test assoc function
+		{"(assoc {} :key \"value\")", "{:key \"value\"}"},
+		{"(assoc {:a 1} :b 2)", "{:a 1 :b 2}"},
+		{"(assoc {:a 1} :a 2)", "{:a 2}"},
+
+		// Test dissoc function
+		{"(dissoc {:a 1 :b 2} :a)", "{:b 2}"},
+		{"(dissoc {:a 1 :b 2 :c 3} :b)", "{:a 1 :c 3}"},
+		{"(dissoc {:a 1} :nonexistent)", "{:a 1}"},
+
+		// Test contains? function
+		{"(contains? {:name \"Alice\"} :name)", "true"},
+		{"(contains? {:name \"Alice\"} :age)", "nil"},
+
+		// Test hash-map? predicate
+		{"(hash-map? {})", "true"},
+		{"(hash-map? {:a 1})", "true"},
+		{"(hash-map? [])", "nil"},
+		{"(hash-map? \"test\")", "nil"},
+
+		// Test count with hash-map
+		{"(count {})", "0"},
+		{"(count {:a 1})", "1"},
+		{"(count {:a 1 :b 2 :c 3})", "3"},
+
+		// Test empty? with hash-map
+		{"(empty? {})", "true"},
+		{"(empty? {:a 1})", "nil"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}
+
+func TestSetOperations(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Test set constructor
+		{"(set)", "#{}"},
+		{"(set 1)", "#{1}"},
+		{"(set 1 2 3)", "#{1 2 3}"},
+		{"(set 1 2 3 2 1)", "#{1 2 3}"},
+
+		// Test set literal syntax
+		{"#{}", "#{}"},
+		{"#{1}", "#{1}"},
+		{"#{1 2 3}", "#{1 2 3}"},
+
+		// Test contains? function with sets
+		{"(contains? #{1 2 3} 1)", "true"},
+		{"(contains? #{1 2 3} 2)", "true"},
+		{"(contains? #{1 2 3} 4)", "nil"},
+
+		// Test set? predicate
+		{"(set? #{})", "true"},
+		{"(set? #{1 2 3})", "true"},
+		{"(set? [])", "nil"},
+		{"(set? {})", "nil"},
+
+		// Test count with set
+		{"(count #{})", "0"},
+		{"(count #{1})", "1"},
+		{"(count #{1 2 3})", "3"},
+
+		// Test empty? with set
+		{"(empty? #{})", "true"},
+		{"(empty? #{1})", "nil"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}
+
+func TestKeywordAsFunction(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Test keyword function calls on hash-maps
+		{"(:name {:name \"Alice\" :age 30})", "\"Alice\""},
+		{"(:age {:name \"Alice\" :age 30})", "30"},
+		{"(:nonexistent {:name \"Alice\"})", "nil"},
+		{"(:nonexistent {:name \"Alice\"} \"default\")", "\"default\""},
+
+		// Test with different data types as keys
+		{"(:key {:key 42})", "42"},
+		{"(:flag {:flag true})", "true"},
+
+		// Test with nested structures
+		{"(:user {:user {:name \"Bob\"}})", "{:name \"Bob\"}"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}

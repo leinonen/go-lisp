@@ -184,6 +184,128 @@ func TestVector(t *testing.T) {
 	}
 }
 
+func TestHashMap(t *testing.T) {
+	// Test empty hash-map
+	emptyHM := core.NewHashMap()
+	if emptyHM.Count() != 0 {
+		t.Errorf("Expected count 0, got %d", emptyHM.Count())
+	}
+	if emptyHM.String() != "{}" {
+		t.Errorf("Expected '{}', got '%s'", emptyHM.String())
+	}
+
+	// Test hash-map with pairs
+	hm := core.NewHashMapWithPairs(
+		core.InternKeyword("name"), core.String("Alice"),
+		core.InternKeyword("age"), core.NewNumber(int64(30)),
+	)
+	if hm.Count() != 2 {
+		t.Errorf("Expected count 2, got %d", hm.Count())
+	}
+
+	// Test get
+	nameKey := core.InternKeyword("name")
+	nameVal := hm.Get(nameKey)
+	if nameVal.String() != "\"Alice\"" {
+		t.Errorf("Expected '\"Alice\"', got '%s'", nameVal.String())
+	}
+
+	ageKey := core.InternKeyword("age")
+	ageVal := hm.Get(ageKey)
+	if ageVal.String() != "30" {
+		t.Errorf("Expected '30', got '%s'", ageVal.String())
+	}
+
+	// Test get non-existent key
+	nonExistentVal := hm.Get(core.InternKeyword("nonexistent"))
+	if nonExistentVal.String() != "nil" {
+		t.Errorf("Expected 'nil', got '%s'", nonExistentVal.String())
+	}
+
+	// Test contains key
+	if !hm.ContainsKey(nameKey) {
+		t.Error("Expected hash-map to contain :name key")
+	}
+	if hm.ContainsKey(core.InternKeyword("nonexistent")) {
+		t.Error("Expected hash-map to not contain :nonexistent key")
+	}
+
+	// Test set new value
+	hm.Set(core.InternKeyword("city"), core.String("New York"))
+	if hm.Count() != 3 {
+		t.Errorf("Expected count 3, got %d", hm.Count())
+	}
+	cityVal := hm.Get(core.InternKeyword("city"))
+	if cityVal.String() != "\"New York\"" {
+		t.Errorf("Expected '\"New York\"', got '%s'", cityVal.String())
+	}
+}
+
+func TestSet(t *testing.T) {
+	// Test empty set
+	emptySet := core.NewSet()
+	if emptySet.Count() != 0 {
+		t.Errorf("Expected count 0, got %d", emptySet.Count())
+	}
+	if emptySet.String() != "#{}" {
+		t.Errorf("Expected '#{}', got '%s'", emptySet.String())
+	}
+
+	// Test set with elements
+	set := core.NewSetWithElements(
+		core.NewNumber(int64(1)),
+		core.NewNumber(int64(2)),
+		core.NewNumber(int64(3)),
+	)
+	if set.Count() != 3 {
+		t.Errorf("Expected count 3, got %d", set.Count())
+	}
+
+	// Test contains
+	if !set.Contains(core.NewNumber(int64(1))) {
+		t.Error("Expected set to contain 1")
+	}
+	if !set.Contains(core.NewNumber(int64(2))) {
+		t.Error("Expected set to contain 2")
+	}
+	if !set.Contains(core.NewNumber(int64(3))) {
+		t.Error("Expected set to contain 3")
+	}
+	if set.Contains(core.NewNumber(int64(4))) {
+		t.Error("Expected set to not contain 4")
+	}
+
+	// Test add duplicate (should not increase count)
+	set.Add(core.NewNumber(int64(1)))
+	if set.Count() != 3 {
+		t.Errorf("Expected count to remain 3, got %d", set.Count())
+	}
+
+	// Test add new element
+	set.Add(core.NewNumber(int64(4)))
+	if set.Count() != 4 {
+		t.Errorf("Expected count 4, got %d", set.Count())
+	}
+	if !set.Contains(core.NewNumber(int64(4))) {
+		t.Error("Expected set to contain 4 after adding")
+	}
+
+	// Test remove
+	set.Remove(core.NewNumber(int64(2)))
+	if set.Count() != 3 {
+		t.Errorf("Expected count 3 after removal, got %d", set.Count())
+	}
+	if set.Contains(core.NewNumber(int64(2))) {
+		t.Error("Expected set to not contain 2 after removal")
+	}
+
+	// Test remove non-existent element
+	set.Remove(core.NewNumber(int64(99)))
+	if set.Count() != 3 {
+		t.Errorf("Expected count to remain 3, got %d", set.Count())
+	}
+}
+
 func TestEnvironment(t *testing.T) {
 	// Test basic environment
 	env := core.NewEnvironment(nil)
@@ -247,6 +369,8 @@ func TestValueInterface(t *testing.T) {
 		core.Nil{},
 		core.NewList(core.NewNumber(int64(1))),
 		core.NewVector(core.NewNumber(int64(1))),
+		core.NewHashMap(),
+		core.NewSet(),
 	}
 
 	for _, val := range values {
