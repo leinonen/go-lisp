@@ -36,7 +36,7 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
   - `eval_collections.go` - Collection operations (cons, first, rest, nth, count, etc.)
   - `eval_strings.go` - String operations (string-split, substring, string-trim, etc.)
   - `eval_io.go` - I/O operations (slurp, spit, println, file-exists?, etc.)
-  - `eval_meta.go` - Meta-programming (eval, read-string, macroexpand, etc.)
+  - `eval_meta.go` - Meta-programming (eval, read-string, macroexpand, gensym, throw, etc.)
   - `eval_special_forms.go` - Special forms (if, fn, def, quote, quasiquote, do, etc.)
 - `repl.go` - Read-Eval-Print-Loop implementation
 - `bootstrap.go` - Standard library loader and environment initialization
@@ -113,7 +113,7 @@ The minimal core provides ~50 essential primitives:
 **Types**: `symbol?`, `string?`, `number?`, `list?`, `vector?`, `hash-map?`, `set?`, `keyword?`, `fn?`, `nil?`
 **Strings**: `str`, `string-split`, `substring`, `string-trim`, `string-replace`
 **I/O**: `slurp`, `spit`, `println`, `prn`, `file-exists?`, `list-dir`, `load-file`
-**Meta**: `eval`, `read-string`, `read-all-string`, `macroexpand`, `gensym`
+**Meta**: `eval`, `read-string`, `read-all-string`, `macroexpand`, `gensym`, `throw`
 **Special**: `symbol`, `keyword`, `name`, `throw`
 **Quasiquote**: `quasiquote` (`` ` ``), `unquote` (`~`), `unquote-splicing` (`~@`)
 

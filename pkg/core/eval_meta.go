@@ -1,6 +1,12 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"sync/atomic"
+)
+
+// Global counter for gensym
+var gensymCounter int64
 
 // setupMetaProgramming adds meta-programming functions and type predicates to the environment
 func setupMetaProgramming(env *Environment) {
@@ -85,6 +91,41 @@ func setupMetaProgramming(env *Environment) {
 		},
 	})
 
+	env.Set(Intern("gensym"), &BuiltinFunction{
+		Name: "gensym",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			var prefix string
+			if len(args) == 0 {
+				prefix = "G__"
+			} else if len(args) == 1 {
+				if str, ok := args[0].(String); ok {
+					prefix = string(str)
+				} else if sym, ok := args[0].(Symbol); ok {
+					prefix = string(sym)
+				} else {
+					return nil, fmt.Errorf("gensym expects string or symbol as prefix, got %T", args[0])
+				}
+			} else {
+				return nil, fmt.Errorf("gensym expects 0 or 1 arguments, got %d", len(args))
+			}
+
+			// Atomically increment the counter to ensure uniqueness
+			id := atomic.AddInt64(&gensymCounter, 1)
+			return Symbol(fmt.Sprintf("%s%d", prefix, id)), nil
+		},
+	})
+
+	env.Set(Intern("macroexpand"), &BuiltinFunction{
+		Name: "macroexpand",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("macroexpand expects 1 argument")
+			}
+
+			return macroExpand(args[0], env)
+		},
+	})
+
 	// Basic type predicates
 	env.Set(Intern("symbol?"), &BuiltinFunction{
 		Name: "symbol?",
@@ -155,4 +196,52 @@ func setupMetaProgramming(env *Environment) {
 			return Nil{}, nil
 		},
 	})
+}
+
+// macroExpand performs macro expansion on an expression
+func macroExpand(expr Value, env *Environment) (Value, error) {
+	// Only expand if expr is a list starting with a macro
+	list, ok := expr.(*List)
+	if !ok || list.IsEmpty() {
+		return expr, nil
+	}
+
+	// Get the first element
+	first := list.First()
+	sym, ok := first.(Symbol)
+	if !ok {
+		return expr, nil
+	}
+
+	// Look up the symbol in the environment
+	value, err := env.Get(sym)
+	if err != nil {
+		return expr, nil
+	}
+
+	// Check if it's a macro
+	macro, ok := value.(*Macro)
+	if !ok {
+		return expr, nil
+	}
+
+	// Collect arguments for macro expansion
+	args := listToSlice(list.Rest())
+
+	// Create environment for macro expansion
+	macroEnv := NewEnvironment(macro.Env)
+
+	// Bind macro parameters to arguments
+	err = bindParams(macro.Params, args, macroEnv)
+	if err != nil {
+		return nil, fmt.Errorf("macro expansion error: %v", err)
+	}
+
+	// Evaluate the macro body to get the expanded form
+	expanded, err := Eval(macro.Body, macroEnv)
+	if err != nil {
+		return nil, fmt.Errorf("macro expansion error: %v", err)
+	}
+
+	return expanded, nil
 }

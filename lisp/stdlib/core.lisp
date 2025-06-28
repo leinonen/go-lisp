@@ -9,13 +9,11 @@
 (def not (fn [x] (if x nil true)))
 
 ;; Conditional helpers  
-(def when
-  (fn [condition body]
-    (if condition body nil)))
+(defmacro when [condition & body]
+  (list 'if condition (cons 'do body) nil))
 
-(def unless
-  (fn [condition body]
-    (if condition nil body)))
+(defmacro unless [condition & body]
+  (list 'if condition nil (cons 'do body)))
 
 ;; Collection operations that complement core functions
 ;; Note: count, empty?, nth, conj are already in core

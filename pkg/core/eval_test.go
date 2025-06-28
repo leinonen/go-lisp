@@ -424,6 +424,134 @@ func TestEvalMetaProgramming(t *testing.T) {
 	if result.String() != "3" {
 		t.Errorf("Expected '3' for eval + read-string, got '%s'", result.String())
 	}
+
+	// Test gensym with default prefix
+	expr, _ = core.ReadString("(gensym)")
+	result, err = core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for gensym: %v", err)
+	}
+	if result.String() != "G__1" {
+		t.Errorf("Expected 'G__1' for first gensym, got '%s'", result.String())
+	}
+
+	// Test gensym with custom prefix
+	expr, _ = core.ReadString("(gensym \"my-prefix\")")
+	result, err = core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for gensym with prefix: %v", err)
+	}
+	if result.String() != "my-prefix2" {
+		t.Errorf("Expected 'my-prefix2' for gensym with prefix, got '%s'", result.String())
+	}
+
+	// Test gensym uniqueness
+	expr, _ = core.ReadString("(gensym)")
+	result, err = core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for third gensym: %v", err)
+	}
+	if result.String() != "G__3" {
+		t.Errorf("Expected 'G__3' for third gensym, got '%s'", result.String())
+	}
+}
+
+func TestEvalMacroExpand(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	// Define a simple macro
+	expr, _ := core.ReadString("(defmacro when [condition body] `(if ~condition ~body nil))")
+	_, err := core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Error defining when macro: %v", err)
+	}
+
+	// Test macroexpand on the macro
+	expr, _ = core.ReadString("(macroexpand '(when true (+ 1 2)))")
+	result, err := core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for macroexpand: %v", err)
+	}
+	expected := "(if true (+ 1 2) nil)"
+	if result.String() != expected {
+		t.Errorf("Expected '%s' for macroexpand, got '%s'", expected, result.String())
+	}
+
+	// Test macroexpand on non-macro (should return unchanged)
+	expr, _ = core.ReadString("(macroexpand '(+ 1 2))")
+	result, err = core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for macroexpand on non-macro: %v", err)
+	}
+	if result.String() != "(+ 1 2)" {
+		t.Errorf("Expected '(+ 1 2)' for macroexpand on non-macro, got '%s'", result.String())
+	}
+}
+
+func TestEvalVariadicFunctions(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	// Test variadic function with no extra args
+	expr, _ := core.ReadString("(def vfn (fn [x & rest] (list x rest)))")
+	_, err := core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Error defining variadic function: %v", err)
+	}
+
+	// Call with minimum args
+	expr, _ = core.ReadString("(vfn 1)")
+	result, err := core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for variadic function with min args: %v", err)
+	}
+	if result.String() != "(1 ())" {
+		t.Errorf("Expected '(1 ())' for variadic function with min args, got '%s'", result.String())
+	}
+
+	// Call with extra args
+	expr, _ = core.ReadString("(vfn 1 2 3 4)")
+	result, err = core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for variadic function with extra args: %v", err)
+	}
+	if result.String() != "(1 (2 3 4))" {
+		t.Errorf("Expected '(1 (2 3 4))' for variadic function with extra args, got '%s'", result.String())
+	}
+
+	// Test variadic macro
+	expr, _ = core.ReadString("(defmacro when [condition & body] `(if ~condition (do ~@body) nil))")
+	_, err = core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Error defining when macro: %v", err)
+	}
+
+	// Test macroexpand on when macro
+	expr, _ = core.ReadString("(macroexpand '(when true (println \"hello\") (+ 1 2)))")
+	result, err = core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Eval error for when macro expansion: %v", err)
+	}
+	expected := "(if true (do (println \"hello\") (+ 1 2)) nil)"
+	if result.String() != expected {
+		t.Errorf("Expected '%s' for when macro expansion, got '%s'", expected, result.String())
+	}
+
+	// Test unless macro (should be available from stdlib)
+	env2, err := core.CreateBootstrappedEnvironment()
+	if err != nil {
+		t.Errorf("Error creating bootstrapped environment: %v", err)
+	}
+
+	// Test unless macro expansion
+	expr, _ = core.ReadString("(macroexpand '(unless false (println \"hello\") (+ 1 2)))")
+	result, err = core.Eval(expr, env2)
+	if err != nil {
+		t.Errorf("Eval error for unless macro expansion: %v", err)
+	}
+	expected = "(if false nil (do (println \"hello\") (+ 1 2)))"
+	if result.String() != expected {
+		t.Errorf("Expected '%s' for unless macro expansion, got '%s'", expected, result.String())
+	}
 }
 
 func TestEvalErrors(t *testing.T) {

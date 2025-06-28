@@ -60,19 +60,66 @@ func (m *Macro) String() string {
 	return fmt.Sprintf("#<macro:%s>", m.Name)
 }
 
-// bindParams binds function parameters to arguments
+// bindParams binds function parameters to arguments, supporting variadic parameters
 func bindParams(params *List, args []Value, env *Environment) error {
 	paramList := listToSlice(params)
 
-	if len(paramList) != len(args) {
-		return fmt.Errorf("function expects %d arguments, got %d", len(paramList), len(args))
+	// Check for variadic parameters (& rest-param)
+	var restParamIndex = -1
+	for i, param := range paramList {
+		if sym, ok := param.(Symbol); ok && sym == "&" {
+			if i == len(paramList)-1 {
+				return fmt.Errorf("& must be followed by a parameter name")
+			}
+			if i != len(paramList)-2 {
+				return fmt.Errorf("& parameter must be the last parameter")
+			}
+			restParamIndex = i
+			break
+		}
 	}
 
-	for i, param := range paramList {
-		if sym, ok := param.(Symbol); ok {
-			env.Set(sym, args[i])
+	if restParamIndex >= 0 {
+		// Variadic function
+		minArgs := restParamIndex
+		if len(args) < minArgs {
+			return fmt.Errorf("function expects at least %d arguments, got %d", minArgs, len(args))
+		}
+
+		// Bind regular parameters
+		for i := 0; i < restParamIndex; i++ {
+			if sym, ok := paramList[i].(Symbol); ok {
+				env.Set(sym, args[i])
+			} else {
+				return fmt.Errorf("parameter must be a symbol, got %T", paramList[i])
+			}
+		}
+
+		// Bind rest parameter as a list
+		restParamName, ok := paramList[restParamIndex+1].(Symbol)
+		if !ok {
+			return fmt.Errorf("rest parameter must be a symbol, got %T", paramList[restParamIndex+1])
+		}
+
+		// Collect remaining arguments into a list
+		restArgs := args[restParamIndex:]
+		if len(restArgs) == 0 {
+			env.Set(restParamName, NewList()) // Empty list
 		} else {
-			return fmt.Errorf("parameter must be a symbol, got %T", param)
+			env.Set(restParamName, NewList(restArgs...))
+		}
+	} else {
+		// Non-variadic function - exact parameter count required
+		if len(paramList) != len(args) {
+			return fmt.Errorf("function expects %d arguments, got %d", len(paramList), len(args))
+		}
+
+		for i, param := range paramList {
+			if sym, ok := param.(Symbol); ok {
+				env.Set(sym, args[i])
+			} else {
+				return fmt.Errorf("parameter must be a symbol, got %T", param)
+			}
 		}
 	}
 

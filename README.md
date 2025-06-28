@@ -67,9 +67,16 @@ make build
   (= x 0) "zero"
   :else   "positive")
 
-;; Macros
+;; Macros (variadic parameters with &)
 (defmacro when [condition & body]
   (list 'if condition (cons 'do body) nil))
+
+(defmacro unless [condition & body]
+  (list 'if condition nil (cons 'do body)))
+
+;; Alternative quasiquote syntax
+(defmacro when [condition & body]
+  `(if ~condition (do ~@body) nil))
 
 ;; Quasiquote for template construction
 (def x 42)

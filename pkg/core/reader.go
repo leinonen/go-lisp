@@ -233,13 +233,13 @@ func (l *Lexer) readSymbol() (Token, error) {
 func isSymbolStart(char rune) bool {
 	return unicode.IsLetter(char) || char == '_' || char == '+' || char == '-' ||
 		char == '*' || char == '/' || char == '=' || char == '<' || char == '>' ||
-		char == '!' || char == '?' || char == '%'
+		char == '!' || char == '?' || char == '%' || char == '&'
 }
 
 func isSymbolChar(char rune) bool {
 	return unicode.IsLetter(char) || unicode.IsDigit(char) || char == '_' ||
 		char == '-' || char == '+' || char == '*' || char == '/' || char == '=' ||
-		char == '<' || char == '>' || char == '!' || char == '?' || char == '%'
+		char == '<' || char == '>' || char == '!' || char == '?' || char == '%' || char == '&'
 }
 
 // Parser converts tokens to AST
