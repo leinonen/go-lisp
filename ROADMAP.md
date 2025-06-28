@@ -334,14 +334,51 @@ Your current architecture is excellent for self-hosting:
 
 ### 📋 Phase 3: Self-Hosting Compiler Enhancement (NEXT PRIORITY)
 
-#### Phase 1.2: Self-Hosting Compiler Integration  
-- [ ] **Integrate Existing Compiler**: Connect `lisp/self-hosting.lisp` with minimal core
-- [ ] **Multi-Expression Parsing**: Improve `read-all` functionality
-- [ ] **Macro Expansion**: Add compilation-time macro expansion
-- [ ] **Optimization Passes**: Implement in Lisp (constant folding, dead code elimination)
-- [ ] **Error Reporting**: Source location tracking during compilation
+#### Phase 3.1: Test and Integrate Existing Self-Hosting Compiler
+- [ ] **Step 3.1.1**: Test current self-hosting.lisp with minimal core
+  - Load `lisp/self-hosting.lisp` without errors
+  - Test basic compilation functions 
+  - Identify missing dependencies
+- [ ] **Step 3.1.2**: Add missing core dependencies
+  - Implement `length` - get collection length
+  - Implement `hash-map-put` - modify hash-map  
+  - Implement `assoc` - associate key-value in map
+  - Implement `nth` - get nth element
+  - Implement `contains?` - check if collection contains key
+  - Implement `throw` - error handling
+- [ ] **Step 3.1.3**: Fix multi-expression parsing
+  - Replace simplified `read-all` function (line 116-119)
+  - Implement proper multi-expression reading from strings
+  - Handle multiple top-level forms in source files
 
-#### Phase 1.3: Advanced Language Features
+#### Phase 3.2: Core Compiler Enhancements  
+- [ ] **Step 3.2.1**: Add missing `let` compilation
+  - Implement `compile-let` function (referenced but missing)
+  - Add proper let-binding compilation with local scope tracking
+- [ ] **Step 3.2.2**: Implement macro expansion during compilation
+  - Add macro expansion during compilation phase
+  - Integrate with existing `macroexpand` function  
+  - Handle recursive macro expansion
+- [ ] **Step 3.2.3**: Enhanced error reporting
+  - Add source location tracking during compilation
+  - Improve error messages with context
+  - Add compilation phase information to errors
+
+#### Phase 3.3: Optimization and Advanced Features
+- [ ] **Step 3.3.1**: Basic optimization passes
+  - Constant folding for arithmetic expressions
+  - Dead code elimination for unused bindings
+  - Simple tail call recognition
+- [ ] **Step 3.3.2**: Testing and validation
+  - Create comprehensive test suite for compiler
+  - Test self-compilation (compiler compiling itself)
+  - Verify compiled code produces identical results
+- [ ] **Step 3.3.3**: Documentation
+  - Document compiler architecture and design
+  - Add usage examples and API documentation
+  - Create self-hosting development guide
+
+#### Phase 3.4: Advanced Language Features (FUTURE)
 - [ ] **Module System**: Namespace support and imports
 - [ ] **Pattern Matching**: Destructuring and match expressions
 - [ ] **Exception Handling**: try/catch constructs
@@ -363,14 +400,56 @@ Your current architecture is excellent for self-hosting:
 - [ ] **Test Framework**: Comprehensive testing utilities
 - [ ] **IDE Integration**: Language server protocol
 
-### 🎯 Immediate Next Actions
+### 🎯 Immediate Next Actions (Updated with Detailed Steps)
 
 1. **✅ Complete Standard Library Functions** - ✅ DONE: Enhanced standard library implemented
-2. **🎯 NEXT: Test Self-Hosting Compiler** - Verify `lisp/self-hosting.lisp` works with minimal core
-3. **Improve Self-Hosting Compiler** - Multi-expression parsing, macro expansion
-4. **Add Advanced Language Features** - Pattern matching, modules, exception handling
-5. **Performance Benchmarking** - Compare minimal core vs full kernel performance
-6. **Documentation** - Document the enhanced architecture and API
+2. **🎯 NEXT: Step 3.1.1** - Test current self-hosting.lisp with minimal core
+   ```bash
+   make build
+   ./bin/golisp -f lisp/self-hosting.lisp
+   # Test: (make-context), (compile-expr '(+ 1 2) (make-context))
+   ```
+3. **Step 3.1.2** - Add missing core dependencies (`length`, `hash-map-put`, `assoc`, `nth`, `contains?`, `throw`)
+4. **Step 3.1.3** - Fix multi-expression parsing (`read-all` function)
+5. **Step 3.2.1** - Add missing `let` compilation
+6. **Step 3.2.2** - Implement macro expansion during compilation
+7. **Step 3.2.3** - Enhanced error reporting
+8. **Step 3.3.1** - Basic optimization passes
+9. **Step 3.3.2** - Testing and validation
+10. **Step 3.3.3** - Documentation
+
+### 🎯 Implementation Commands per Step
+
+#### Step 3.1.1: Test Self-Hosting Compiler
+```bash
+# Test loading the compiler
+./bin/golisp -f lisp/self-hosting.lisp
+
+# Test in REPL:
+# (make-context)
+# (compile-expr 'x (make-context))
+# (compile-expr '(+ 1 2) (make-context))
+```
+
+#### Step 3.1.2: Add Missing Dependencies
+```bash
+# Test what's missing:
+./bin/golisp -e "(length [1 2 3])"  # Should work or error
+./bin/golisp -e "(assoc {} :a 1)"   # Should work or error
+./bin/golisp -e "(nth [1 2 3] 1)"   # Should work or error
+```
+
+#### Step 3.1.3: Fix Multi-Expression Parsing
+- Implement proper `read-all` to replace lines 116-119 in self-hosting.lisp
+- Test with multi-expression strings
+
+### 🏁 Success Criteria for Phase 3.1
+
+**Step 3.1.1 Complete**: Self-hosting.lisp loads without errors
+**Step 3.1.2 Complete**: All missing functions implemented and tested
+**Step 3.1.3 Complete**: Multi-expression parsing works correctly
+
+**Phase 3.1 Complete**: Can successfully run `(bootstrap-self-hosting)` and compile basic Lisp files
 
 ### 🏆 Achievement Summary
 
