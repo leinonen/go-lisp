@@ -23,7 +23,7 @@ A minimalist, self-hosting Lisp interpreter written in Go, inspired by Clojure. 
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/go-lisp
+git clone https://github.com/leinonen/go-lisp
 cd go-lisp
 make build
 ```
@@ -52,10 +52,10 @@ make build
 
 ### Functions and Variables
 ```lisp
-(defn square [x] (* x x))          ; define function (using defn)
-(square 5)                         ; 25
+(defn square [x] (* x x))            ; define function (using defn)
+(square 5)                           ; 25
 
-(def numbers [1 2 3 4 5])          ; vector
+(def numbers [1 2 3 4 5])            ; vector
 (def person {:name "Alice" :age 30}) ; hash-map
 ```
 
@@ -81,9 +81,9 @@ make build
 
 ### Higher-Order Functions (Self-Hosted)
 ```lisp
-(map (fn [x] (* x 2)) [1 2 3 4])   ; (2 4 6 8)
+(map (fn [x] (* x 2)) [1 2 3 4])      ; (2 4 6 8)
 (filter (fn [x] (> x 2)) [1 2 3 4 5]) ; (3 4 5)
-(reduce + 0 [1 2 3 4 5])           ; 15
+(reduce + 0 [1 2 3 4 5])              ; 15
 ```
 
 ### Collections
