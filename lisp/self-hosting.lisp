@@ -114,9 +114,8 @@
 
 ;; Read multiple expressions from a string
 (defn read-all [source]
-  ;; This is a simplified version - in reality we'd need
-  ;; a proper multi-expression reader
-  (list (read-string (str "(" source ")"))))
+  ;; Use the core read-all-string function to parse multiple expressions
+  (read-all-string source))
 
 ;; Utility for joining strings
 (defn str-join [separator coll]

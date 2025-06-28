@@ -142,4 +142,49 @@ func setupIOOperations(env *Environment) {
 			return NewVector(elements...), nil
 		},
 	})
+
+	env.Set(Intern("load-file"), &BuiltinFunction{
+		Name: "load-file",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("load-file expects 1 argument")
+			}
+
+			filename, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("load-file expects string filename, got %T", args[0])
+			}
+
+			// Read file content
+			content, err := os.ReadFile(string(filename))
+			if err != nil {
+				return nil, fmt.Errorf("failed to read file %s: %v", filename, err)
+			}
+
+			// Parse all expressions
+			lexer := NewLexer(string(content))
+			tokens, err := lexer.Tokenize()
+			if err != nil {
+				return nil, fmt.Errorf("failed to tokenize file %s: %v", filename, err)
+			}
+
+			parser := NewParser(tokens)
+			expressions, err := parser.ParseAll()
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse file %s: %v", filename, err)
+			}
+
+			// Evaluate all expressions in the current environment
+			var result Value = Nil{}
+			for _, expr := range expressions {
+				result, err = Eval(expr, env)
+				if err != nil {
+					return nil, fmt.Errorf("failed to evaluate expression in file %s: %v", filename, err)
+				}
+			}
+
+			// Return the result of the last expression
+			return result, nil
+		},
+	})
 }

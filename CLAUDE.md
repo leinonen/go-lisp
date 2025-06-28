@@ -112,8 +112,8 @@ The minimal core provides ~50 essential primitives:
 **HashMap**: `get`, `assoc`, `dissoc`, `contains?`
 **Types**: `symbol?`, `string?`, `number?`, `list?`, `vector?`, `hash-map?`, `set?`, `keyword?`, `fn?`, `nil?`
 **Strings**: `str`, `string-split`, `substring`, `string-trim`, `string-replace`
-**I/O**: `slurp`, `spit`, `println`, `prn`, `file-exists?`, `list-dir`
-**Meta**: `eval`, `read-string`, `macroexpand`, `gensym`
+**I/O**: `slurp`, `spit`, `println`, `prn`, `file-exists?`, `list-dir`, `load-file`
+**Meta**: `eval`, `read-string`, `read-all-string`, `macroexpand`, `gensym`
 **Special**: `symbol`, `keyword`, `name`, `throw`
 **Quasiquote**: `quasiquote` (`` ` ``), `unquote` (`~`), `unquote-splicing` (`~@`)
 
@@ -124,13 +124,38 @@ Higher-level functions implemented in Lisp:
 **Collections**: `map`, `filter`, `reduce`, `apply`, `sort`, `concat`, `any?`, `second`, `third`
 **Utilities**: `range`, `join`, `group-by`
 
+### Multi-Expression Support
+The GoLisp interpreter provides comprehensive support for handling multiple expressions in source files:
+
+#### File Loading Functions
+- **`load-file`**: Loads and evaluates all expressions from a Lisp file in the current environment
+  - Usage: `(load-file "filename.lisp")`
+  - Returns the value of the last expression in the file
+  - All definitions and side effects are applied to the current environment
+  - Supports relative and absolute file paths
+
+#### Multi-Expression Parsing
+- **`read-all-string`**: Parses multiple expressions from a string
+  - Usage: `(read-all-string "(def x 1) (def y 2) (+ x y)")`
+  - Returns a list of parsed expressions: `((def x 1) (def y 2) (+ x y))`
+  - Handles all data types: lists, vectors, hash-maps, sets, literals
+  - Used internally by the self-hosting compiler for source file processing
+
+#### Self-Hosting Compiler Integration
+- **`read-all`**: Lisp function that wraps `read-all-string` for compiler use
+  - Defined in `lisp/self-hosting.lisp` as `(defn read-all [source] (read-all-string source))`
+  - Used by `compile-file` to parse source files with multiple top-level forms
+  - Enables the self-hosting compiler to handle realistic Lisp programs
+
 ### Testing Strategy
-Comprehensive test coverage with 4,319 lines of tests:
+Comprehensive test coverage with 4,500+ lines of tests:
 - Core data types and operations (`types_test.go`)
 - Parser functionality (`reader_test.go`)
-- Evaluation engine (`eval_test.go`)
+- Evaluation engine with new multi-expression functions (`eval_test.go`)
 - Standard library functions (`stdlib_test.go`)
 - Integration scenarios (`integration_test.go`)
+- Self-hosting compiler integration (`self_hosting_test.go`)
+- Multi-expression parsing and file loading tests
 - Error handling and edge cases
 - Self-hosting capabilities
 
@@ -138,5 +163,7 @@ Comprehensive test coverage with 4,319 lines of tests:
 - **Minimal Core**: 2,719 lines of Go code providing essential primitives
 - **Self-Hosted Stdlib**: Standard library functions written in Lisp
 - **Compiler Foundation**: Self-hosting compiler in `lisp/self-hosting.lisp`
+- **Multi-Expression Support**: Complete support for parsing and compiling multi-expression source files
+- **File Loading System**: `load-file` function for loading and evaluating Lisp files
 - **Bootstrap Process**: Automatic loading of Lisp-based standard library
-- **Meta-Programming**: Full eval/read-string capabilities for self-modification
+- **Meta-Programming**: Full eval/read-string/read-all-string capabilities for self-modification

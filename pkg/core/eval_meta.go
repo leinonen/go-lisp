@@ -37,6 +37,35 @@ func setupMetaProgramming(env *Environment) {
 		},
 	})
 
+	env.Set(Intern("read-all-string"), &BuiltinFunction{
+		Name: "read-all-string",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("read-all-string expects 1 argument")
+			}
+
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("read-all-string expects string, got %T", args[0])
+			}
+
+			lexer := NewLexer(string(str))
+			tokens, err := lexer.Tokenize()
+			if err != nil {
+				return nil, fmt.Errorf("failed to tokenize: %v", err)
+			}
+
+			parser := NewParser(tokens)
+			expressions, err := parser.ParseAll()
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse: %v", err)
+			}
+
+			// Convert slice to List
+			return NewList(expressions...), nil
+		},
+	})
+
 	env.Set(Intern("throw"), &BuiltinFunction{
 		Name: "throw",
 		Fn: func(args []Value, env *Environment) (Value, error) {

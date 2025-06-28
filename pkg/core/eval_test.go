@@ -998,3 +998,210 @@ func TestKeywordAsFunction(t *testing.T) {
 		}
 	}
 }
+
+func TestReadAllString(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input    string
+		expected string
+		count    int
+		desc     string
+	}{
+		{
+			input:    "(read-all-string \"(+ 1 2)\")",
+			expected: "((+ 1 2))",
+			count:    1,
+			desc:     "single expression",
+		},
+		{
+			input:    "(read-all-string \"(+ 1 2) (* 3 4)\")",
+			expected: "((+ 1 2) (* 3 4))",
+			count:    2,
+			desc:     "two expressions",
+		},
+		{
+			input:    "(read-all-string \"(def x 10) (def y 20) (+ x y)\")",
+			expected: "((def x 10) (def y 20) (+ x y))",
+			count:    3,
+			desc:     "three expressions with definitions",
+		},
+		{
+			input:    "(read-all-string \"[1 2 3] {:a 1} #{1 2}\")",
+			expected: "([1 2 3] {:a 1} #{1 2})",
+			count:    3,
+			desc:     "data structures",
+		},
+		{
+			input:    "(read-all-string \"(defn f [x] (* x x)) (f 5)\")",
+			expected: "((defn f [x] (* x x)) (f 5))",
+			count:    2,
+			desc:     "function definition and call",
+		},
+		{
+			input:    "(read-all-string \"\")",
+			expected: "()",
+			count:    0,
+			desc:     "empty string",
+		},
+	}
+
+	for _, test := range tests {
+		// Test the result
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for %s '%s': %v", test.desc, test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for %s '%s': %v", test.desc, test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for %s, got '%s'", test.expected, test.desc, result.String())
+		}
+
+		// Test the count
+		countExpr, err := core.ReadString(fmt.Sprintf("(count %s)", test.input))
+		if err != nil {
+			t.Errorf("Parse error for count test %s: %v", test.desc, err)
+			continue
+		}
+
+		countResult, err := core.Eval(countExpr, env)
+		if err != nil {
+			t.Errorf("Eval error for count test %s: %v", test.desc, err)
+			continue
+		}
+
+		expectedCount := fmt.Sprintf("%d", test.count)
+		if countResult.String() != expectedCount {
+			t.Errorf("Expected count %s for %s, got '%s'", expectedCount, test.desc, countResult.String())
+		}
+	}
+}
+
+func TestReadAllStringErrors(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input string
+		desc  string
+	}{
+		{"(read-all-string)", "no arguments"},
+		{"(read-all-string \"(+ 1 2)\" \"extra\")", "too many arguments"},
+		{"(read-all-string 123)", "non-string argument"},
+		{"(read-all-string \"(unclosed list\")", "syntax error"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			// This is expected for some syntax errors
+			continue
+		}
+
+		_, err = core.Eval(expr, env)
+		if err == nil {
+			t.Errorf("Expected error for %s '%s', but got none", test.desc, test.input)
+		}
+	}
+}
+
+func TestLoadFile(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	// Create a temporary test file
+	testContent := `(def test-var 42)
+(def test-fn (fn [x] (* x 2)))
+(def test-result (test-fn test-var))`
+
+	// Write test file
+	testFile := "/tmp/test-load-file.lisp"
+	expr, err := core.ReadString(fmt.Sprintf("(spit \"%s\" \"%s\")", testFile, testContent))
+	if err != nil {
+		t.Errorf("Parse error creating test file: %v", err)
+		return
+	}
+	_, err = core.Eval(expr, env)
+	if err != nil {
+		t.Errorf("Error creating test file: %v", err)
+		return
+	}
+
+	// Test load-file
+	loadExpr, err := core.ReadString(fmt.Sprintf("(load-file \"%s\")", testFile))
+	if err != nil {
+		t.Errorf("Parse error for load-file: %v", err)
+		return
+	}
+
+	result, err := core.Eval(loadExpr, env)
+	if err != nil {
+		t.Errorf("Error loading file: %v", err)
+		return
+	}
+
+	// The result should be the last expression's symbol (test-result)
+	if result.String() != "test-result" {
+		t.Errorf("Expected 'test-result' from loaded file, got '%s'", result.String())
+	}
+
+	// Test that the variables are now defined in the environment
+	tests := []struct {
+		input    string
+		expected string
+		desc     string
+	}{
+		{"test-var", "42", "loaded variable"},
+		{"(test-fn 10)", "20", "loaded function"},
+		{"test-result", "84", "loaded computation result"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for %s: %v", test.desc, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for %s: %v", test.desc, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for %s, got '%s'", test.expected, test.desc, result.String())
+		}
+	}
+}
+
+func TestLoadFileErrors(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input string
+		desc  string
+	}{
+		{"(load-file)", "no arguments"},
+		{"(load-file \"file1\" \"file2\")", "too many arguments"},
+		{"(load-file 123)", "non-string argument"},
+		{"(load-file \"/nonexistent/file.lisp\")", "nonexistent file"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			continue
+		}
+
+		_, err = core.Eval(expr, env)
+		if err == nil {
+			t.Errorf("Expected error for %s '%s', but got none", test.desc, test.input)
+		}
+	}
+}
