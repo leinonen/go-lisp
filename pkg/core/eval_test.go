@@ -520,3 +520,150 @@ func TestBuiltinFunctionInterface(t *testing.T) {
 		t.Errorf("Expected '#<builtin:test-add>', got '%s'", addFn.String())
 	}
 }
+
+func TestNewCoreFunctions(t *testing.T) {
+	env := NewCoreEnvironment()
+	
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Test list function
+		{"(list)", "()"},
+		{"(list 1)", "(1)"},
+		{"(list 1 2 3)", "(1 2 3)"},
+		{"(list \"a\" \"b\" \"c\")", "(\"a\" \"b\" \"c\")"},
+		
+		// Test count function
+		{"(count (list 1 2 3))", "3"},
+		{"(count [])", "0"},
+		{"(count [1 2 3 4])", "4"},
+		{"(count nil)", "0"},
+		
+		// Test empty? function
+		{"(empty? (list))", "true"},
+		{"(empty? [])", "true"},
+		{"(empty? (list 1))", "nil"},
+		{"(empty? [1])", "nil"},
+		{"(empty? nil)", "true"},
+		
+		// Test nth function
+		{"(nth [1 2 3] 0)", "1"},
+		{"(nth [1 2 3] 1)", "2"},
+		{"(nth [1 2 3] 2)", "3"},
+		{"(nth (list 1 2 3) 1)", "2"},
+		
+		// Test conj function
+		{"(conj [1 2] 3)", "[1 2 3]"},
+		{"(conj [] 1)", "[1]"},
+		{"(conj (list 1 2) 3)", "(3 1 2)"},
+	}
+	
+	for _, test := range tests {
+		expr, err := ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+		
+		result, err := Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+		
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}
+
+func TestStringOperations(t *testing.T) {
+	env := NewCoreEnvironment()
+	
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Test str function
+		{"(str \"hello\")", "\"hello\""},
+		{"(str \"hello\" \" \" \"world\")", "\"hello world\""},
+		{"(str 1 2 3)", "\"123\""},
+		{"(str)", "\"\""},
+		
+		// Test substring function
+		{"(substring \"hello\" 1 4)", "\"ell\""},
+		{"(substring \"world\" 0 5)", "\"world\""},
+		{"(substring \"test\" 2 4)", "\"st\""},
+		
+		// Test string-split function
+		{"(string-split \"a,b,c\" \",\")", "[\"a\" \"b\" \"c\"]"},
+		{"(string-split \"hello world\" \" \")", "[\"hello\" \"world\"]"},
+		{"(string-split \"test\" \",\")", "[\"test\"]"},
+		
+		// Test string-trim function
+		{"(string-trim \"  hello  \")", "\"hello\""},
+		{"(string-trim \"\\n\\ttest\\n\")", "\"test\""},
+		{"(string-trim \"normal\")", "\"normal\""},
+		
+		// Test string-replace function
+		{"(string-replace \"hello world\" \"world\" \"universe\")", "\"hello universe\""},
+		{"(string-replace \"test test\" \"test\" \"demo\")", "\"demo demo\""},
+	}
+	
+	for _, test := range tests {
+		expr, err := ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+		
+		result, err := Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+		
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}
+
+func TestLetSpecialForm(t *testing.T) {
+	env := NewCoreEnvironment()
+	
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Basic let bindings
+		{"(let [x 1] x)", "1"},
+		{"(let [x 1 y 2] (+ x y))", "3"},
+		{"(let [x 10] (let [y 20] (+ x y)))", "30"},
+		
+		// Let with function calls
+		{"(let [x (+ 1 2)] (* x 3))", "9"},
+		
+		// Let with multiple expressions in body
+		{"(let [x 1] x x)", "1"},
+	}
+	
+	for _, test := range tests {
+		expr, err := ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+		
+		result, err := Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+		
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}

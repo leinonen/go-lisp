@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 // Function interface for callable values
@@ -205,6 +206,61 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 		}
 		
 		return result, nil
+		
+	case "let":
+		argSlice := listToSlice(args)
+		if len(argSlice) < 2 {
+			return nil, fmt.Errorf("let expects at least 2 arguments")
+		}
+		
+		// Create new environment for let bindings
+		letEnv := NewEnvironment(env)
+		
+		// Process bindings
+		bindings := argSlice[0]
+		var bindingList []Value
+		
+		switch b := bindings.(type) {
+		case *List:
+			bindingList = listToSlice(b)
+		case *Vector:
+			for i := 0; i < b.Count(); i++ {
+				bindingList = append(bindingList, b.Get(i))
+			}
+		default:
+			return nil, fmt.Errorf("let expects vector or list for bindings")
+		}
+		
+		if len(bindingList)%2 != 0 {
+			return nil, fmt.Errorf("let bindings must be even number of forms")
+		}
+		
+		// Bind variables
+		for i := 0; i < len(bindingList); i += 2 {
+			sym, ok := bindingList[i].(Symbol)
+			if !ok {
+				return nil, fmt.Errorf("let binding names must be symbols")
+			}
+			
+			value, err := Eval(bindingList[i+1], letEnv)
+			if err != nil {
+				return nil, err
+			}
+			
+			letEnv.Set(sym, value)
+		}
+		
+		// Evaluate body expressions
+		var result Value = Nil{}
+		for _, expr := range argSlice[1:] {
+			var err error
+			result, err = Eval(expr, letEnv)
+			if err != nil {
+				return nil, err
+			}
+		}
+		
+		return result, nil
 	}
 	
 	return nil, fmt.Errorf("unknown special form: %s", sym)
@@ -213,7 +269,7 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 // isSpecialForm checks if a symbol is a special form
 func isSpecialForm(sym Symbol) bool {
 	switch sym {
-	case "quote", "if", "def", "fn", "do":
+	case "quote", "if", "def", "fn", "do", "let":
 		return true
 	default:
 		return false
@@ -428,6 +484,30 @@ func NewCoreEnvironment() *Environment {
 		},
 	})
 	
+	env.Set(Intern("%"), &BuiltinFunction{
+		Name: "%",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("%% expects 2 arguments")
+			}
+			
+			n1, ok1 := args[0].(Number)
+			n2, ok2 := args[1].(Number)
+			
+			if !ok1 || !ok2 {
+				return nil, fmt.Errorf("%% expects numbers")
+			}
+			
+			divisor := n2.ToInt()
+			if divisor == 0 {
+				return nil, fmt.Errorf("modulo by zero")
+			}
+			
+			result := n1.ToInt() % divisor
+			return NewNumber(result), nil
+		},
+	})
+	
 	// Comparison operations
 	env.Set(Intern("="), &BuiltinFunction{
 		Name: "=",
@@ -482,6 +562,48 @@ func NewCoreEnvironment() *Environment {
 			}
 			
 			if n1.ToFloat() > n2.ToFloat() {
+				return Symbol("true"), nil
+			}
+			return Nil{}, nil
+		},
+	})
+	
+	env.Set(Intern(">="), &BuiltinFunction{
+		Name: ">=",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf(">= expects 2 arguments")
+			}
+			
+			n1, ok1 := args[0].(Number)
+			n2, ok2 := args[1].(Number)
+			
+			if !ok1 || !ok2 {
+				return nil, fmt.Errorf(">= expects numbers")
+			}
+			
+			if n1.ToFloat() >= n2.ToFloat() {
+				return Symbol("true"), nil
+			}
+			return Nil{}, nil
+		},
+	})
+	
+	env.Set(Intern("<="), &BuiltinFunction{
+		Name: "<=",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("<= expects 2 arguments")
+			}
+			
+			n1, ok1 := args[0].(Number)
+			n2, ok2 := args[1].(Number)
+			
+			if !ok1 || !ok2 {
+				return nil, fmt.Errorf("<= expects numbers")
+			}
+			
+			if n1.ToFloat() <= n2.ToFloat() {
 				return Symbol("true"), nil
 			}
 			return Nil{}, nil
@@ -548,10 +670,20 @@ func NewCoreEnvironment() *Environment {
 					return (*List)(nil), nil  // Return nil list, which prints as "()"
 				}
 				return rest, nil
+			case *Vector:
+				if coll.Count() == 0 {
+					return (*List)(nil), nil  // Return empty list
+				}
+				// Convert vector rest to list
+				var elements []Value
+				for i := 1; i < coll.Count(); i++ {
+					elements = append(elements, coll.Get(i))
+				}
+				return NewList(elements...), nil
 			case Nil:
 				return (*List)(nil), nil  // Return nil list, which prints as "()"
 			default:
-				return nil, fmt.Errorf("rest expects list, got %T", args[0])
+				return nil, fmt.Errorf("rest expects list or vector, got %T", args[0])
 			}
 		},
 	})
@@ -700,6 +832,385 @@ func NewCoreEnvironment() *Environment {
 				return Symbol("true"), nil
 			}
 			return Nil{}, nil
+		},
+	})
+	
+	// String operations
+	env.Set(Intern("str"), &BuiltinFunction{
+		Name: "str",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			result := ""
+			for _, arg := range args {
+				switch v := arg.(type) {
+				case String:
+					result += string(v)
+				case Symbol:
+					result += string(v)
+				case Keyword:
+					result += v.String()
+				case Number:
+					result += v.String()
+				case Nil:
+					result += ""
+				default:
+					result += arg.String()
+				}
+			}
+			return String(result), nil
+		},
+	})
+	
+	env.Set(Intern("substring"), &BuiltinFunction{
+		Name: "substring",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) < 2 || len(args) > 3 {
+				return nil, fmt.Errorf("substring expects 2-3 arguments")
+			}
+			
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("substring expects string as first argument")
+			}
+			
+			start, ok := args[1].(Number)
+			if !ok {
+				return nil, fmt.Errorf("substring expects number as second argument")
+			}
+			
+			s := string(str)
+			startIdx := int(start.ToInt())
+			
+			if startIdx < 0 || startIdx > len(s) {
+				return String(""), nil
+			}
+			
+			if len(args) == 2 {
+				return String(s[startIdx:]), nil
+			}
+			
+			end, ok := args[2].(Number)
+			if !ok {
+				return nil, fmt.Errorf("substring expects number as third argument")
+			}
+			
+			endIdx := int(end.ToInt())
+			if endIdx < startIdx || endIdx > len(s) {
+				endIdx = len(s)
+			}
+			
+			return String(s[startIdx:endIdx]), nil
+		},
+	})
+	
+	env.Set(Intern("string-length"), &BuiltinFunction{
+		Name: "string-length",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("string-length expects 1 argument")
+			}
+			
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("string-length expects string")
+			}
+			
+			return NewNumber(int64(len(string(str)))), nil
+		},
+	})
+	
+	env.Set(Intern("string-contains?"), &BuiltinFunction{
+		Name: "string-contains?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("string-contains? expects 2 arguments")
+			}
+			
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("string-contains? expects string as first argument")
+			}
+			
+			substr, ok := args[1].(String)
+			if !ok {
+				return nil, fmt.Errorf("string-contains? expects string as second argument")
+			}
+			
+			if strings.Contains(string(str), string(substr)) {
+				return Symbol("true"), nil
+			}
+			return Nil{}, nil
+		},
+	})
+	
+	env.Set(Intern("string-replace"), &BuiltinFunction{
+		Name: "string-replace",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 3 {
+				return nil, fmt.Errorf("string-replace expects 3 arguments")
+			}
+			
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("string-replace expects string as first argument")
+			}
+			
+			old, ok := args[1].(String)
+			if !ok {
+				return nil, fmt.Errorf("string-replace expects string as second argument")
+			}
+			
+			new, ok := args[2].(String)
+			if !ok {
+				return nil, fmt.Errorf("string-replace expects string as third argument")
+			}
+			
+			result := strings.ReplaceAll(string(str), string(old), string(new))
+			return String(result), nil
+		},
+	})
+	
+	env.Set(Intern("string-split"), &BuiltinFunction{
+		Name: "string-split",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("string-split expects 2 arguments")
+			}
+			
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("string-split expects string as first argument")
+			}
+			
+			sep, ok := args[1].(String)
+			if !ok {
+				return nil, fmt.Errorf("string-split expects string as second argument")
+			}
+			
+			parts := strings.Split(string(str), string(sep))
+			var result []Value
+			for _, part := range parts {
+				result = append(result, String(part))
+			}
+			
+			return NewVector(result...), nil
+		},
+	})
+	
+	env.Set(Intern("string-trim"), &BuiltinFunction{
+		Name: "string-trim",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("string-trim expects 1 argument")
+			}
+			
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("string-trim expects string")
+			}
+			
+			result := strings.TrimSpace(string(str))
+			return String(result), nil
+		},
+	})
+	
+	// Collection operations
+	env.Set(Intern("count"), &BuiltinFunction{
+		Name: "count",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("count expects 1 argument")
+			}
+			
+			switch coll := args[0].(type) {
+			case *List:
+				count := int64(0)
+				current := coll
+				for current != nil {
+					count++
+					current = current.Rest()
+				}
+				return NewNumber(count), nil
+			case *Vector:
+				return NewNumber(int64(coll.Count())), nil
+			case String:
+				return NewNumber(int64(len(string(coll)))), nil
+			case Nil:
+				return NewNumber(int64(0)), nil
+			default:
+				return nil, fmt.Errorf("count expects collection, got %T", args[0])
+			}
+		},
+	})
+	
+	env.Set(Intern("empty?"), &BuiltinFunction{
+		Name: "empty?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("empty? expects 1 argument")
+			}
+			
+			switch coll := args[0].(type) {
+			case *List:
+				if coll.IsEmpty() {
+					return Symbol("true"), nil
+				}
+				return Nil{}, nil
+			case *Vector:
+				if coll.Count() == 0 {
+					return Symbol("true"), nil
+				}
+				return Nil{}, nil
+			case String:
+				if len(string(coll)) == 0 {
+					return Symbol("true"), nil
+				}
+				return Nil{}, nil
+			case Nil:
+				return Symbol("true"), nil
+			default:
+				return nil, fmt.Errorf("empty? expects collection, got %T", args[0])
+			}
+		},
+	})
+	
+	env.Set(Intern("nth"), &BuiltinFunction{
+		Name: "nth",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) < 2 || len(args) > 3 {
+				return nil, fmt.Errorf("nth expects 2-3 arguments")
+			}
+			
+			n, ok := args[1].(Number)
+			if !ok {
+				return nil, fmt.Errorf("nth expects number as second argument")
+			}
+			
+			index := int(n.ToInt())
+			
+			switch coll := args[0].(type) {
+			case *List:
+				current := coll
+				for i := 0; i < index && current != nil; i++ {
+					current = current.Rest()
+				}
+				if current == nil {
+					if len(args) == 3 {
+						return args[2], nil // Return default value
+					}
+					return nil, fmt.Errorf("index %d out of bounds", index)
+				}
+				return current.First(), nil
+			case *Vector:
+				if index < 0 || index >= coll.Count() {
+					if len(args) == 3 {
+						return args[2], nil // Return default value
+					}
+					return nil, fmt.Errorf("index %d out of bounds", index)
+				}
+				return coll.Get(index), nil
+			case String:
+				s := string(coll)
+				if index < 0 || index >= len(s) {
+					if len(args) == 3 {
+						return args[2], nil // Return default value
+					}
+					return nil, fmt.Errorf("index %d out of bounds", index)
+				}
+				return String(string(s[index])), nil
+			default:
+				return nil, fmt.Errorf("nth expects collection, got %T", args[0])
+			}
+		},
+	})
+	
+	env.Set(Intern("conj"), &BuiltinFunction{
+		Name: "conj",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("conj expects at least 2 arguments")
+			}
+			
+			coll := args[0]
+			elements := args[1:]
+			
+			switch c := coll.(type) {
+			case *List:
+				result := c
+				// For lists, conj adds to the front
+				for i := len(elements) - 1; i >= 0; i-- {
+					result = &List{head: elements[i], tail: result}
+				}
+				return result, nil
+			case *Vector:
+				// For vectors, conj adds to the end
+				newElements := make([]Value, c.Count()+len(elements))
+				for i := 0; i < c.Count(); i++ {
+					newElements[i] = c.Get(i)
+				}
+				for i, elem := range elements {
+					newElements[c.Count()+i] = elem
+				}
+				return NewVector(newElements...), nil
+			case Nil:
+				// Conj on nil creates a list
+				result := (*List)(nil)
+				for i := len(elements) - 1; i >= 0; i-- {
+					result = &List{head: elements[i], tail: result}
+				}
+				return result, nil
+			default:
+				return nil, fmt.Errorf("conj expects collection, got %T", coll)
+			}
+		},
+	})
+	
+	// I/O operations
+	env.Set(Intern("println"), &BuiltinFunction{
+		Name: "println",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			for i, arg := range args {
+				if i > 0 {
+					fmt.Print(" ")
+				}
+				switch v := arg.(type) {
+				case String:
+					fmt.Print(string(v))
+				case Symbol:
+					fmt.Print(string(v))
+				case Keyword:
+					fmt.Print(v.String())
+				case Number:
+					fmt.Print(v.String())
+				case Nil:
+					fmt.Print("nil")
+				default:
+					fmt.Print(arg.String())
+				}
+			}
+			fmt.Println()
+			return Nil{}, nil
+		},
+	})
+	
+	env.Set(Intern("prn"), &BuiltinFunction{
+		Name: "prn",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			for i, arg := range args {
+				if i > 0 {
+					fmt.Print(" ")
+				}
+				fmt.Print(arg.String())
+			}
+			fmt.Println()
+			return Nil{}, nil
+		},
+	})
+	
+	// List construction function
+	env.Set(Intern("list"), &BuiltinFunction{
+		Name: "list",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			return NewList(args...), nil
 		},
 	})
 	

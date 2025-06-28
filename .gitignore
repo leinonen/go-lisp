@@ -17,3 +17,4 @@
 go.work
 
 bin/golisp
+bin/golisp-core

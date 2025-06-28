@@ -309,12 +309,15 @@ Your current architecture is excellent for self-hosting:
 
 ### 📋 Phase 1: Enhanced Self-Hosting (NEXT PRIORITY)
 
-#### Phase 1.1: Complete Standard Library in Lisp
-- [ ] **String Operations**: `split`, `join`, `substring`, `trim`, `replace`
-- [ ] **Advanced Collections**: Complete `map`, `filter`, `apply`, `sort`, `group-by`
-- [ ] **I/O Enhancements**: `println`, `prn`, directory operations
+#### ✅ Phase 1.1: Complete Standard Library in Lisp (COMPLETED)
+- ✅ **String Operations**: `string-split`, `string-trim`, `string-replace`, `substring`, `str` (in core)
+- ✅ **Advanced Collections**: `map`, `filter`, `reduce`, `apply`, `sort`, `reverse`, `take`, `drop`, `concat` (enhanced.lisp)  
+- ✅ **I/O Enhancements**: `println`, `prn` (in core)
+- ✅ **Collection Predicates**: `all?`, `any?`, `empty?`, `count` (comprehensive set)
+- ✅ **Utility Functions**: `inc`, `dec`, `min`, `max`, `abs`, `even?`, `odd?`, `identity`
+- ✅ **List Construction**: Added `list` function to core primitives
 - [ ] **Macro System**: `defmacro`, `gensym`, `macroexpand` in Lisp
-- [ ] **Type System**: Enhanced type predicates and conversions
+- ✅ **Type System**: Enhanced type predicates (`nil?`, `some?`, `seq?`, `coll?`)
 
 #### Phase 1.2: Self-Hosting Compiler Integration  
 - [ ] **Integrate Existing Compiler**: Connect `lisp/self-hosting.lisp` with minimal core
