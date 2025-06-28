@@ -1,0 +1,110 @@
+package core
+
+import "fmt"
+
+// setupMetaProgramming adds meta-programming functions and type predicates to the environment
+func setupMetaProgramming(env *Environment) {
+	// Basic language literals
+	env.Set(Intern("nil"), Nil{})
+	env.Set(Intern("true"), Symbol("true"))
+	env.Set(Intern("false"), Nil{})
+
+	// Meta-programming functions
+	env.Set(Intern("eval"), &BuiltinFunction{
+		Name: "eval",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("eval expects 1 argument")
+			}
+
+			return Eval(args[0], env)
+		},
+	})
+
+	env.Set(Intern("read-string"), &BuiltinFunction{
+		Name: "read-string",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("read-string expects 1 argument")
+			}
+
+			str, ok := args[0].(String)
+			if !ok {
+				return nil, fmt.Errorf("read-string expects string, got %T", args[0])
+			}
+
+			return ReadString(string(str))
+		},
+	})
+
+	// Basic type predicates
+	env.Set(Intern("symbol?"), &BuiltinFunction{
+		Name: "symbol?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("symbol? expects 1 argument")
+			}
+
+			if _, ok := args[0].(Symbol); ok {
+				return Symbol("true"), nil
+			}
+			return Nil{}, nil
+		},
+	})
+
+	env.Set(Intern("number?"), &BuiltinFunction{
+		Name: "number?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("number? expects 1 argument")
+			}
+
+			if _, ok := args[0].(Number); ok {
+				return Symbol("true"), nil
+			}
+			return Nil{}, nil
+		},
+	})
+
+	env.Set(Intern("keyword?"), &BuiltinFunction{
+		Name: "keyword?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("keyword? expects 1 argument")
+			}
+
+			if _, ok := args[0].(Keyword); ok {
+				return Symbol("true"), nil
+			}
+			return Nil{}, nil
+		},
+	})
+
+	env.Set(Intern("nil?"), &BuiltinFunction{
+		Name: "nil?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("nil? expects 1 argument")
+			}
+
+			if _, ok := args[0].(Nil); ok {
+				return Symbol("true"), nil
+			}
+			return Nil{}, nil
+		},
+	})
+
+	env.Set(Intern("fn?"), &BuiltinFunction{
+		Name: "fn?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("fn? expects 1 argument")
+			}
+
+			if _, ok := args[0].(Function); ok {
+				return Symbol("true"), nil
+			}
+			return Nil{}, nil
+		},
+	})
+}
