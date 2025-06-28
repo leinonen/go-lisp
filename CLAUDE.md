@@ -37,7 +37,7 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
   - `eval_strings.go` - String operations (string-split, substring, string-trim, etc.)
   - `eval_io.go` - I/O operations (slurp, spit, println, file-exists?, etc.)
   - `eval_meta.go` - Meta-programming (eval, read-string, macroexpand, etc.)
-  - `eval_special_forms.go` - Special forms (if, fn, def, quote, do, etc.)
+  - `eval_special_forms.go` - Special forms (if, fn, def, quote, quasiquote, do, etc.)
 - `repl.go` - Read-Eval-Print-Loop implementation
 - `bootstrap.go` - Standard library loader and environment initialization
 
@@ -57,7 +57,7 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
 
 1. **Value Interface**: All Lisp values implement the `Value` interface with a `String()` method
 2. **Environment Chain**: Lexical scoping through linked environments
-3. **Special Forms**: Core language constructs (if, fn, def, etc.) handled separately from function calls
+3. **Special Forms**: Core language constructs (if, fn, def, quote, quasiquote, etc.) handled separately from function calls
 4. **Modular Evaluation**: Core primitives split into focused modules for maintainability
 5. **Self-Hosting**: Standard library functions implemented in Lisp using core primitives
 6. **Error Context**: Rich error reporting with evaluation context and stack traces
@@ -83,6 +83,27 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
 - **Flexible keys**: Any value type can be used as a key
 - **Insertion order**: Keys maintain their insertion order
 
+#### Quasiquote System
+GoLisp implements a complete quasiquote system compatible with Clojure:
+- **Syntax**: `` `expr `` (quasiquote), `~expr` (unquote), `~@expr` (unquote-splicing)
+- **Basic quasiquote**: `` `(a b c) `` acts like `'(a b c)` - prevents evaluation
+- **Unquote**: `` `(a ~x c) `` evaluates `x` and substitutes its value
+- **Unquote-splicing**: `` `(a ~@lst c) `` evaluates `lst` and splices sequence elements
+- **Data structure support**: Works with lists, vectors, and hash maps
+- **Nested evaluation**: Supports complex expressions like `` `(+ 1 ~(* 2 3)) ``
+
+Examples:
+```lisp
+(def x 42)
+(def lst (list 1 2 3))
+
+`(a b c)        ; → (a b c)
+`(a ~x c)       ; → (a 42 c)
+`(a ~@lst d)    ; → (a 1 2 3 d)
+`[a ~x c]       ; → [a 42 c]
+`{:a ~x :b 2}   ; → {:a 42 :b 2}
+```
+
 ### Core Primitives (Go Implementation)
 The minimal core provides ~50 essential primitives:
 
@@ -94,6 +115,7 @@ The minimal core provides ~50 essential primitives:
 **I/O**: `slurp`, `spit`, `println`, `prn`, `file-exists?`, `list-dir`
 **Meta**: `eval`, `read-string`, `macroexpand`, `gensym`
 **Special**: `symbol`, `keyword`, `name`, `throw`
+**Quasiquote**: `quasiquote` (`` ` ``), `unquote` (`~`), `unquote-splicing` (`~@`)
 
 ### Self-Hosted Standard Library
 Higher-level functions implemented in Lisp:

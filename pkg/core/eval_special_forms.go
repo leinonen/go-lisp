@@ -14,6 +14,13 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 		}
 		return argSlice[0], nil
 
+	case "quasiquote":
+		argSlice := listToSlice(args)
+		if len(argSlice) != 1 {
+			return nil, fmt.Errorf("quasiquote expects 1 argument, got %d", len(argSlice))
+		}
+		return evalQuasiquote(argSlice[0], env)
+
 	case "if":
 		argSlice := listToSlice(args)
 		if len(argSlice) < 2 || len(argSlice) > 3 {
@@ -293,9 +300,173 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 // isSpecialForm checks if a symbol is a special form
 func isSpecialForm(sym Symbol) bool {
 	switch sym {
-	case "quote", "if", "def", "fn", "do", "let", "defmacro", "defn", "cond":
+	case "quote", "quasiquote", "if", "def", "fn", "do", "let", "defmacro", "defn", "cond":
 		return true
 	default:
 		return false
+	}
+}
+
+// evalQuasiquote handles quasiquote evaluation
+func evalQuasiquote(expr Value, env *Environment) (Value, error) {
+	return quasiQuoteExpand(expr, env)
+}
+
+// quasiQuoteExpand recursively expands quasiquoted expressions
+func quasiQuoteExpand(expr Value, env *Environment) (Value, error) {
+	switch v := expr.(type) {
+	case *List:
+		if v.IsEmpty() {
+			return v, nil
+		}
+		
+		// Check if this is an unquote form
+		if first := v.First(); first != nil {
+			if sym, ok := first.(Symbol); ok && sym == "unquote" {
+				rest := v.Rest()
+				args := listToSlice(rest)
+				if len(args) != 1 {
+					return nil, fmt.Errorf("unquote expects 1 argument, got %d", len(args))
+				}
+				return Eval(args[0], env)
+			}
+		}
+		
+		// Expand list elements, handling unquote-splicing
+		var result []Value
+		current := v
+		for !current.IsEmpty() {
+			elem := current.First()
+			
+			// Check for unquote-splicing
+			if elemList, ok := elem.(*List); ok && !elemList.IsEmpty() {
+				if sym, ok := elemList.First().(Symbol); ok && sym == "unquote-splicing" {
+					rest := elemList.Rest()
+					args := listToSlice(rest)
+					if len(args) != 1 {
+						return nil, fmt.Errorf("unquote-splicing expects 1 argument, got %d", len(args))
+					}
+					
+					// Evaluate the spliced expression
+					spliced, err := Eval(args[0], env)
+					if err != nil {
+						return nil, err
+					}
+					
+					// Convert to slice and append all elements
+					switch s := spliced.(type) {
+					case *List:
+						splicedSlice := listToSlice(s)
+						result = append(result, splicedSlice...)
+					case *Vector:
+						for i := 0; i < s.Count(); i++ {
+							result = append(result, s.Get(i))
+						}
+					default:
+						return nil, fmt.Errorf("unquote-splicing can only splice sequences, got %T", spliced)
+					}
+				} else {
+					// Regular element, expand recursively
+					expanded, err := quasiQuoteExpand(elem, env)
+					if err != nil {
+						return nil, err
+					}
+					result = append(result, expanded)
+				}
+			} else {
+				// Regular element, expand recursively
+				expanded, err := quasiQuoteExpand(elem, env)
+				if err != nil {
+					return nil, err
+				}
+				result = append(result, expanded)
+			}
+			
+			current = current.Rest()
+		}
+		
+		return NewList(result...), nil
+		
+	case *Vector:
+		// Expand vector elements
+		var result []Value
+		for i := 0; i < v.Count(); i++ {
+			elem := v.Get(i)
+			
+			// Check for unquote-splicing in vectors
+			if elemList, ok := elem.(*List); ok && !elemList.IsEmpty() {
+				if sym, ok := elemList.First().(Symbol); ok && sym == "unquote-splicing" {
+					rest := elemList.Rest()
+					args := listToSlice(rest)
+					if len(args) != 1 {
+						return nil, fmt.Errorf("unquote-splicing expects 1 argument, got %d", len(args))
+					}
+					
+					// Evaluate the spliced expression
+					spliced, err := Eval(args[0], env)
+					if err != nil {
+						return nil, err
+					}
+					
+					// Convert to slice and append all elements
+					switch s := spliced.(type) {
+					case *List:
+						splicedSlice := listToSlice(s)
+						result = append(result, splicedSlice...)
+					case *Vector:
+						for j := 0; j < s.Count(); j++ {
+							result = append(result, s.Get(j))
+						}
+					default:
+						return nil, fmt.Errorf("unquote-splicing can only splice sequences, got %T", spliced)
+					}
+				} else {
+					// Regular element, expand recursively
+					expanded, err := quasiQuoteExpand(elem, env)
+					if err != nil {
+						return nil, err
+					}
+					result = append(result, expanded)
+				}
+			} else {
+				// Regular element, expand recursively
+				expanded, err := quasiQuoteExpand(elem, env)
+				if err != nil {
+					return nil, err
+				}
+				result = append(result, expanded)
+			}
+		}
+		
+		return NewVector(result...), nil
+		
+	case *HashMap:
+		// Expand hash map entries by iterating over internal keys
+		var result []Value
+		
+		// Access the keys field through the structure
+		for _, key := range v.keys {
+			value := v.Get(key)
+			
+			// Expand key
+			expandedKey, err := quasiQuoteExpand(key, env)
+			if err != nil {
+				return nil, err
+			}
+			
+			// Expand value
+			expandedValue, err := quasiQuoteExpand(value, env)
+			if err != nil {
+				return nil, err
+			}
+			
+			result = append(result, expandedKey, expandedValue)
+		}
+		
+		return NewHashMapWithPairs(result...), nil
+		
+	default:
+		// Atoms (symbols, numbers, strings, etc.) are returned as-is
+		return expr, nil
 	}
 }

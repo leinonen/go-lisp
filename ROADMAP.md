@@ -6,7 +6,7 @@ Your GoLisp implementation already has a strong foundation for self-hosting:
 
 ### Core Infrastructure
 - ✅ Evaluator with 900+ lines of robust evaluation logic
-- ✅ Macro system with `defmacro`, quasiquote/unquote  
+- ✅ Macro system with `defmacro`, full quasiquote/unquote/unquote-splicing  
 - ✅ File loading system (`LoadFile`)
 - ✅ REPL with parsing and evaluation
 - ✅ Lexical environments with proper scoping
@@ -15,7 +15,8 @@ Your GoLisp implementation already has a strong foundation for self-hosting:
 
 ### Data Types & Special Forms
 - ✅ Core data types: symbols, lists, vectors, hash-maps, sets
-- ✅ Special forms: `if`, `def`, `fn`, `quote`, `do`, `defmacro`, `loop`, `recur`
+- ✅ Special forms: `if`, `def`, `fn`, `quote`, `quasiquote`, `do`, `defmacro`, `loop`, `recur`
+- ✅ Quasiquote system: `` ` `` (quasiquote), `~` (unquote), `~@` (unquote-splicing)
 - ✅ Arithmetic and comparison operators
 - ✅ Collection operations (`first`, `rest`, `cons`, `conj`, etc.)
 

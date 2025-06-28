@@ -11,7 +11,7 @@ A minimalist, self-hosting Lisp interpreter written in Go, inspired by Clojure. 
 - **Rich Data Types**: Numbers, strings, symbols, keywords, lists, vectors, hash-maps, sets
 - **Functional Programming**: First-class functions, closures, and higher-order functions
 - **Advanced Language Features**: `defn`, `defmacro`, `cond`, multiple body expressions
-- **Macro System**: Full macro expansion with `defmacro` support
+- **Macro System**: Full macro expansion with `defmacro` and quasiquote support
 - **Meta-Programming**: Full `eval`/`read-string` capabilities with macro system
 - **Self-Hosting Compiler**: Integrated compiler for self-compilation capabilities
 - **REPL**: Interactive development environment
@@ -70,6 +70,13 @@ make build
 ;; Macros
 (defmacro when [condition & body]
   (list 'if condition (cons 'do body) nil))
+
+;; Quasiquote for template construction
+(def x 42)
+(def lst (list 1 2 3))
+`(a ~x c)                           ; (a 42 c) - unquote substitution
+`(a ~@lst d)                        ; (a 1 2 3 d) - unquote-splicing
+`{:value ~x :type "number"}         ; {:value 42 :type "number"}
 
 ;; Multiple body expressions
 (defn complex-function [x]

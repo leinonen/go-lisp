@@ -29,6 +29,9 @@ const (
 	TokenRightBrace
 	TokenHash
 	TokenQuote
+	TokenQuasiquote
+	TokenUnquote
+	TokenUnquoteSplicing
 	TokenEOF
 )
 
@@ -121,6 +124,17 @@ func (l *Lexer) nextToken() (Token, error) {
 	case '\'':
 		l.advance()
 		return Token{Type: TokenQuote, Value: "'"}, nil
+	case '`':
+		l.advance()
+		return Token{Type: TokenQuasiquote, Value: "`"}, nil
+	case '~':
+		l.advance()
+		// Check for unquote-splicing (~@)
+		if l.position < len(l.input) && l.current() == '@' {
+			l.advance()
+			return Token{Type: TokenUnquoteSplicing, Value: "~@"}, nil
+		}
+		return Token{Type: TokenUnquote, Value: "~"}, nil
 	case '"':
 		return l.readString()
 	case ':':
@@ -285,6 +299,27 @@ func (p *Parser) parseExpression() (Value, error) {
 			return nil, err
 		}
 		return NewList(Intern("quote"), expr), nil
+	case TokenQuasiquote:
+		p.position++
+		expr, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		return NewList(Intern("quasiquote"), expr), nil
+	case TokenUnquote:
+		p.position++
+		expr, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		return NewList(Intern("unquote"), expr), nil
+	case TokenUnquoteSplicing:
+		p.position++
+		expr, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		return NewList(Intern("unquote-splicing"), expr), nil
 	case TokenSymbol:
 		p.position++
 		return Intern(token.Value), nil

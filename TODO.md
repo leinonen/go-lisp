@@ -6,6 +6,9 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 
 ### Core Special Forms (Go Core)
 - [x] **`quote`** - Quote expressions to prevent evaluation
+- [x] **`quasiquote`** - Template construction with selective evaluation (`` ` ``)
+- [x] **`unquote`** - Evaluate expression within quasiquote (`~`)
+- [x] **`unquote-splicing`** - Splice sequence into quasiquote (`~@`)
 - [x] **`if`** - Conditional evaluation (2-3 arguments)
 - [x] **`def`** - Define global variables
 - [x] **`fn`** - Create anonymous functions (supports vector/list params, multiple body expressions)
@@ -128,6 +131,10 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 ### Meta Programming (Go Core)
 - [x] **`eval`** - Evaluate data as code
 - [x] **`read-string`** - Parse string as Lisp data
+- [x] **`macroexpand`** - Expand macros for inspection
+- [x] **`gensym`** - Generate unique symbols
+- [x] **`symbol`** - Create symbols programmatically
+- [x] **`keyword`** - Create keywords programmatically
 
 ### Enhanced Features (Self-hosted)
 - [x] **`partial`** - Partial function application (comp function)
@@ -165,8 +172,7 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [ ] **`cycle`** - Cycle through sequence infinitely
 
 ### Meta Programming
-- [ ] **`macroexpand`** - Expand macro once
-- [ ] **`macroexpand-1`** - Expand macro completely
+- [x] **`macroexpand`** - Expand macro (already implemented in Go Core)
 
 ## 🚫 NOT YET IMPLEMENTED
 
@@ -186,21 +192,20 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 
 ## 📊 IMPLEMENTATION SUMMARY
 
-### ✅ Fully Implemented: ~90+ functions
-- **Go Core**: ~50 essential primitives
+### ✅ Fully Implemented: ~95+ functions
+- **Go Core**: ~55 essential primitives (including full quasiquote system)
 - **Self-hosted Standard Library**: ~40+ higher-level functions
-- **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming
+- **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, quasiquote templating
 
-### 🔄 Partial/Needs Work: ~15 functions
+### 🔄 Partial/Needs Work: ~13 functions
 - Mostly variations or enhanced versions of existing functionality
 - Some naming consistency issues (e.g., every? vs all?)
 
-### 🚫 Missing: ~10 functions
+### 🚫 Missing: ~8 functions
 - Advanced set operations
-- Some meta-programming features
 - Destructuring support
 - Infinite sequence generators
 
-### Overall Completion: **85-90%** of core Clojure functionality implemented
+### Overall Completion: **90-92%** of core Clojure functionality implemented
 
 GoLisp has successfully implemented the vast majority of essential Clojure features, with a robust self-hosting standard library that demonstrates the language's expressiveness and completeness.
