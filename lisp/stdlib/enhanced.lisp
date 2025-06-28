@@ -145,14 +145,6 @@
         nil
         (cons x (repeat (- n 1) x)))))
 
-;; Some useful conditional helpers
-(def when
-  (fn [condition body]
-    (if condition body nil)))
-
-(def unless
-  (fn [condition body]
-    (if condition nil body)))
 
 ;; Enhanced collection functions
 (def sort
