@@ -5,13 +5,13 @@
 Your GoLisp implementation already has a strong foundation for self-hosting:
 
 ### Core Infrastructure
-- ✅ Evaluator with 900+ lines of robust evaluation logic
+- ✅ Evaluator with 3,439 lines of robust evaluation logic in modular Go packages
 - ✅ Macro system with `defmacro`, full quasiquote/unquote/unquote-splicing  
-- ✅ File loading system (`LoadFile`)
+- ✅ File loading system (`load-file`)
 - ✅ REPL with parsing and evaluation
 - ✅ Lexical environments with proper scoping
 - ✅ Tail call optimization via loop/recur
-- ✅ Bootstrap system extending kernel in Lisp
+- ✅ Bootstrap system extending core in Lisp
 
 ### Data Types & Special Forms
 - ✅ Core data types: symbols, lists, vectors, hash-maps, sets
@@ -82,7 +82,7 @@ Your GoLisp implementation already has a strong foundation for self-hosting:
 - ✅ Function application compilation
 - ✅ Vector compilation
 - [ ] Macro expansion during compilation
-- [ ] Improved multi-expression parsing (read-all)
+- ✅ Multi-expression parsing (read-all-string, read-all) ✅ **COMPLETED**
 - [ ] Optimization passes
 - ✅ **Error reporting with source locations** - Parse errors show exact line/column
 
@@ -164,7 +164,7 @@ make build
 
 1. **✅ Phase 1 Complete - All meta-programming functions implemented**
 2. **✅ Phase 2 Complete - Enhanced standard library functions implemented**
-3. **🎯 NEXT: Improve multi-expression parsing in self-hosting compiler**
+3. **✅ DONE: Multi-expression parsing in self-hosting compiler**
 4. **Test self-hosting compiler with realistic examples**
 5. **Add macro expansion during compilation**
 6. **Implement advanced language features (pattern matching, modules, etc.)**
@@ -222,12 +222,12 @@ The minimal core is now **fully implemented and tested** with modular architectu
 - ✅ Collection operations and utilities self-hosted
 - ✅ String manipulation and I/O helpers in Lisp
 
-**~50 Core primitives in Go (across modular files):**
+**50+ Core primitives in Go (across modular files):**
 - ✅ **Arithmetic**: `+`, `-`, `*`, `/`, `=`, `<`, `>`, `<=`, `>=`
 - ✅ **Collections**: `cons`, `first`, `rest`, `nth`, `count`, `empty?`, `conj`, `list`, `vector`, `hash-map`, `set`
 - ✅ **Types**: `symbol?`, `string?`, `number?`, `list?`, `vector?`, `hash-map?`, `set?`, `keyword?`, `fn?`, `nil?`
 - ✅ **Strings**: `str`, `string-split`, `substring`, `string-trim`, `string-replace`
-- ✅ **I/O**: `slurp`, `spit`, `println`, `prn`, `file-exists?`, `list-dir`
+- ✅ **I/O**: `slurp`, `spit`, `println`, `prn`, `file-exists?`, `list-dir`, `load-file`
 - ✅ **Meta**: `eval`, `read-string`, `read-all-string`, `macroexpand`, `gensym`, `throw`
 - ✅ **Special**: `symbol`, `keyword`, `name`, `throw`
 
@@ -237,41 +237,44 @@ The minimal core is now **fully implemented and tested** with modular architectu
 
 ```
 pkg/
-├── core/                    # Minimal kernel
-│   ├── types.go             # Core data types
-│   ├── reader.go            # Parser/lexer with error reporting
-│   ├── eval_core.go         # Core evaluation logic
-│   ├── eval_arithmetic.go   # Arithmetic operations
-│   ├── eval_collections.go  # Collection operations
-│   ├── eval_strings.go      # String operations
-│   ├── eval_io.go          # I/O operations
-│   ├── eval_meta.go        # Meta-programming
-│   ├── eval_special_forms.go # Special forms
-│   ├── repl.go             # REPL interface
-│   └── bootstrap.go        # Stdlib loader
+├── core/                    # Unified core (3,439 lines)
+│   ├── types.go             # Core data types (387 lines)
+│   ├── reader.go            # Parser/lexer with error reporting (550 lines)
+│   ├── eval_core.go         # Core evaluation logic (291 lines)
+│   ├── eval_collections.go  # Collection operations (556 lines)
+│   ├── eval_special_forms.go # Special forms (528 lines)
+│   ├── eval_arithmetic.go   # Arithmetic operations (291 lines)
+│   ├── eval_meta.go         # Meta-programming (247 lines)
+│   ├── eval_io.go          # I/O operations (190 lines)
+│   ├── eval_strings.go      # String operations (186 lines)
+│   ├── repl.go             # REPL interface (118 lines)
+│   └── bootstrap.go        # Stdlib loader (95 lines)
 cmd/
-├── golisp/                 # GoLisp interpreter
+├── golisp/                 # GoLisp interpreter (86 lines)
 │   └── main.go
 lisp/
-├── stdlib/                 # Self-hosted standard library
-│   ├── core.lisp          # Core functions in Lisp
-│   └── enhanced.lisp      # Enhanced utilities
-├── stdlib.lisp            # Legacy minimal stdlib
-└── self-hosting.lisp      # Self-hosting compiler
+├── stdlib/                 # Self-hosted standard library (298 lines)
+│   ├── core.lisp          # Core functions in Lisp (81 lines)
+│   └── enhanced.lisp      # Enhanced utilities (217 lines)
+├── stdlib.lisp            # Legacy minimal stdlib (28 lines)
+└── self-hosting.lisp      # Self-hosting compiler (186 lines)
 ```
 
 **Build targets available:**
-- `make build` - Build GoLisp interpreter
+- `make build` - Build single `golisp` binary
 - `make run` - Build and run REPL
 - `make test` - Run all tests
 - `make test-core` - Test core package only
+- `make test-nocache` - Run tests without cache
+- `make test-core-nocache` - Run core tests without cache
+- `make fmt` - Format Go code
 
 #### ✅ Completed: Refactoring Implementation Plan
 
 **✅ Phase 0.1: Extract Minimal Core** 
-1. ✅ Audited `bootstrap.go` functions: categorized 25 core vs 27 stdlib functions
-2. ✅ Created `pkg/core/` with 25 essential primitives
-3. ✅ Moved 15+ functions to `lisp/stdlib/core.lisp`
+1. ✅ Audited core functions: categorized 50+ core primitives vs stdlib functions
+2. ✅ Created unified `pkg/core/` with modular architecture
+3. ✅ Moved standard library functions to `lisp/stdlib/core.lisp` and `lisp/stdlib/enhanced.lisp`
 
 **🔄 Phase 0.2: Self-Host Standard Library** (In Progress)
 1. ✅ Started rewriting built-in functions in Lisp using core primitives
@@ -296,16 +299,15 @@ lisp/
 
 #### ✅ Completed: Migration Strategy
 
-1. ✅ **Backward Compatibility**: Original kernel maintained in `pkg/kernel/`
-2. ✅ **Parallel Implementation**: Minimal core in `pkg/core/` alongside original
-3. ✅ **Comprehensive Testing**: Extensive test suite ensures self-hosted functions work correctly
+1. ✅ **Unified Architecture**: Single `pkg/core/` package with modular design
+2. ✅ **Production Implementation**: Comprehensive core with 50+ primitives and self-hosted stdlib
+3. ✅ **Comprehensive Testing**: Extensive test suite (3,188 lines) ensures reliability
 4. ✅ **Performance Validated**: Recursive functions (factorial) and closures working
-5. ✅ **Dual Build System**: Both `golisp` (full) and `golisp-core` (minimal) available
 
 ### Current Architecture Strengths
 
 Your current architecture is excellent for self-hosting:
-- Clean separation between kernel (Go) and library (Lisp)
+- Clean separation between core (Go) and library (Lisp)
 - Robust macro system for code transformation
 - File loading system for modular development
 - REPL for interactive development
@@ -316,10 +318,10 @@ Your current architecture is excellent for self-hosting:
 ## 🎯 Current Status & Next Steps
 
 ### ✅ Phase 0 Complete: Minimal Core Foundation (DONE)
-- **Minimal Core**: Focused Go code with essential primitives
-- **~50 Core Primitives**: Essential functions in modular Go packages
-- **Self-Hosted Stdlib**: Standard library functions implemented in Lisp  
-- **Comprehensive Testing**: Extensive test suite, all passing
+- **Unified Core**: Focused Go code (3,439 lines) with essential primitives
+- **50+ Core Primitives**: Essential functions in modular Go packages
+- **Self-Hosted Stdlib**: Standard library functions (298 lines) implemented in Lisp  
+- **Comprehensive Testing**: Extensive test suite (3,188 lines), all passing
 - **Modular Architecture**: Clean separation of concerns across focused modules
 
 ### ✅ Phase 2 Complete: Enhanced Standard Library (DONE)
