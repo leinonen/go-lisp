@@ -37,6 +37,39 @@ func setupCollectionOperations(env *Environment) {
 		},
 	})
 
+	// Add length as alias for count
+	env.Set(Intern("length"), &BuiltinFunction{
+		Name: "length",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("length expects 1 argument")
+			}
+
+			switch coll := args[0].(type) {
+			case *List:
+				count := int64(0)
+				current := coll
+				for current != nil {
+					count++
+					current = current.Rest()
+				}
+				return NewNumber(count), nil
+			case *Vector:
+				return NewNumber(int64(coll.Count())), nil
+			case *HashMap:
+				return NewNumber(int64(coll.Count())), nil
+			case *Set:
+				return NewNumber(int64(coll.Count())), nil
+			case String:
+				return NewNumber(int64(len(string(coll)))), nil
+			case Nil:
+				return NewNumber(int64(0)), nil
+			default:
+				return nil, fmt.Errorf("length expects collection, got %T", args[0])
+			}
+		},
+	})
+
 	env.Set(Intern("empty?"), &BuiltinFunction{
 		Name: "empty?",
 		Fn: func(args []Value, env *Environment) (Value, error) {
@@ -430,6 +463,40 @@ func setupCollectionOperations(env *Environment) {
 			default:
 				return nil, fmt.Errorf("contains? expects hash-map or set, got %T", args[0])
 			}
+		},
+	})
+
+	// Add hash-map-put as alias for assoc
+	env.Set(Intern("hash-map-put"), &BuiltinFunction{
+		Name: "hash-map-put",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) < 3 {
+				return nil, fmt.Errorf("hash-map-put expects at least 3 arguments (map, key, value, ...)")
+			}
+
+			hm, ok := args[0].(*HashMap)
+			if !ok {
+				return nil, fmt.Errorf("hash-map-put expects hash-map as first argument, got %T", args[0])
+			}
+
+			// Create new hash-map with all existing mappings
+			newHM := NewHashMap()
+			for _, key := range hm.keys {
+				newHM.Set(key, hm.Get(key))
+			}
+
+			// Add new key-value pairs (must be even number of key-value arguments)
+			if (len(args)-1)%2 != 0 {
+				return nil, fmt.Errorf("hash-map-put expects even number of key-value arguments")
+			}
+
+			for i := 1; i < len(args); i += 2 {
+				key := args[i]
+				value := args[i+1]
+				newHM.Set(key, value)
+			}
+
+			return newHM, nil
 		},
 	})
 

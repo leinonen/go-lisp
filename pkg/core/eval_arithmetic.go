@@ -288,4 +288,27 @@ func setupArithmeticOperations(env *Environment) {
 			return Nil{}, nil
 		},
 	})
+
+	// Logical operations
+	env.Set(Intern("not"), &BuiltinFunction{
+		Name: "not",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("not expects 1 argument")
+			}
+
+			// In Lisp, anything that's not nil or false is truthy
+			switch v := args[0].(type) {
+			case Nil:
+				return Symbol("true"), nil
+			case Symbol:
+				if v == "false" {
+					return Symbol("true"), nil
+				}
+				return Nil{}, nil
+			default:
+				return Nil{}, nil
+			}
+		},
+	})
 }

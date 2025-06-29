@@ -49,6 +49,33 @@ func setupIOOperations(env *Environment) {
 		},
 	})
 
+	// Add print function (like println but without newline)
+	env.Set(Intern("print"), &BuiltinFunction{
+		Name: "print",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			for i, arg := range args {
+				if i > 0 {
+					fmt.Print(" ")
+				}
+				switch v := arg.(type) {
+				case String:
+					fmt.Print(string(v))
+				case Symbol:
+					fmt.Print(string(v))
+				case Keyword:
+					fmt.Print(v.String())
+				case Number:
+					fmt.Print(v.String())
+				case Nil:
+					fmt.Print("nil")
+				default:
+					fmt.Print(arg.String())
+				}
+			}
+			return Nil{}, nil
+		},
+	})
+
 	// File I/O
 	env.Set(Intern("slurp"), &BuiltinFunction{
 		Name: "slurp",

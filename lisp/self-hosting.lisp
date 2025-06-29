@@ -96,12 +96,12 @@
     (constant? expr) expr
     
     ;; List - check for arithmetic operations with all constant args
-    (and (list? expr) (if (empty? expr) false true))
+    (and (list? expr) (not (empty? expr)))
     (let [head (first expr)
           args (rest expr)]
       (if (and (symbol? head)
                (any? (fn [op] (= head op)) '(+ - * / = < > <= >=))
-               (if (empty? args) false true)
+               (if (nil? args) false (not (empty? args)))
                (reduce (fn [acc arg] (and acc (constant? (constant-fold-expr arg)))) true args))
         ;; All arguments are constants - try to evaluate
         (let [folded-args (map constant-fold-expr args)
@@ -144,8 +144,9 @@
 
 ;; Main dead code elimination function  
 (defn eliminate-dead-code [expr]
-  (if (list? expr)
-    ;; It's a list - check what kind
+  (cond
+    ;; List handling
+    (list? expr)
     (if (empty? expr)
       expr  ; Empty list
       (cond
@@ -164,8 +165,13 @@
         
         ;; Other expressions - recursively optimize
         :else (map eliminate-dead-code expr)))
-    ;; Non-list (constant or symbol) - return as-is
-    expr))
+    
+    ;; Vector handling
+    (vector? expr)
+    (vector (map eliminate-dead-code expr))
+    
+    ;; Other types (symbols, numbers, strings, etc.) - return as-is
+    :else expr))
 
 ;; Core compiler data structures
 (def *current-env* nil)
@@ -209,12 +215,11 @@
     (throw (str "Maximum macro expansion depth exceeded: " depth))
     (cond
       ;; Lists - check for macro expansion
-      (and (list? expr) (if (empty? expr) false true))
+      (and (list? expr) (not (empty? expr)))
       (let [head (first expr)]
         (if (is-macro? head ctx)
-          ;; It's a macro - expand it and recurse
-          (let [expanded (macroexpand expr)]
-            (expand-macros expanded ctx (+ depth 1)))
+          ;; It's a macro - expand it once, but don't recursively expand to avoid loops
+          (macroexpand expr)
           ;; Not a macro - recursively expand elements
           (map (fn [elem] (expand-macros elem ctx depth)) expr)))
       
