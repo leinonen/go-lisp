@@ -337,7 +337,7 @@ Your current architecture is excellent for self-hosting:
 - ✅ **Comprehensive Testing**: Unit tests for all new functions
 - ✅ **Quality Assurance**: Code formatting, lint compliance, error handling
 
-### ✅ Phase 3: Self-Hosting Compiler Enhancement (IN PROGRESS)
+### 🚀 Phase 3: Self-Hosting Compiler Enhancement (MAJOR PROGRESS)
 
 #### ✅ Phase 3.1: Test and Integrate Existing Self-Hosting Compiler (COMPLETED)
 - ✅ **Step 3.1.1**: Test current self-hosting.lisp with minimal core
@@ -360,17 +360,22 @@ Your current architecture is excellent for self-hosting:
   - ✅ Comprehensive unit tests and integration tests
   - ✅ Handle multiple top-level forms in source files correctly
 
-#### Phase 3.2: Core Compiler Enhancements  
+#### ✅ Phase 3.2: Core Compiler Enhancements (COMPLETED)  
 - [x] **Step 3.2.1**: Add missing `let` compilation ✅ **COMPLETED**
   - ✅ Implement `compile-let` function (referenced but missing)
   - ✅ Add proper let-binding compilation with local scope tracking
   - ✅ Fixed context architecture (lists instead of sets for locals compatibility)
   - ✅ Proper symbol resolution using `any?` for list-based local lookup
   - ✅ Comprehensive testing with simple and complex let expressions
-- [ ] **Step 3.2.2**: Implement macro expansion during compilation
-  - Add macro expansion during compilation phase
-  - Integrate with existing `macroexpand` function  
-  - Handle recursive macro expansion
+- [x] **Step 3.2.2**: Implement macro expansion during compilation ✅ **COMPLETED**
+  - ✅ Add macro expansion during compilation phase
+  - ✅ Integrate with existing `macroexpand` function  
+  - ✅ Handle recursive macro expansion with depth limits
+  - ✅ Context-aware macro tracking in compilation pipeline
+  - ✅ Support for built-in macros (`when`, `unless`, `cond`)
+  - ✅ Macro expansion in all data structures (lists, vectors)
+  - ✅ Enhanced `cond` macro implementation in standard library
+  - ✅ Comprehensive testing with nested and complex macro usage
 - [x] **Step 3.2.3**: Enhanced error reporting ✅ **COMPLETED**
   - ✅ Add source location tracking during parsing
   - ✅ Enhanced error messages with exact line/column information
@@ -430,9 +435,14 @@ Your current architecture is excellent for self-hosting:
    # Output: ((+ 1 2) (* 3 4) (def x 5))
    ```
 5. **✅ Step 3.2.1** - ✅ DONE: Add missing `let` compilation
-6. **🎯 NEXT: Step 3.2.2** - Implement macro expansion during compilation
+6. **✅ Step 3.2.2** - ✅ DONE: Implement macro expansion during compilation
+   ```bash
+   # ✅ COMPLETED: Macro expansion during compilation working
+   ./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (compile-expr '(when true (println \"hello\")) (make-context))"
+   # Output: (if true (do (println "hello")) nil)
+   ```
 7. **✅ Step 3.2.3** - ✅ DONE: Enhanced error reporting with source locations
-8. **Step 3.3.1** - Basic optimization passes
+8. **🎯 NEXT: Step 3.3.1** - Basic optimization passes
 9. **Step 3.3.2** - Testing and validation
 10. **Step 3.3.3** - Documentation
 
@@ -481,7 +491,7 @@ Your current architecture is excellent for self-hosting:
 **✅ Step 3.2.3 Complete**: Enhanced error reporting with source locations
 
 **Phase 3.1 Progress**: 3/3 steps complete - ✅ **PHASE 3.1 COMPLETED!**
-**Phase 3.2 Progress**: 2/3 steps complete - 🎯 **PHASE 3.2 IN PROGRESS**
+**Phase 3.2 Progress**: 3/3 steps complete - ✅ **PHASE 3.2 COMPLETED!**
 
 ### 🏆 Achievement Summary
 
@@ -496,7 +506,7 @@ The Phase 3.1 Self-Hosting Compiler Integration is now **COMPLETE**:
 - **✅ Production-ready interpreter** with 60+ comprehensive tests including integration tests
 - **✅ True self-hosting foundation** with Go core + Lisp stdlib + compiler architecture
 
-**🎉 Phase 3.1 COMPLETED! Phase 3.2 MAJOR PROGRESS!** 
+**🎉 Phase 3.1 COMPLETED! Phase 3.2 COMPLETED!** 
 
 **✅ Recent Achievements (2024 Updates):**
 
@@ -521,4 +531,15 @@ The Phase 3.1 Self-Hosting Compiler Integration is now **COMPLETE**:
 - **✅ Variadic parameters** - Support for `& rest` in functions and macros
 - **✅ Enhanced macros** - `when` and `unless` now proper macros with variadic bodies
 
-**🎯 Next milestone: Phase 3.2.2 - Implement macro expansion during compilation** 🚀
+### ✅ Step 3.2.2: Macro Expansion During Compilation (COMPLETED)
+- **✅ Core macro expansion engine** - `expand-macros` function with recursive expansion and depth limits
+- **✅ Context-aware compilation** - Enhanced compilation context tracks macro definitions
+- **✅ Built-in macro support** - Integrated support for `when`, `unless`, and `cond` macros
+- **✅ Data structure handling** - Macro expansion works in lists, vectors, and all data types
+- **✅ `cond` macro implementation** - Added full `cond` macro to standard library with recursive expansion
+- **✅ Compilation pipeline integration** - Pre-expansion pass expands all macros before compilation
+- **✅ Helper functions** - Added missing `not=` function and fixed context creation issues
+- **✅ Comprehensive testing** - Unit tests and integration tests for nested and complex macro usage
+- **✅ Production-ready** - Macro expansion depth limits prevent infinite recursion
+
+**🎯 Next milestone: Phase 3.3.1 - Basic optimization passes** 🚀

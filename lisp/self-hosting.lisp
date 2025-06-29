@@ -1,6 +1,9 @@
 ;; Self-hosting GoLisp Compiler
 ;; This file demonstrates how GoLisp can compile itself
 
+;; Helper functions
+(defn not= [a b] (not (= a b)))
+
 ;; Core compiler data structures
 (def *current-env* nil)
 (def *compile-target* 'eval) ; 'eval or 'file
@@ -10,17 +13,55 @@
 
 ;; Compilation context
 (defn make-context []
-  {:symbols (hash-map)
-   :locals '()
-   :target *compile-target*})
+  (hash-map :symbols (hash-map)
+            :locals '()
+            :macros (hash-map)  ; Track macro definitions
+            :target *compile-target*))
+
+;; Macro expansion support
+(def *max-macro-expansion-depth* 20)  ; Lower limit for safety
+
+;; Check if a symbol refers to a macro
+(defn is-macro? [sym ctx]
+  ;; Check compilation context first for user-defined macros
+  (if (and ctx (:macros ctx) (contains? (:macros ctx) sym))
+    true
+    ;; Fall back to built-in macros using any? instead of contains? with set
+    (and (symbol? sym)
+         (any? (fn [macro-sym] (= macro-sym sym)) 
+               '(when unless cond)))))
+
+;; Expand macros recursively with depth limiting
+(defn expand-macros [expr ctx depth]
+  (if (> depth *max-macro-expansion-depth*)
+    (throw (str "Maximum macro expansion depth exceeded: " depth))
+    (cond
+      ;; Lists - check for macro expansion
+      (and (list? expr) (not (empty? expr)))
+      (let [head (first expr)]
+        (if (is-macro? head ctx)
+          ;; It's a macro - expand it and recurse
+          (let [expanded (macroexpand expr)]
+            (expand-macros expanded ctx (+ depth 1)))
+          ;; Not a macro - recursively expand elements
+          (map (fn [elem] (expand-macros elem ctx depth)) expr)))
+      
+      ;; Vectors - recursively expand elements
+      (vector? expr)
+      (vector (map (fn [elem] (expand-macros elem ctx depth)) expr))
+      
+      ;; Other types - return as-is (symbols, numbers, strings, etc.)
+      :else expr)))
 
 ;; Core compilation functions
 (defn compile-expr [expr ctx]
-  (cond
-    (symbol? expr) (compile-symbol expr ctx)
-    (list? expr) (compile-list expr ctx)
-    (vector? expr) (compile-vector expr ctx)
-    :else expr)) ; literals
+  ;; First expand all macros
+  (let [expanded-expr (expand-macros expr ctx 0)]
+    (cond
+      (symbol? expanded-expr) (compile-symbol expanded-expr ctx)
+      (list? expanded-expr) (compile-list expanded-expr ctx)
+      (vector? expanded-expr) (compile-vector expanded-expr ctx)
+      :else expanded-expr))) ; literals
 
 (defn compile-symbol [sym ctx]
   ;; Check if it's a local binding or global using any? for list-based locals
@@ -39,6 +80,7 @@
       (cond
         ;; Special forms
         (= head 'def) (compile-def args ctx)
+        (= head 'defmacro) (compile-defmacro args ctx)
         (= head 'fn) (compile-fn args ctx)
         (= head 'if) (compile-if args ctx)
         (= head 'quote) (compile-quote args ctx)
@@ -61,6 +103,20 @@
           ;; Compile the value
           (list 'def name (compile-expr value ctx)))))))
 
+(defn compile-defmacro [args ctx]
+  (if (not= (length args) 3)
+    (throw (str "defmacro requires exactly 3 arguments (name params body)"))
+    (let [name (first args)
+          params (second args)
+          body (nth args 2)]
+      (if (not (symbol? name))
+        (throw (str "defmacro name must be a symbol"))
+        (do
+          ;; For now, just register in symbol table (context modification is complex)
+          (hash-map-put *symbol-table* name :macro)
+          ;; Return the defmacro form (no compilation of macro body)
+          (list 'defmacro name params body))))))
+
 (defn compile-fn [args ctx]
   (if (< (length args) 2)
     (throw (str "fn requires at least 2 arguments"))
@@ -71,7 +127,10 @@
                               (conj acc param)) 
                             (:locals ctx) 
                             params)
-          fn-ctx (assoc ctx :locals new-locals)]
+          fn-ctx (hash-map :symbols (:symbols ctx)
+                           :locals new-locals
+                           :macros (:macros ctx)
+                           :target (:target ctx))]
       ;; Compile function body with new context  
       (cons 'fn (cons params (map (fn [expr] (compile-expr expr fn-ctx)) body))))))
 
@@ -104,7 +163,10 @@
             binding-symbols (extract-symbols bindings '())
             ;; Create new context with locals  
             new-locals (reduce (fn [acc sym] (conj acc sym)) (:locals ctx) binding-symbols)
-            let-ctx (assoc ctx :locals new-locals)
+            let-ctx (hash-map :symbols (:symbols ctx)
+                              :locals new-locals
+                              :macros (:macros ctx)
+                              :target (:target ctx))
             ;; Compile bindings values with current context
             compile-bindings (fn [bindings-list acc]
                               (if (empty? bindings-list)

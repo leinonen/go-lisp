@@ -15,6 +15,16 @@
 (defmacro unless [condition & body]
   (list 'if condition nil (cons 'do body)))
 
+(defmacro cond [& clauses]
+  (if (empty? clauses)
+    nil
+    (let [condition (first clauses)
+          then-expr (second clauses)
+          rest-clauses (rest (rest clauses))]
+      (if (= condition :else)
+        then-expr
+        (list 'if condition then-expr (cons 'cond rest-clauses))))))
+
 ;; Collection operations that complement core functions
 ;; Note: count, empty?, nth, conj are already in core
 
