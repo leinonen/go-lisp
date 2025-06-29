@@ -1094,6 +1094,27 @@ func TestSetOperations(t *testing.T) {
 		// Test empty? with set
 		{"(empty? #{})", "true"},
 		{"(empty? #{1})", "nil"},
+
+		// Test union operation
+		{"(union #{1 2} #{3 4})", "#{1 2 3 4}"},
+		{"(union #{1 2} #{2 3})", "#{1 2 3}"},
+		{"(union #{} #{1 2})", "#{1 2}"},
+		{"(union #{1 2} #{})", "#{1 2}"},
+		{"(union #{1 2} #{2 3} #{3 4})", "#{1 2 3 4}"},
+
+		// Test intersection operation
+		{"(intersection #{1 2 3} #{2 3 4})", "#{2 3}"},
+		{"(intersection #{1 2} #{3 4})", "#{}"},
+		{"(intersection #{1 2 3} #{1 2 3})", "#{1 2 3}"},
+		{"(intersection #{1 2 3} #{2} #{2 4})", "#{2}"},
+		{"(intersection #{1 2 3} #{2 3} #{2 3 4})", "#{2 3}"},
+
+		// Test difference operation
+		{"(difference #{1 2 3} #{2})", "#{1 3}"},
+		{"(difference #{1 2 3} #{2 3})", "#{1}"},
+		{"(difference #{1 2 3} #{4 5})", "#{1 2 3}"},
+		{"(difference #{1 2 3} #{1 2 3})", "#{}"},
+		{"(difference #{1 2 3 4} #{2} #{3})", "#{1 4}"},
 	}
 
 	for _, test := range tests {
@@ -1383,7 +1404,7 @@ func TestLogicalOperations(t *testing.T) {
 		{"(and true nil)", "nil"},
 		{"(and 1 nil 3)", "nil"},
 		{"(and nil false)", "nil"},
-		
+
 		// Test or with no arguments
 		{"(or)", "nil"},
 		// Test or with single argument

@@ -432,6 +432,111 @@ func setupCollectionOperations(env *Environment) {
 			}
 		},
 	})
+
+	// Set operations
+	env.Set(Intern("union"), &BuiltinFunction{
+		Name: "union",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("union expects at least 2 arguments")
+			}
+
+			// All arguments must be sets
+			for i, arg := range args {
+				if _, ok := arg.(*Set); !ok {
+					return nil, fmt.Errorf("union expects set as argument %d, got %T", i+1, arg)
+				}
+			}
+
+			result := NewSet()
+
+			// Add all elements from all sets
+			for _, arg := range args {
+				set := arg.(*Set)
+				for _, elem := range set.order {
+					result.Add(elem)
+				}
+			}
+
+			return result, nil
+		},
+	})
+
+	env.Set(Intern("intersection"), &BuiltinFunction{
+		Name: "intersection",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("intersection expects at least 2 arguments")
+			}
+
+			// All arguments must be sets
+			for i, arg := range args {
+				if _, ok := arg.(*Set); !ok {
+					return nil, fmt.Errorf("intersection expects set as argument %d, got %T", i+1, arg)
+				}
+			}
+
+			// Start with elements from the first set
+			firstSet := args[0].(*Set)
+			result := NewSet()
+
+			// Check each element from the first set
+			for _, elem := range firstSet.order {
+				inAllSets := true
+				// Check if element exists in all other sets
+				for i := 1; i < len(args); i++ {
+					otherSet := args[i].(*Set)
+					if !otherSet.Contains(elem) {
+						inAllSets = false
+						break
+					}
+				}
+				if inAllSets {
+					result.Add(elem)
+				}
+			}
+
+			return result, nil
+		},
+	})
+
+	env.Set(Intern("difference"), &BuiltinFunction{
+		Name: "difference",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("difference expects at least 2 arguments")
+			}
+
+			// All arguments must be sets
+			for i, arg := range args {
+				if _, ok := arg.(*Set); !ok {
+					return nil, fmt.Errorf("difference expects set as argument %d, got %T", i+1, arg)
+				}
+			}
+
+			// Start with elements from the first set
+			firstSet := args[0].(*Set)
+			result := NewSet()
+
+			// Add elements from first set that don't exist in any other set
+			for _, elem := range firstSet.order {
+				inOtherSets := false
+				// Check if element exists in any other set
+				for i := 1; i < len(args); i++ {
+					otherSet := args[i].(*Set)
+					if otherSet.Contains(elem) {
+						inOtherSets = true
+						break
+					}
+				}
+				if !inOtherSets {
+					result.Add(elem)
+				}
+			}
+
+			return result, nil
+		},
+	})
 }
 
 // Helper function to convert a value to a list

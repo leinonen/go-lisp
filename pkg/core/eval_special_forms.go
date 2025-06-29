@@ -272,7 +272,7 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 			}
 
 			condition := argSlice[i]
-			
+
 			// Special case for :else
 			if sym, ok := condition.(Symbol); ok && sym == ":else" {
 				return Eval(argSlice[i+1], env)
@@ -306,18 +306,18 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 			if err != nil {
 				return nil, err
 			}
-			
+
 			// If falsy, return this value (short-circuit)
 			if !isTruthy(result) {
 				return result, nil
 			}
-			
+
 			// If this is the last expression, return its value
 			if i == len(argSlice)-1 {
 				return result, nil
 			}
 		}
-		
+
 		// Should never reach here
 		return Symbol("true"), nil
 
@@ -334,18 +334,18 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 			if err != nil {
 				return nil, err
 			}
-			
+
 			// If truthy, return this value (short-circuit)
 			if isTruthy(result) {
 				return result, nil
 			}
-			
+
 			// If this is the last expression, return its value
 			if i == len(argSlice)-1 {
 				return result, nil
 			}
 		}
-		
+
 		// Should never reach here
 		return Nil{}, nil
 	}
@@ -375,7 +375,7 @@ func quasiQuoteExpand(expr Value, env *Environment) (Value, error) {
 		if v.IsEmpty() {
 			return v, nil
 		}
-		
+
 		// Check if this is an unquote form
 		if first := v.First(); first != nil {
 			if sym, ok := first.(Symbol); ok && sym == "unquote" {
@@ -387,13 +387,13 @@ func quasiQuoteExpand(expr Value, env *Environment) (Value, error) {
 				return Eval(args[0], env)
 			}
 		}
-		
+
 		// Expand list elements, handling unquote-splicing
 		var result []Value
 		current := v
 		for !current.IsEmpty() {
 			elem := current.First()
-			
+
 			// Check for unquote-splicing
 			if elemList, ok := elem.(*List); ok && !elemList.IsEmpty() {
 				if sym, ok := elemList.First().(Symbol); ok && sym == "unquote-splicing" {
@@ -402,13 +402,13 @@ func quasiQuoteExpand(expr Value, env *Environment) (Value, error) {
 					if len(args) != 1 {
 						return nil, fmt.Errorf("unquote-splicing expects 1 argument, got %d", len(args))
 					}
-					
+
 					// Evaluate the spliced expression
 					spliced, err := Eval(args[0], env)
 					if err != nil {
 						return nil, err
 					}
-					
+
 					// Convert to slice and append all elements
 					switch s := spliced.(type) {
 					case *List:
@@ -437,18 +437,18 @@ func quasiQuoteExpand(expr Value, env *Environment) (Value, error) {
 				}
 				result = append(result, expanded)
 			}
-			
+
 			current = current.Rest()
 		}
-		
+
 		return NewList(result...), nil
-		
+
 	case *Vector:
 		// Expand vector elements
 		var result []Value
 		for i := 0; i < v.Count(); i++ {
 			elem := v.Get(i)
-			
+
 			// Check for unquote-splicing in vectors
 			if elemList, ok := elem.(*List); ok && !elemList.IsEmpty() {
 				if sym, ok := elemList.First().(Symbol); ok && sym == "unquote-splicing" {
@@ -457,13 +457,13 @@ func quasiQuoteExpand(expr Value, env *Environment) (Value, error) {
 					if len(args) != 1 {
 						return nil, fmt.Errorf("unquote-splicing expects 1 argument, got %d", len(args))
 					}
-					
+
 					// Evaluate the spliced expression
 					spliced, err := Eval(args[0], env)
 					if err != nil {
 						return nil, err
 					}
-					
+
 					// Convert to slice and append all elements
 					switch s := spliced.(type) {
 					case *List:
@@ -493,34 +493,34 @@ func quasiQuoteExpand(expr Value, env *Environment) (Value, error) {
 				result = append(result, expanded)
 			}
 		}
-		
+
 		return NewVector(result...), nil
-		
+
 	case *HashMap:
 		// Expand hash map entries by iterating over internal keys
 		var result []Value
-		
+
 		// Access the keys field through the structure
 		for _, key := range v.keys {
 			value := v.Get(key)
-			
+
 			// Expand key
 			expandedKey, err := quasiQuoteExpand(key, env)
 			if err != nil {
 				return nil, err
 			}
-			
+
 			// Expand value
 			expandedValue, err := quasiQuoteExpand(value, env)
 			if err != nil {
 				return nil, err
 			}
-			
+
 			result = append(result, expandedKey, expandedValue)
 		}
-		
+
 		return NewHashMapWithPairs(result...), nil
-		
+
 	default:
 		// Atoms (symbols, numbers, strings, etc.) are returned as-is
 		return expr, nil

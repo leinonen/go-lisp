@@ -175,9 +175,9 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 ## 🚫 NOT YET IMPLEMENTED
 
 ### Set Operations
-- [ ] **`union`** - Set union
-- [ ] **`intersection`** - Set intersection
-- [ ] **`difference`** - Set difference
+- [x] **`union`** - Set union (Go Core)
+- [x] **`intersection`** - Set intersection (Go Core)
+- [x] **`difference`** - Set difference (Go Core)
 - [ ] **`subset?`** - Check if set is subset
 - [ ] **`superset?`** - Check if set is superset
 
@@ -190,20 +190,20 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 
 ## 📊 IMPLEMENTATION SUMMARY
 
-### ✅ Fully Implemented: ~97+ functions
-- **Go Core**: ~57 essential primitives (including full quasiquote system and logical operations)
+### ✅ Fully Implemented: ~100+ functions
+- **Go Core**: ~60 essential primitives (including full quasiquote system, logical operations, and set operations)
 - **Self-hosted Standard Library**: ~40+ higher-level functions
-- **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, logical operations, quasiquote templating
+- **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, logical operations, quasiquote templating, set operations
 
 ### 🔄 Partial/Needs Work: ~11 functions
 - Mostly variations or enhanced versions of existing functionality
 - Some naming consistency issues (e.g., every? vs all?)
 
-### 🚫 Missing: ~8 functions
-- Advanced set operations
+### 🚫 Missing: ~5 functions
+- Remaining set operations (subset?, superset?)
 - Destructuring support
 - Infinite sequence generators
 
-### Overall Completion: **92-94%** of core Clojure functionality implemented
+### Overall Completion: **95-96%** of core Clojure functionality implemented
 
 GoLisp has successfully implemented the vast majority of essential Clojure features, with a robust self-hosting standard library that demonstrates the language's expressiveness and completeness.

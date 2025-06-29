@@ -294,11 +294,11 @@ func (e *ParseError) Error() string {
 			line := lines[e.Position.Line-1]
 			// Show the line and point to the error
 			pointer := strings.Repeat(" ", e.Position.Column-1) + "^"
-			return fmt.Sprintf("Parse error at line %d, column %d: %s\n%s\n%s", 
+			return fmt.Sprintf("Parse error at line %d, column %d: %s\n%s\n%s",
 				e.Position.Line, e.Position.Column, e.Message, line, pointer)
 		}
 	}
-	return fmt.Sprintf("Parse error at line %d, column %d: %s", 
+	return fmt.Sprintf("Parse error at line %d, column %d: %s",
 		e.Position.Line, e.Position.Column, e.Message)
 }
 

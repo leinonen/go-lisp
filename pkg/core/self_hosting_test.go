@@ -169,7 +169,7 @@ func TestSelfHostingReadAllWithRealFile(t *testing.T) {
 	// Test that each expression is parsed correctly
 	resultStr := result.String()
 	expectedParts := []string{"(def x 10)", "(def y 20)", "(defn add [a b] (+ a b))", "(add x y)"}
-	
+
 	for _, part := range expectedParts {
 		if !contains(resultStr, part) {
 			t.Errorf("Expected result to contain '%s', got: %s", part, resultStr)
@@ -215,11 +215,11 @@ func TestSelfHostingCompilerParsesSelf(t *testing.T) {
 
 // Helper function to check if a string contains a substring
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && 
-		   (s == substr || 
-		    s[:len(substr)] == substr || 
-		    s[len(s)-len(substr):] == substr ||
-		    containsAt(s, substr))
+	return len(s) >= len(substr) &&
+		(s == substr ||
+			s[:len(substr)] == substr ||
+			s[len(s)-len(substr):] == substr ||
+			containsAt(s, substr))
 }
 
 func containsAt(s, substr string) bool {
