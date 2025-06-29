@@ -34,7 +34,7 @@ func (r *REPL) Run() error {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
-		fmt.Print("core> ")
+		fmt.Print("GoLisp> ")
 
 		if !scanner.Scan() {
 			break
@@ -107,7 +107,7 @@ func (r *REPL) LoadFile(filename string) error {
 
 	// Set the file context for better error reporting
 	r.ctx.Position.File = filename
-	
+
 	// Evaluate each expression
 	for _, expr := range expressions {
 		_, err := EvalWithContext(expr, r.env, r.ctx)
