@@ -98,7 +98,7 @@ func bindParams(params *List, args []Value, env *Environment) error {
 		// Bind rest parameter as a list
 		restParamName, ok := paramList[restParamIndex+1].(Symbol)
 		if !ok {
-			return fmt.Errorf("rest parameter must be a symbol, got %T", paramList[restParamIndex+1])
+			return NewTypeError("rest parameter must be a symbol, got %T", paramList[restParamIndex+1])
 		}
 
 		// Collect remaining arguments into a list
@@ -111,14 +111,14 @@ func bindParams(params *List, args []Value, env *Environment) error {
 	} else {
 		// Non-variadic function - exact parameter count required
 		if len(paramList) != len(args) {
-			return fmt.Errorf("function expects %d arguments, got %d", len(paramList), len(args))
+			return NewArityError("function expects %d arguments, got %d", len(paramList), len(args))
 		}
 
 		for i, param := range paramList {
 			if sym, ok := param.(Symbol); ok {
 				env.Set(sym, args[i])
 			} else {
-				return fmt.Errorf("parameter must be a symbol, got %T", param)
+				return NewTypeError("parameter must be a symbol, got %T", param)
 			}
 		}
 	}
@@ -139,12 +139,27 @@ func listToSlice(list *List) []Value {
 	return result
 }
 
-// Eval evaluates a Lisp expression
+// EvalWithContext evaluates a Lisp expression with context tracking
+func EvalWithContext(expr Value, env *Environment, ctx *EvaluationContext) (Value, error) {
+	return evalWithContext(expr, env, ctx)
+}
+
+// Eval evaluates a Lisp expression (backward compatibility)
 func Eval(expr Value, env *Environment) (Value, error) {
+	ctx := NewEvaluationContext()
+	return evalWithContext(expr, env, ctx)
+}
+
+// evalWithContext is the internal evaluation function with context tracking
+func evalWithContext(expr Value, env *Environment, ctx *EvaluationContext) (Value, error) {
 	switch v := expr.(type) {
 	case Symbol:
 		// Look up symbol in environment
-		return env.Get(v)
+		result, err := env.Get(v)
+		if err != nil {
+			return nil, ctx.EnhanceError(err)
+		}
+		return result, nil
 
 	case *List:
 		if v.IsEmpty() {
@@ -153,18 +168,20 @@ func Eval(expr Value, env *Environment) (Value, error) {
 
 		// Check if first element is a special form
 		if sym, ok := v.First().(Symbol); ok {
-			result, err := evalSpecialForm(sym, v.Rest(), env)
+			ctx.PushFrame(string(sym), Position{})
+			result, err := evalSpecialFormWithContext(sym, v.Rest(), env, ctx)
+			ctx.PopFrame()
 			if err == nil {
 				return result, nil
 			}
 			// If it's a recognized special form but had an error, return the error
 			if isSpecialForm(sym) {
-				return nil, err
+				return nil, ctx.EnhanceError(err)
 			}
 		}
 
 		// Regular function call
-		return evalFunctionCall(v, env)
+		return evalFunctionCallWithContext(v, env, ctx)
 
 	case Number, String, Keyword, *Vector:
 		// These evaluate to themselves
@@ -175,31 +192,43 @@ func Eval(expr Value, env *Environment) (Value, error) {
 	}
 }
 
-// evalFunctionCall evaluates a function call
-func evalFunctionCall(list *List, env *Environment) (Value, error) {
+// evalFunctionCallWithContext evaluates a function call with context tracking
+func evalFunctionCallWithContext(list *List, env *Environment, ctx *EvaluationContext) (Value, error) {
 	// Evaluate the function
-	fn, err := Eval(list.First(), env)
+	fn, err := evalWithContext(list.First(), env, ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	// Get function name for stack trace
+	fnName := "anonymous"
+	if sym, ok := list.First().(Symbol); ok {
+		fnName = string(sym)
+	}
+
 	// Check if it's a macro - macros are expanded without evaluating arguments
 	if macro, ok := fn.(*Macro); ok {
-		return expandMacro(macro, list.Rest(), env)
+		ctx.PushFrame(fmt.Sprintf("macro %s", fnName), Position{})
+		result, err := expandMacroWithContext(macro, list.Rest(), env, ctx)
+		ctx.PopFrame()
+		if err != nil {
+			return nil, ctx.EnhanceError(err)
+		}
+		return result, nil
 	}
 
 	// Check if it's callable
 	callable, ok := fn.(Function)
 	if !ok {
-		return nil, fmt.Errorf("cannot call non-function: %T", fn)
+		return nil, ctx.EnhanceError(NewTypeError("cannot call non-function: %T", fn))
 	}
 
 	// Evaluate arguments
 	var args []Value
 	current := list.Rest()
-
+	
 	for current != nil {
-		arg, err := Eval(current.First(), env)
+		arg, err := evalWithContext(current.First(), env, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -207,8 +236,33 @@ func evalFunctionCall(list *List, env *Environment) (Value, error) {
 		current = current.Rest()
 	}
 
-	// Call the function
-	return callable.Call(args, env)
+	// Call the function with context tracking
+	ctx.PushFrame(fnName, Position{})
+	result, err := callable.Call(args, env)
+	ctx.PopFrame()
+	
+	if err != nil {
+		return nil, ctx.EnhanceError(err)
+	}
+	
+	return result, nil
+}
+
+
+// evalSpecialFormWithContext handles special forms with context tracking
+func evalSpecialFormWithContext(sym Symbol, args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	// For now, just use the regular evalSpecialForm
+	// TODO: Enhance special forms to use context for better error reporting
+	_ = ctx // Suppress unused parameter warning
+	return evalSpecialForm(sym, args, env)
+}
+
+// expandMacroWithContext expands a macro with context tracking  
+func expandMacroWithContext(macro *Macro, args *List, env *Environment, ctx *EvaluationContext) (Value, error) {
+	// For now, just use the regular expandMacro
+	// TODO: Enhance macro expansion to use context for better error reporting
+	_ = ctx // Suppress unused parameter warning
+	return expandMacro(macro, args, env)
 }
 
 // isTruthy determines if a value is truthy

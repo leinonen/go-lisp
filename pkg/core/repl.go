@@ -10,6 +10,7 @@ import (
 // REPL represents a Read-Eval-Print-Loop
 type REPL struct {
 	env *Environment
+	ctx *EvaluationContext
 }
 
 // NewREPL creates a new REPL with bootstrapped environment
@@ -19,7 +20,10 @@ func NewREPL() (*REPL, error) {
 		return nil, err
 	}
 
-	return &REPL{env: env}, nil
+	return &REPL{
+		env: env,
+		ctx: NewEvaluationContext(),
+	}, nil
 }
 
 // Run starts the REPL
@@ -77,8 +81,8 @@ func (r *REPL) Eval(input string) (Value, error) {
 		return nil, err
 	}
 
-	// Evaluate the expression
-	return Eval(expr, r.env)
+	// Evaluate the expression with context
+	return EvalWithContext(expr, r.env, r.ctx)
 }
 
 // LoadFile loads and evaluates a Lisp file
@@ -101,9 +105,12 @@ func (r *REPL) LoadFile(filename string) error {
 		return fmt.Errorf("failed to parse file %s: %v", filename, err)
 	}
 
+	// Set the file context for better error reporting
+	r.ctx.Position.File = filename
+	
 	// Evaluate each expression
 	for _, expr := range expressions {
-		_, err := Eval(expr, r.env)
+		_, err := EvalWithContext(expr, r.env, r.ctx)
 		if err != nil {
 			return fmt.Errorf("failed to evaluate expression in file %s: %v", filename, err)
 		}

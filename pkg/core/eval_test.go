@@ -561,7 +561,7 @@ func TestEvalErrorReporting(t *testing.T) {
 		input    string
 		contains []string // Substrings that should be in the error message
 	}{
-		{"(+ 1 2", []string{"Parse error", "line 1", "column"}},
+		{"(+ 1 2", []string{"ParseError", "line 1", "column"}},
 		{"(def x \"unterminated", []string{"unterminated string", "line 1", "column"}},
 		{")", []string{"unexpected token", "line 1", "column"}},
 	}

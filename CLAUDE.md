@@ -28,17 +28,17 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
 ### Core Components
 
 **`pkg/core/`** - Minimal kernel (2,719 lines total):
-- `types.go` - Core data types (Symbol, Keyword, List, Vector, HashMap, etc.) implementing the `Value` interface
+- `types.go` - Core data types (Symbol, Keyword, List, Vector, HashMap, etc.) implementing the `Value` interface, plus comprehensive error handling system
 - `reader.go` - Lexer and parser for converting text to AST (Token-based parsing with position tracking)
 - `eval_*.go` - Modular evaluation engine split across specialized files:
-  - `eval_core.go` - Core evaluation logic and special forms
+  - `eval_core.go` - Core evaluation logic, special forms, and context-aware evaluation with stack tracking
   - `eval_arithmetic.go` - Arithmetic operations (+, -, *, /, =, <, >)
   - `eval_collections.go` - Collection operations (cons, first, rest, nth, count, etc.)
   - `eval_strings.go` - String operations (string-split, substring, string-trim, etc.)
   - `eval_io.go` - I/O operations (slurp, spit, println, file-exists?, etc.)
   - `eval_meta.go` - Meta-programming (eval, read-string, macroexpand, gensym, throw, etc.)
   - `eval_special_forms.go` - Special forms (if, fn, def, quote, quasiquote, do, etc.)
-- `repl.go` - Read-Eval-Print-Loop implementation
+- `repl.go` - Read-Eval-Print-Loop implementation with context-aware error reporting
 - `bootstrap.go` - Standard library loader and environment initialization
 
 **`cmd/golisp/main.go`** - CLI entry point supporting:
@@ -60,8 +60,69 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
 3. **Special Forms**: Core language constructs (if, fn, def, quote, quasiquote, etc.) handled separately from function calls
 4. **Modular Evaluation**: Core primitives split into focused modules for maintainability
 5. **Self-Hosting**: Standard library functions implemented in Lisp using core primitives
-6. **Error Context**: Rich error reporting with evaluation context and stack traces
+6. **Enhanced Error Handling**: Professional-grade error reporting with categorized errors, stack traces, and source context
 7. **Bootstrapped REPL**: REPL automatically loads self-hosted standard library
+
+### Enhanced Error Handling System
+
+GoLisp implements a comprehensive error handling system designed for professional development:
+
+#### Error Categories
+- **`ParseError`**: Syntax errors during lexing/parsing with source location and context
+- **`TypeError`**: Type mismatches (e.g., `(+ 1 "string")`)
+- **`ArityError`**: Wrong number of function arguments (e.g., `(+ 1)`, `(def)`)
+- **`NameError`**: Undefined symbols/variables (e.g., `undefined-variable`)
+- **`RuntimeError`**: General runtime errors and exceptions
+- **`IOError`**: File system and I/O related errors
+
+#### Error Information
+- **Source Location**: File name, line number, column number, and character offset
+- **Source Context**: Visual display of the error location with pointer (`^`)
+- **Stack Traces**: Call stack information for debugging nested function calls
+- **Error Chaining**: Support for wrapped/caused-by error relationships
+- **Position Tracking**: Unified position tracking across parser and evaluator
+
+#### Error Message Examples
+
+**Parse Error with Visual Context:**
+```
+ParseError: unexpected end of input at line 3, column 7
+(+ 1 2
+      ^
+```
+
+**Type Error:**
+```
+TypeError: + expects numbers, got core.String
+```
+
+**Arity Error with Location:**
+```
+ArityError: def expects 2 arguments, got 0 at script.lisp:5:1
+```
+
+**Name Error:**
+```
+NameError: undefined symbol: unknown-function
+```
+
+#### Context-Aware Evaluation
+- **`EvaluationContext`**: Tracks call stack and source information during evaluation
+- **`EvalWithContext`**: Enhanced evaluation function with context tracking
+- **Stack Frame Tracking**: Automatic call stack construction for debugging
+- **File Context**: REPL and file loading maintain filename context for errors
+
+#### Error System Architecture
+- **`LispError`**: Primary error type with rich metadata and formatting
+- **Error Preservation**: Error types maintained through evaluation chain
+- **Backward Compatibility**: Existing `Eval` function preserved for compatibility
+- **Enhanced REPL**: Context-aware evaluation in interactive mode and file loading
+
+#### Developer Experience
+- **Clear Error Messages**: Descriptive messages following consistent patterns
+- **Visual Error Location**: Source code display with error position indicators
+- **Professional Output**: Production-quality error reporting for debugging
+- **Non-Crashing REPL**: Errors don't terminate interactive sessions
 
 ### Data Types Support
 - Numbers (integers and floats)
@@ -156,7 +217,9 @@ Comprehensive test coverage with 4,500+ lines of tests:
 - Integration scenarios (`integration_test.go`)
 - Self-hosting compiler integration (`self_hosting_test.go`)
 - Multi-expression parsing and file loading tests
-- Error handling and edge cases
+- Enhanced error handling system with categorized error testing
+- Error context preservation and stack trace functionality
+- Parse error reporting with source location and visual context
 - Self-hosting capabilities
 
 ### Self-Hosting Features

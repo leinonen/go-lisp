@@ -13,6 +13,7 @@ A minimalist, self-hosting Lisp interpreter written in Go, inspired by Clojure. 
 - **Advanced Language Features**: `defn`, `defmacro`, `cond`, multiple body expressions
 - **Macro System**: Full macro expansion with `defmacro` and quasiquote support
 - **Meta-Programming**: Full `eval`/`read-string` capabilities with macro system
+- **Enhanced Error Handling**: Professional-grade error reporting with categorized errors, stack traces, and source context
 - **Self-Hosting Compiler**: Integrated compiler for self-compilation capabilities
 - **REPL**: Interactive development environment
 - **File Operations**: Load and execute Lisp files
@@ -118,6 +119,23 @@ make build
 ;; => (if true (do (println "hello")) nil)
 ```
 
+### Enhanced Error Handling
+```lisp
+;; Type errors with clear categorization
+(+ 1 "hello")
+;; => TypeError: + expects numbers, got core.String
+
+;; Parse errors with source location and visual context
+(+ 1 2
+;; => ParseError: unexpected end of input at line 1, column 7
+;;    (+ 1 2
+;;          ^
+
+;; Arity errors for wrong argument counts
+(def)
+;; => ArityError: def expects 2 arguments, got 0
+```
+
 ### Self-Hosting Compiler
 ```lisp
 ;; Load the self-hosting compiler
@@ -136,7 +154,8 @@ GoLisp uses a modular architecture with clear separation between the Go core and
 - **Evaluator**: Modular evaluation engine (~60 core primitives including special forms
 - **Special Forms**: `def`, `fn`, `defn`, `defmacro`, `cond`, `if`, `let`, `do`, `quote`
 - **Macro System**: Full macro expansion with `defmacro` and macro call evaluation
-- **REPL**: Interactive environment with file loading
+- **Error System**: Comprehensive error handling with categorized errors and stack traces
+- **REPL**: Interactive environment with file loading and context-aware error reporting
 
 ### Standard Library (Lisp Implementation)
 - **Collections**: `map`, `filter`, `reduce`, `sort`, `apply`, `length`

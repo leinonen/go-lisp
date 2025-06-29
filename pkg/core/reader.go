@@ -7,12 +7,6 @@ import (
 	"unicode"
 )
 
-// Position represents a position in source code
-type Position struct {
-	Line   int
-	Column int
-	Offset int
-}
 
 // Token represents a token with source location
 type Token struct {
@@ -280,27 +274,6 @@ type Parser struct {
 	source   string // Original source code for error reporting
 }
 
-// ParseError represents a parsing error with location information
-type ParseError struct {
-	Message  string
-	Position Position
-	Source   string
-}
-
-func (e *ParseError) Error() string {
-	if e.Source != "" {
-		lines := strings.Split(e.Source, "\n")
-		if e.Position.Line > 0 && e.Position.Line <= len(lines) {
-			line := lines[e.Position.Line-1]
-			// Show the line and point to the error
-			pointer := strings.Repeat(" ", e.Position.Column-1) + "^"
-			return fmt.Sprintf("Parse error at line %d, column %d: %s\n%s\n%s",
-				e.Position.Line, e.Position.Column, e.Message, line, pointer)
-		}
-	}
-	return fmt.Sprintf("Parse error at line %d, column %d: %s",
-		e.Position.Line, e.Position.Column, e.Message)
-}
 
 // NewParser creates a new parser
 func NewParser(tokens []Token) *Parser {
@@ -322,15 +295,13 @@ func NewParserWithSource(tokens []Token, source string) *Parser {
 // Parse converts tokens to Lisp values
 func (p *Parser) Parse() (Value, error) {
 	if p.position >= len(p.tokens) {
-		pos := Position{Line: 1, Column: 1}
+		pos := Position{Line: 1, Column: 1, Offset: 0}
 		if len(p.tokens) > 0 {
 			pos = p.tokens[len(p.tokens)-1].Position
 		}
-		return nil, &ParseError{
-			Message:  "unexpected end of input",
-			Position: pos,
-			Source:   p.source,
-		}
+		return nil, NewLispError(ParseError, "unexpected end of input").
+			WithPosition(pos).
+			WithSource(p.source)
 	}
 
 	return p.parseExpression()
@@ -404,17 +375,13 @@ func (p *Parser) parseExpression() (Value, error) {
 		p.position++
 		return p.parseNumber(token.Value)
 	case TokenEOF:
-		return nil, &ParseError{
-			Message:  "unexpected end of input",
-			Position: token.Position,
-			Source:   p.source,
-		}
+		return nil, NewLispError(ParseError, "unexpected end of input").
+			WithPosition(token.Position).
+			WithSource(p.source)
 	default:
-		return nil, &ParseError{
-			Message:  fmt.Sprintf("unexpected token: %s", token.Value),
-			Position: token.Position,
-			Source:   p.source,
-		}
+		return nil, NewLispErrorf(ParseError, "unexpected token: %s", token.Value).
+			WithPosition(token.Position).
+			WithSource(p.source)
 	}
 }
 
@@ -437,11 +404,9 @@ func (p *Parser) parseList() (Value, error) {
 		if len(p.tokens) > 1 {
 			openParenPos = p.tokens[len(p.tokens)-1].Position
 		}
-		return nil, &ParseError{
-			Message:  "unterminated list",
-			Position: openParenPos,
-			Source:   p.source,
-		}
+		return nil, NewLispError(ParseError, "unterminated list").
+			WithPosition(openParenPos).
+			WithSource(p.source)
 	}
 
 	p.position++ // Skip ')'

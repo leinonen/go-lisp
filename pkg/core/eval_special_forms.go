@@ -10,7 +10,7 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 	case "quote":
 		argSlice := listToSlice(args)
 		if len(argSlice) != 1 {
-			return nil, fmt.Errorf("quote expects 1 argument, got %d", len(argSlice))
+			return nil, NewArityError("quote expects 1 argument, got %d", len(argSlice))
 		}
 		return argSlice[0], nil
 
@@ -24,7 +24,7 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 	case "if":
 		argSlice := listToSlice(args)
 		if len(argSlice) < 2 || len(argSlice) > 3 {
-			return nil, fmt.Errorf("if expects 2-3 arguments, got %d", len(argSlice))
+			return nil, NewArityError("if expects 2-3 arguments, got %d", len(argSlice))
 		}
 
 		condition, err := Eval(argSlice[0], env)
@@ -42,7 +42,7 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 	case "def":
 		argSlice := listToSlice(args)
 		if len(argSlice) != 2 {
-			return nil, fmt.Errorf("def expects 2 arguments, got %d", len(argSlice))
+			return nil, NewArityError("def expects 2 arguments, got %d", len(argSlice))
 		}
 
 		sym, ok := argSlice[0].(Symbol)

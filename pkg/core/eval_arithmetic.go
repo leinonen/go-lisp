@@ -28,7 +28,7 @@ func setupArithmeticOperations(env *Environment) {
 						result += num.ToInt()
 					}
 				} else {
-					return nil, fmt.Errorf("+ expects numbers, got %T", arg)
+					return nil, NewTypeError("+ expects numbers, got %T", arg)
 				}
 			}
 
@@ -43,12 +43,12 @@ func setupArithmeticOperations(env *Environment) {
 		Name: "-",
 		Fn: func(args []Value, env *Environment) (Value, error) {
 			if len(args) == 0 {
-				return nil, fmt.Errorf("- expects at least 1 argument")
+				return nil, NewArityError("- expects at least 1 argument")
 			}
 
 			first, ok := args[0].(Number)
 			if !ok {
-				return nil, fmt.Errorf("- expects numbers, got %T", args[0])
+				return nil, NewTypeError("- expects numbers, got %T", args[0])
 			}
 
 			if len(args) == 1 {
