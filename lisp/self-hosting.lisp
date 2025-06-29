@@ -167,14 +167,16 @@
   
   ;; Compile the standard library
   (print "1. Compiling standard library...")
-  (compile-file "stdlib.lisp" "stdlib-compiled.lisp")
+  (compile-file "lisp/stdlib/core.lisp" "stdlib-core-compiled.lisp")
+  (compile-file "lisp/stdlib/enhanced.lisp" "stdlib-enhanced-compiled.lisp")
   
   ;; Compile this compiler itself!
   (print "2. Compiling self-hosting compiler...")
   (compile-file "self-hosting.lisp" "self-hosting-compiled.lisp")
   
   (print "3. Self-hosting bootstrap complete!")
-  (print "   - stdlib-compiled.lisp: Compiled standard library")
+  (print "   - stdlib-core-compiled.lisp: Compiled core standard library")
+  (print "   - stdlib-enhanced-compiled.lisp: Compiled enhanced standard library")
   (print "   - self-hosting-compiled.lisp: Compiled compiler")
   (print "")
   (print "Next steps:")
