@@ -44,6 +44,8 @@ make build
 
 ## Examples
 
+For comprehensive examples of all standard library functions, see [docs/examples.md](docs/examples.md).
+
 ### Basic Operations
 ```lisp
 (+ 1 2 3)                          ; 6

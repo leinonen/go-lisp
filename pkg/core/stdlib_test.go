@@ -34,12 +34,12 @@ func TestStdlibCoreLibrary(t *testing.T) {
 		{"third", "(third (list 1 2 3 4))", "3"},
 
 		// Test map function
-		{"map-simple", "(map (fn [x] (* x 2)) (list 1 2 3))", "(2 4 6 nil)"},
-		{"map-empty", "(map (fn [x] x) nil)", "nil"},
+		{"map-simple", "(map (fn [x] (* x 2)) (list 1 2 3))", "(2 4 6)"},
+		{"map-empty", "(map (fn [x] x) nil)", "()"},
 
 		// Test filter function
-		{"filter-positive", "(filter (fn [x] (> x 0)) (list -1 0 1 2))", "(1 2 nil)"},
-		{"filter-empty", "(filter (fn [x] x) nil)", "nil"},
+		{"filter-positive", "(filter (fn [x] (> x 0)) (list -1 0 1 2))", "(1 2)"},
+		{"filter-empty", "(filter (fn [x] x) nil)", "()"},
 
 		// Test reduce function
 		{"reduce-sum", "(reduce + 0 (list 1 2 3 4))", "10"},
@@ -47,9 +47,9 @@ func TestStdlibCoreLibrary(t *testing.T) {
 		{"reduce-empty", "(reduce + 0 nil)", "0"},
 
 		// Test range function (reverse order for simplicity)
-		{"range-5", "(range 5)", "(4 3 2 1 0 nil)"},
-		{"range-1", "(range 1)", "(0 nil)"},
-		{"range-0", "(range 0)", "nil"},
+		{"range-5", "(range 5)", "(4 3 2 1 0)"},
+		{"range-1", "(range 1)", "(0)"},
+		{"range-0", "(range 0)", "()"},
 	}
 
 	for _, test := range tests {
@@ -122,8 +122,8 @@ func TestStdlibEnhancedLibrary(t *testing.T) {
 		{"abs-negative", "(abs -5)", "5"},
 
 		// Test collection operations
-		{"reverse", "(reverse (list 1 2 3))", "(3 2 1 nil)"},
-		{"take", "(take 2 (list 1 2 3 4))", "(1 2 nil)"},
+		{"reverse", "(reverse (list 1 2 3))", "(3 2 1)"},
+		{"take", "(take 2 (list 1 2 3 4))", "(1 2)"},
 		{"drop", "(drop 2 (list 1 2 3 4))", "(3 4)"},
 		{"concat", "(concat (list 1 2) (list 3 4))", "(1 2 3 4)"},
 
@@ -138,8 +138,8 @@ func TestStdlibEnhancedLibrary(t *testing.T) {
 		{"any?-false", "(any? (fn [x] (> x 5)) (list 1 2 3))", "nil"},
 
 		// Test repeat function
-		{"repeat", "(repeat 3 \"x\")", "(\"x\" \"x\" \"x\" nil)"},
-		{"repeat-zero", "(repeat 0 \"x\")", "nil"},
+		{"repeat", "(repeat 3 \"x\")", "(\"x\" \"x\" \"x\")"},
+		{"repeat-zero", "(repeat 0 \"x\")", "()"},
 	}
 
 	for _, test := range tests {
@@ -176,7 +176,7 @@ func TestStdlibComplexOperations(t *testing.T) {
 		expected string
 	}{
 		// Test filter then map on individual elements (avoiding nil terminator issue)
-		{"filter-result", "(filter (fn [x] (> x 1)) (list 1 2 3))", "(2 3 nil)"},
+		{"filter-result", "(filter (fn [x] (> x 1)) (list 1 2 3))", "(2 3)"},
 		{"reduce-map", "(+ (first (map (fn [x] (* x x)) (list 1 2 3))) (second (map (fn [x] (* x x)) (list 1 2 3))) (third (map (fn [x] (* x x)) (list 1 2 3))))", "14"},
 
 		// Test higher-order function composition
@@ -184,25 +184,25 @@ func TestStdlibComplexOperations(t *testing.T) {
 
 		// Test complex collection operations
 		{"last", "(last (list 1 2 3 4))", "4"},
-		{"butlast", "(butlast (list 1 2 3 4))", "(1 2 3 nil)"},
+		{"butlast", "(butlast (list 1 2 3 4))", "(1 2 3)"},
 
 		// Test partition function
-		{"partition", "(partition 2 (list 1 2 3 4))", "((1 2 nil) (3 4 nil) nil)"},
+		{"partition", "(partition 2 (list 1 2 3 4))", "((1 2) (3 4))"},
 
 		// Test interpose
 		{"interpose", "(interpose \",\" (list 1 2 3))", "(1 \",\" 2 \",\" 3)"},
 
 		// Test remove function (opposite of filter)
-		{"remove", "(remove (fn [x] (> x 2)) (list 1 2 3 4))", "(1 2 nil)"},
+		{"remove", "(remove (fn [x] (> x 2)) (list 1 2 3 4))", "(1 2)"},
 
 		// Test keep function
-		{"keep", "(keep (fn [x] (if (> x 2) x nil)) (list 1 2 3 4))", "(3 4 nil)"},
+		{"keep", "(keep (fn [x] (if (> x 2) x nil)) (list 1 2 3 4))", "(3 4)"},
 
 		// Test sort function - disabled due to nil terminator issues in current implementation
 		// {"sort", "(sort (list 3 1 4 2))", "(1 2 3 4 nil)"},
 
 		// Test distinct function
-		{"distinct", "(distinct (list 1 2 2 3 1))", "(2 3 1 nil)"},
+		{"distinct", "(distinct (list 1 2 2 3 1))", "(2 3 1)"},
 
 		// Test contains-item?
 		{"contains-item?-true", "(contains-item? 2 (list 1 2 3))", "true"},

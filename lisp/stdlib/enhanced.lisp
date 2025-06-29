@@ -28,20 +28,20 @@
                   (f (first coll) (nth coll 1) (nth coll 2) (nth coll 3)))))))
 
 (defn reverse [coll]
-  (reduce (fn [acc x] (cons x acc)) nil coll))
+  (reduce (fn [acc x] (cons x acc)) () coll))
 
 (defn take [n coll]
   (if (= n 0)
-      nil
+      ()
       (if (empty? coll)
-          nil
+          ()
           (cons (first coll) (take (- n 1) (rest coll))))))
 
 (defn drop [n coll]
   (if (= n 0)
       coll
       (if (empty? coll)
-          nil
+          ()
           (drop (- n 1) (rest coll)))))
 
 (defn concat [coll1 coll2]
@@ -85,11 +85,11 @@
 (defn identity [x] x)
 
 ;; Math utilities
-(defn min [a b]
-  (if (< a b) a b))
+(defn min [& args]
+  (reduce (fn [a b] (if (< a b) a b)) (first args) (rest args)))
 
-(defn max [a b]
-  (if (> a b) a b))
+(defn max [& args]
+  (reduce (fn [a b] (if (> a b) a b)) (first args) (rest args)))
 
 (defn abs [x]
   (if (< x 0) (- x) x))
@@ -102,12 +102,12 @@
 
 (defn butlast [coll]
   (if (empty? (rest coll))
-      nil
+      ()
       (cons (first coll) (butlast (rest coll)))))
 
 (defn distinct [coll]
   (if (empty? coll)
-      nil
+      ()
       (let [head (first coll)
             rest-distinct (distinct (rest coll))]
         (if (contains-item? head rest-distinct)
@@ -116,7 +116,7 @@
 
 (defn contains-item? [item coll]
   (if (empty? coll)
-      nil
+      false
       (if (= item (first coll))
           true
           (contains-item? item (rest coll)))))
@@ -124,14 +124,14 @@
 ;; Repeat function
 (defn repeat [n x]
   (if (= n 0)
-      nil
+      ()
       (cons x (repeat (- n 1) x))))
 
 
 ;; Enhanced collection functions
 (defn sort [coll]
   (if (empty? coll)
-      nil
+      ()
       (if (= (count coll) 1)
           coll
           (let [pivot (first coll)
@@ -146,12 +146,12 @@
       true
       (if (pred (first coll))
           (all? pred (rest coll))
-          nil)))
+          false)))
 
 ;; Any function  
 (defn any? [pred coll]
   (if (empty? coll)
-      nil
+      false
       (if (pred (first coll))
           true
           (any? pred (rest coll)))))
@@ -159,13 +159,13 @@
 ;; Partition function
 (defn partition [n coll]
   (if (< (count coll) n)
-      nil
+      ()
       (cons (take n coll) (partition n (drop n coll)))))
 
 ;; Interpose
 (defn interpose [sep coll]
   (if (empty? coll)
-      nil
+      ()
       (if (empty? (rest coll))
           coll
           (cons (first coll) (cons sep (interpose sep (rest coll)))))))
@@ -177,7 +177,7 @@
 ;; Keep function
 (defn keep [f coll]
   (if (empty? coll)
-      nil
+      ()
       (let [result (f (first coll))]
         (if (nil? result)
             (keep f (rest coll))
@@ -186,7 +186,7 @@
 ;; Flatten (simple version)
 (defn flatten [coll]
   (if (empty? coll)
-      nil
+      ()
       (if (list? (first coll))
           (concat (flatten (first coll)) (flatten (rest coll)))
           (cons (first coll) (flatten (rest coll))))))

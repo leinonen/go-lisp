@@ -33,13 +33,13 @@
 ;; Map function
 (defn map [f coll]
   (if (empty? coll)
-      nil
+      ()
       (cons (f (first coll)) (map f (rest coll)))))
 
 ;; Filter function
 (defn filter [pred coll]
   (if (empty? coll)
-      nil
+      ()
       (if (pred (first coll))
           (cons (first coll) (filter pred (rest coll)))
           (filter pred (rest coll)))))
@@ -47,7 +47,7 @@
 ;; Range function (reverse order for simplicity)
 (defn range [n]
   (if (= n 0)
-      nil
+      ()
       (cons (- n 1) (range (- n 1)))))
 
 ;; Reduce function (simplified)
