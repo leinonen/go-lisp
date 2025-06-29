@@ -1361,3 +1361,59 @@ func TestLoadFileErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestLogicalOperations(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Test and with no arguments
+		{"(and)", "true"},
+		// Test and with single argument
+		{"(and true)", "true"},
+		{"(and nil)", "nil"},
+		{"(and 42)", "42"},
+		// Test and with multiple arguments - returns last value if all truthy
+		{"(and true true)", "true"},
+		{"(and 1 2 3)", "3"},
+		{"(and \"hello\" \"world\")", "\"world\""},
+		// Test and with falsy values - returns first falsy value
+		{"(and true nil)", "nil"},
+		{"(and 1 nil 3)", "nil"},
+		{"(and nil false)", "nil"},
+		
+		// Test or with no arguments
+		{"(or)", "nil"},
+		// Test or with single argument
+		{"(or true)", "true"},
+		{"(or nil)", "nil"},
+		{"(or 42)", "42"},
+		// Test or with multiple arguments - returns first truthy value
+		{"(or true false)", "true"},
+		{"(or nil 42)", "42"},
+		{"(or nil false \"hello\")", "\"hello\""},
+		// Test or with all falsy values - returns last value
+		{"(or nil false)", "nil"},
+		{"(or false nil)", "nil"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}

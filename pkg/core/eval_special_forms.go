@@ -292,6 +292,62 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 
 		// No condition matched
 		return Nil{}, nil
+
+	case "and":
+		argSlice := listToSlice(args)
+		if len(argSlice) == 0 {
+			return Symbol("true"), nil
+		}
+
+		// Short-circuiting: evaluate expressions left-to-right
+		// Return first falsy value or last value if all are truthy
+		for i, expr := range argSlice {
+			result, err := Eval(expr, env)
+			if err != nil {
+				return nil, err
+			}
+			
+			// If falsy, return this value (short-circuit)
+			if !isTruthy(result) {
+				return result, nil
+			}
+			
+			// If this is the last expression, return its value
+			if i == len(argSlice)-1 {
+				return result, nil
+			}
+		}
+		
+		// Should never reach here
+		return Symbol("true"), nil
+
+	case "or":
+		argSlice := listToSlice(args)
+		if len(argSlice) == 0 {
+			return Nil{}, nil
+		}
+
+		// Short-circuiting: evaluate expressions left-to-right
+		// Return first truthy value or last value if all are falsy
+		for i, expr := range argSlice {
+			result, err := Eval(expr, env)
+			if err != nil {
+				return nil, err
+			}
+			
+			// If truthy, return this value (short-circuit)
+			if isTruthy(result) {
+				return result, nil
+			}
+			
+			// If this is the last expression, return its value
+			if i == len(argSlice)-1 {
+				return result, nil
+			}
+		}
+		
+		// Should never reach here
+		return Nil{}, nil
 	}
 
 	return nil, fmt.Errorf("unknown special form: %s", sym)
@@ -300,7 +356,7 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 // isSpecialForm checks if a symbol is a special form
 func isSpecialForm(sym Symbol) bool {
 	switch sym {
-	case "quote", "quasiquote", "if", "def", "fn", "do", "let", "defmacro", "defn", "cond":
+	case "quote", "quasiquote", "if", "def", "fn", "do", "let", "defmacro", "defn", "cond", "and", "or":
 		return true
 	default:
 		return false

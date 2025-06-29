@@ -82,10 +82,12 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [x] **`even?`** - Check if number is even
 - [x] **`odd?`** - Check if number is odd
 
-### Logic & Flow Control (Self-hosted)
-- [x] **`not`** - Logical not
-- [x] **`when`** - Conditional execution when true
-- [x] **`unless`** - Conditional execution when false
+### Logic & Flow Control (Go Core + Self-hosted)
+- [x] **`not`** - Logical not (Self-hosted)
+- [x] **`when`** - Conditional execution when true (Self-hosted)
+- [x] **`unless`** - Conditional execution when false (Self-hosted)
+- [x] **`and`** - Logical and (short-circuiting, variadic) (Go Core)
+- [x] **`or`** - Logical or (short-circuiting, variadic) (Go Core)
 
 ### String Operations (Go Core + Self-hosted)
 - [x] **`str`** - String concatenation
@@ -146,10 +148,6 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 
 ## 🔄 PARTIALLY IMPLEMENTED / NEEDS IMPROVEMENT
 
-### Logical Operations
-- [ ] **`and`** - Logical and (short-circuiting) - Only `and2` for two values implemented
-- [ ] **`or`** - Logical or (short-circuiting) - Only `or2` for two values implemented
-
 ### Control Flow
 - [ ] **`when-not`** - Conditional execution when false (similar to unless but different semantics)
 - [ ] **`case`** - Pattern matching
@@ -192,12 +190,12 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 
 ## 📊 IMPLEMENTATION SUMMARY
 
-### ✅ Fully Implemented: ~95+ functions
-- **Go Core**: ~55 essential primitives (including full quasiquote system)
+### ✅ Fully Implemented: ~97+ functions
+- **Go Core**: ~57 essential primitives (including full quasiquote system and logical operations)
 - **Self-hosted Standard Library**: ~40+ higher-level functions
-- **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, quasiquote templating
+- **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, logical operations, quasiquote templating
 
-### 🔄 Partial/Needs Work: ~13 functions
+### 🔄 Partial/Needs Work: ~11 functions
 - Mostly variations or enhanced versions of existing functionality
 - Some naming consistency issues (e.g., every? vs all?)
 
@@ -206,6 +204,6 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - Destructuring support
 - Infinite sequence generators
 
-### Overall Completion: **90-92%** of core Clojure functionality implemented
+### Overall Completion: **92-94%** of core Clojure functionality implemented
 
 GoLisp has successfully implemented the vast majority of essential Clojure features, with a robust self-hosting standard library that demonstrates the language's expressiveness and completeness.
