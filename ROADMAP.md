@@ -1190,4 +1190,402 @@ make test-all
 - **Documentation**: Complete guides and examples for web development
 - **Testing**: Comprehensive test coverage for all web functionality
 
+## Phase 5: Core.async Module Implementation 🔄
+
+### Overview
+Implement Clojure-style core.async functionality as a separate `pkg/async` module, leveraging Go's goroutines and channels for high-performance concurrent programming. This follows GoLisp's established pattern: minimal Go primitives + comprehensive self-hosted GoLisp framework.
+
+**Architecture Strategy:**
+- **Go Layer**: `pkg/async/` with ~15-20 essential channel/goroutine primitives
+- **GoLisp Layer**: `lisp/stdlib/async.lisp` with high-level async constructs and macros
+- **Integration**: Automatic loading via bootstrap, seamless REPL availability
+
+### Phase 5.1: Core Channel Types 🏗️
+
+**Essential Channel Primitives (Go Implementation):**
+
+#### Channel Data Types
+- `Channel` - Wrapper around Go channels implementing Value interface
+- `Buffer` - Channel buffering strategies (fixed, sliding, dropping)
+- `Timeout` - Special timeout values for time-based operations
+- `Promise` - Future-like values for async results
+
+#### Basic Channel Operations
+- `chan-create` - Create channels with optional buffer size/strategy
+- `chan-close` - Close channels gracefully
+- `chan-closed?` - Check if channel is closed
+- `chan-put-raw` - Non-blocking put operation (returns boolean)
+- `chan-take-raw` - Non-blocking take operation (returns [value taken?])
+- `chan-put-blocking` - Blocking put operation
+- `chan-take-blocking` - Blocking take operation
+
+#### Timeout and Selection
+- `timeout-create` - Create timeout channels
+- `alts-raw` - Select from multiple channels (Go select implementation)
+- `chan-buffer-info` - Get buffer size and current count
+
+### Phase 5.2: Self-Hosted Async Framework 🚀
+
+**High-Level Async Framework (GoLisp Implementation in `lisp/stdlib/async.lisp`):**
+
+#### Channel Creation and Management
+```lisp
+;; Channel Creation DSL
+(defn chan 
+  ([] (chan-create 0))
+  ([buffer-size] (chan-create buffer-size))
+  ([buffer-size buffer-type] (chan-create buffer-size buffer-type)))
+
+(defn sliding-buffer [n] {:type :sliding :size n})
+(defn dropping-buffer [n] {:type :dropping :size n})
+
+;; Channel Operations
+(defn close! [ch] (chan-close ch))
+(defn closed? [ch] (chan-closed? ch))
+
+;; Timeout Utilities
+(defn timeout [ms] (timeout-create ms))
+```
+
+#### Blocking Channel Operations (Macros)
+```lisp
+;; Core channel communication macros
+(defmacro <! [ch]
+  `(chan-take-blocking ~ch))
+
+(defmacro >! [ch val]
+  `(chan-put-blocking ~ch ~val))
+
+;; Non-blocking operations with callbacks
+(defn put! [ch val callback]
+  (go
+    (if (chan-put-raw ch val)
+      (callback true)
+      (callback false))))
+
+(defn take! [ch callback]
+  (go
+    (let [[val taken?] (chan-take-raw ch)]
+      (callback val taken?))))
+```
+
+#### Go Block Implementation
+```lisp
+;; Lightweight goroutine creation
+(defmacro go [& body]
+  `(spawn-goroutine (fn [] ~@body)))
+
+(defmacro go-loop [bindings & body]
+  `(go
+     (loop ~bindings
+       ~@body)))
+
+;; Channel selection
+(defmacro alts! [channels & {:keys [default priority]}]
+  `(alts-impl ~channels ~default ~priority))
+
+(defn alts-impl [channels default priority]
+  (if default
+    (or (alts-raw channels) default)
+    (alts-raw channels)))
+```
+
+### Phase 5.3: Pipeline Operations 🔄
+
+#### Pipeline Framework
+```lisp
+;; Pipeline Construction
+(defn pipe [from to & {:keys [close? transform]}]
+  (go-loop []
+    (let [val (<! from)]
+      (when-not (nil? val)
+        (let [result (if transform (transform val) val)]
+          (>! to result)
+          (recur))))
+    (when close? (close! to))))
+
+(defn pipeline [n xf from to & {:keys [close?]}]
+  (let [worker-fn (fn []
+                    (go-loop []
+                      (let [val (<! from)]
+                        (when-not (nil? val)
+                          (>! to (xf val))
+                          (recur)))))]
+    (dotimes [_ n] (worker-fn))
+    (when close?
+      (go
+        (loop [workers n]
+          (when (> workers 0)
+            (<! to)
+            (recur (dec workers))))
+        (close! to)))))
+
+;; Channel Utilities
+(defn merge [channels]
+  (let [out (chan)]
+    (doseq [ch channels]
+      (go-loop []
+        (let [val (<! ch)]
+          (when-not (nil? val)
+            (>! out val)
+            (recur)))))
+    out))
+
+(defn split [predicate ch]
+  (let [true-ch (chan)
+        false-ch (chan)]
+    (go-loop []
+      (let [val (<! ch)]
+        (when-not (nil? val)
+          (if (predicate val)
+            (>! true-ch val)
+            (>! false-ch val))
+          (recur))))
+    [true-ch false-ch]))
+```
+
+### Phase 5.4: Advanced Async Patterns 🎯
+
+#### Async Utilities
+```lisp
+;; Promise-like constructs
+(defn promise []
+  (let [ch (chan 1)]
+    {:channel ch
+     :deliver (fn [val] (>! ch val) (close! ch))
+     :deref (fn [] (<! ch))}))
+
+;; Async mapping and filtering
+(defn async-map [f input-ch]
+  (let [output-ch (chan)]
+    (go-loop []
+      (let [val (<! input-ch)]
+        (when-not (nil? val)
+          (>! output-ch (f val))
+          (recur))))
+    output-ch))
+
+(defn async-filter [pred input-ch]
+  (let [output-ch (chan)]
+    (go-loop []
+      (let [val (<! input-ch)]
+        (when-not (nil? val)
+          (when (pred val)
+            (>! output-ch val))
+          (recur))))
+    output-ch))
+
+;; Batching and windowing
+(defn batch [n ch]
+  (let [out (chan)]
+    (go-loop [batch []]
+      (let [val (<! ch)]
+        (if (nil? val)
+          (when (seq batch) (>! out batch))
+          (let [new-batch (conj batch val)]
+            (if (= (count new-batch) n)
+              (do (>! out new-batch) (recur []))
+              (recur new-batch))))))
+    out))
+```
+
+### Phase 5.5: Integration & Testing 🔗
+
+#### Go Primitives Testing
+```bash
+# Test channel creation and basic operations
+go test ./pkg/async -run TestChannel -v
+
+# Test goroutine integration
+go test ./pkg/async -run TestGoroutine -v
+
+# Test timeout functionality
+go test ./pkg/async -run TestTimeout -v
+
+# Test channel selection (alts)
+go test ./pkg/async -run TestAlts -v
+```
+
+#### Self-Hosted Framework Testing
+```bash
+# Test channel operations
+./bin/golisp -e "(load-file \"lisp/stdlib/async.lisp\") (def ch (chan 5))"
+./bin/golisp -e "(>! ch :hello) (<! ch)"
+
+# Test go blocks
+./bin/golisp -e "(go (>! ch :world)) (<! ch)"
+
+# Test pipeline operations
+./bin/golisp -e "(def in (chan)) (def out (async-map inc in)) (>! in 5) (<! out)"
+
+# Test timeout and alts
+./bin/golisp -e "(alts! [ch (timeout 1000)])"
+```
+
+#### Integration Examples
+```lisp
+;; Producer-Consumer Example
+(ns async-example
+  (:require [async :refer :all]))
+
+(defn producer [ch items]
+  (go-loop [remaining items]
+    (when (seq remaining)
+      (>! ch (first remaining))
+      (recur (rest remaining)))
+    (close! ch)))
+
+(defn consumer [ch]
+  (go-loop [results []]
+    (let [val (<! ch)]
+      (if (nil? val)
+        results
+        (recur (conj results val))))))
+
+;; Usage
+(def data-ch (chan 10))
+(producer data-ch (range 100))
+(def results (<! (consumer data-ch)))
+(println "Processed" (count results) "items")
+```
+
+#### Performance Benchmarks
+```bash
+# Benchmark channel operations
+go test ./pkg/async -bench=BenchmarkChannel -v
+
+# Benchmark goroutine creation
+go test ./pkg/async -bench=BenchmarkGoroutine -v
+
+# Test concurrent throughput
+./bin/golisp -f examples/async-performance.lisp
+```
+
+### Implementation Timeline 📅
+
+#### Phase 5.1: Core Channel Types (Week 1-2)
+```bash
+# Create async module structure
+mkdir -p pkg/async
+touch pkg/async/types.go pkg/async/channels.go pkg/async/types_test.go
+
+# Implement Channel, Buffer, Promise types
+# Implement basic channel operations (create, close, put, take)
+# Add timeout functionality
+# Add to bootstrap loading system
+
+# Test primitive functionality
+go test ./pkg/async -v
+```
+
+#### Phase 5.2: Go Blocks and Macros (Week 3-4)
+```bash
+# Create async framework in GoLisp
+touch lisp/stdlib/async.lisp
+
+# Implement go block macros
+# Implement channel operation macros (<!, >!)
+# Implement alts! selection
+# Add promise and future constructs
+
+# Test framework functionality
+./bin/golisp -f lisp/stdlib/async.lisp
+```
+
+#### Phase 5.3: Pipeline Operations (Week 5-6)
+```bash
+# Implement pipeline framework
+# Add async mapping and filtering
+# Create channel utilities (merge, split)
+# Add batching and windowing operations
+
+# Test pipeline functionality
+./bin/golisp -f examples/async-pipeline.lisp
+```
+
+#### Phase 5.4: Advanced Features (Week 7)
+```bash
+# Add advanced async patterns
+# Implement error handling for channels
+# Add monitoring and debugging utilities
+# Performance optimization
+
+# Test advanced functionality
+make test-async-advanced
+```
+
+#### Phase 5.5: Integration & Documentation (Week 8)
+```bash
+# Update bootstrap system
+# Create comprehensive examples
+# Add performance benchmarks
+# Update documentation
+
+# Validate complete implementation
+make test-async-all
+```
+
+### Module Structure 📁
+```
+pkg/async/
+├── types.go          # Channel, Buffer, Promise types + Value interface
+├── channels.go       # Basic channel operations (create, close, put, take)
+├── goroutines.go     # Goroutine spawning and management
+├── selection.go      # alts! implementation using Go select
+├── timeout.go        # Timeout channel implementation
+├── integration.go    # Environment setup and registration
+├── async_test.go     # Comprehensive Go tests
+└── benchmarks_test.go # Performance benchmarks
+
+lisp/stdlib/
+├── async.lisp        # Self-hosted async framework
+└── examples/
+    ├── async-basics.lisp     # Basic channel operations
+    ├── async-pipeline.lisp   # Pipeline examples
+    └── async-performance.lisp # Performance tests
+```
+
+### Go Core Primitives (Essential Operations) 🔧
+
+**Channel Management:**
+- `chan-create(size, buffer-type) -> Channel`
+- `chan-close(channel) -> nil`
+- `chan-closed?(channel) -> boolean`
+
+**Channel Operations:**
+- `chan-put-blocking(channel, value) -> nil`
+- `chan-take-blocking(channel) -> value`
+- `chan-put-raw(channel, value) -> boolean`
+- `chan-take-raw(channel) -> [value, taken?]`
+
+**Concurrency:**
+- `spawn-goroutine(function) -> goroutine-id`
+- `alts-raw(channels) -> [value, channel, taken?]`
+- `timeout-create(milliseconds) -> timeout-channel`
+
+**Buffer Types:**
+- `fixed-buffer(size) -> buffer`
+- `sliding-buffer(size) -> buffer`
+- `dropping-buffer(size) -> buffer`
+
+### Benefits of Async Module Architecture 🌟
+
+1. **Go Integration**: Direct leverage of Go's proven concurrency primitives
+2. **Clojure Compatibility**: Familiar API for Clojure developers
+3. **Self-Hosting**: High-level constructs implemented in GoLisp
+4. **Performance**: Minimal overhead, maximum throughput
+5. **Extensibility**: Framework can be extended entirely in GoLisp
+6. **Safety**: Go's memory safety and race detection built-in
+
+### Success Criteria ✅
+
+- **Channel Operations**: All core.async channel operations working
+- **Go Blocks**: Lightweight goroutine creation and management
+- **Pipeline Processing**: High-throughput data transformation pipelines
+- **Timeout Support**: Robust timeout and deadline handling
+- **Error Handling**: Graceful error propagation and recovery
+- **Performance**: Competitive with native Go channel performance
+- **Documentation**: Complete guides and examples for async programming
+- **Testing**: Comprehensive test coverage including concurrency edge cases
+
 **🎯 Next milestone: Begin Phase 3.4.1 - Core Module Infrastructure** 🚀
