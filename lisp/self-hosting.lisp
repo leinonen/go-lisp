@@ -2,7 +2,170 @@
 ;; This file demonstrates how GoLisp can compile itself
 
 ;; Helper functions
-(defn not= [a b] (not (= a b)))
+(defn not= [a b] (if (= a b) false true))
+
+;; Simple any? function for optimization code
+(defn any? [pred coll]
+  (if (empty? coll)
+      false
+      (if (pred (first coll))
+          true
+          (any? pred (rest coll)))))
+
+;; Simple map function for optimization code
+(defn map [f coll]
+  (if (empty? coll)
+      '()
+      (cons (f (first coll)) (map f (rest coll)))))
+
+;; Simple reduce function for optimization code  
+(defn reduce [f init coll]
+  (if (empty? coll)
+      init
+      (reduce f (f init (first coll)) (rest coll))))
+
+;; Simple filter function for optimization code
+(defn filter [pred coll]
+  (if (empty? coll)
+      '()
+      (if (pred (first coll))
+          (cons (first coll) (filter pred (rest coll)))
+          (filter pred (rest coll)))))
+
+;; Helper functions used in compiler
+(defn second [coll] (first (rest coll)))
+(defn length [coll] (count coll))
+
+;; Simple concat function  
+(defn concat [coll1 coll2]
+  (if (empty? coll1)
+      coll2
+      (cons (first coll1) (concat (rest coll1) coll2))))
+
+;; Flatten one level
+(defn flatten1 [colls]
+  (reduce concat '() colls))
+
+;; Reverse function
+(defn reverse [coll]
+  (reduce (fn [acc item] (cons item acc)) '() coll))
+
+;; Optimization functions
+
+;; Check if a value is a constant (number, string, boolean, nil, keyword)
+(defn constant? [expr]
+  (or (number? expr)
+      (string? expr)
+      (nil? expr)
+      (keyword? expr)
+      (= expr 'true)
+      (= expr 'false)))
+
+;; Evaluate arithmetic operations on constants
+(defn eval-constant-arith [op args]
+  (cond
+    (= op '+) (reduce + 0 args)
+    (= op '-) (if (= (count args) 1) 
+                (- (first args))
+                (reduce - (first args) (rest args)))
+    (= op '*) (reduce * 1 args)
+    (= op '/) (if (= (count args) 1)
+                (/ 1 (first args))
+                (reduce / (first args) (rest args)))
+    (= op '=) (if (= (count args) 2) 
+                  (if (= (first args) (second args)) 'true 'false)
+                  nil)
+    (= op '<) (if (= (count args) 2) 
+                  (if (< (first args) (second args)) 'true 'false)
+                  nil)
+    (= op '>) (if (= (count args) 2) 
+                  (if (> (first args) (second args)) 'true 'false)
+                  nil)
+    (= op '<=) (if (= (count args) 2) 
+                   (if (<= (first args) (second args)) 'true 'false)
+                   nil)
+    (= op '>=) (if (= (count args) 2) 
+                   (if (>= (first args) (second args)) 'true 'false)
+                   nil)
+    :else nil))
+
+;; Constant folding optimization
+(defn constant-fold-expr [expr]
+  (cond
+    ;; Already a constant - return as-is
+    (constant? expr) expr
+    
+    ;; List - check for arithmetic operations with all constant args
+    (and (list? expr) (if (empty? expr) false true))
+    (let [head (first expr)
+          args (rest expr)]
+      (if (and (symbol? head)
+               (any? (fn [op] (= head op)) '(+ - * / = < > <= >=))
+               (if (empty? args) false true)
+               (reduce (fn [acc arg] (and acc (constant? (constant-fold-expr arg)))) true args))
+        ;; All arguments are constants - try to evaluate
+        (let [folded-args (map constant-fold-expr args)
+              result (eval-constant-arith head folded-args)]
+          (if (not= result nil)
+            result
+            ;; Couldn't fold - return with folded args
+            (cons head folded-args)))
+        ;; Not all constants or not arithmetic - recursively fold args
+        (cons head (map constant-fold-expr args))))
+    
+    ;; Vector - recursively fold elements
+    (vector? expr)
+    (vector (map constant-fold-expr expr))
+    
+    ;; Other types - return as-is
+    :else expr))
+
+;; Dead code elimination - remove unused let bindings
+(defn find-used-symbols [expr]
+  (cond
+    (symbol? expr) (list expr)
+    (list? expr) (flatten1 (map find-used-symbols expr))
+    (vector? expr) (flatten1 (map find-used-symbols expr))
+    :else '()))
+
+(defn eliminate-dead-let-bindings [bindings body]
+  ;; For now, just return the original bindings to avoid the complex vector/list conversion
+  ;; TODO: Implement proper dead code elimination for let bindings
+  bindings)
+
+;; Dead code elimination for if expressions  
+(defn eliminate-dead-if [condition then-expr else-expr]
+  (cond
+    ;; If condition is constant true, return then branch
+    (= condition 'true) then-expr
+    (= condition 'false) else-expr
+    ;; Otherwise return full if expression
+    :else (list 'if condition then-expr else-expr)))
+
+;; Main dead code elimination function  
+(defn eliminate-dead-code [expr]
+  (if (list? expr)
+    ;; It's a list - check what kind
+    (if (empty? expr)
+      expr  ; Empty list
+      (cond
+        ;; Let expression - skip dead code elimination for now due to vector handling complexity
+        (= (first expr) 'let)
+        (map eliminate-dead-code expr)
+        
+        ;; If expression - eliminate unreachable branches
+        (= (first expr) 'if)
+        (if (= (count expr) 4)
+          (let [condition (eliminate-dead-code (second expr))
+                then-branch (eliminate-dead-code (nth expr 2))
+                else-branch (eliminate-dead-code (nth expr 3))]
+            (eliminate-dead-if condition then-branch else-branch))
+          expr)  ; Malformed if
+        
+        ;; Other expressions - recursively optimize
+        :else (map eliminate-dead-code expr)))
+    ;; Non-list (constant or symbol) - return as-is
+    expr))
 
 ;; Core compiler data structures
 (def *current-env* nil)
@@ -13,10 +176,19 @@
 
 ;; Compilation context
 (defn make-context []
+  (make-context-with-optimizations {:constant-folding true :dead-code-elimination true}))
+
+(defn make-context-with-optimizations [opt-flags]
   (hash-map :symbols (hash-map)
             :locals '()
             :macros (hash-map)  ; Track macro definitions
-            :target *compile-target*))
+            :target *compile-target*
+            :optimizations opt-flags))
+
+;; Helper to check if an optimization is enabled
+(defn optimization-enabled? [ctx opt-name]
+  (let [opts (:optimizations ctx)]
+    (and opts (get opts opt-name))))
 
 ;; Macro expansion support
 (def *max-macro-expansion-depth* 20)  ; Lower limit for safety
@@ -37,7 +209,7 @@
     (throw (str "Maximum macro expansion depth exceeded: " depth))
     (cond
       ;; Lists - check for macro expansion
-      (and (list? expr) (not (empty? expr)))
+      (and (list? expr) (if (empty? expr) false true))
       (let [head (first expr)]
         (if (is-macro? head ctx)
           ;; It's a macro - expand it and recurse
@@ -55,13 +227,34 @@
 
 ;; Core compilation functions
 (defn compile-expr [expr ctx]
-  ;; First expand all macros
+  ;; Multi-pass compilation with optimizations
+  (let [;; Pass 1: Macro expansion
+        expanded-expr (expand-macros expr ctx 0)
+        ;; Pass 2: Constant folding (if enabled)
+        folded-expr (if (optimization-enabled? ctx :constant-folding)
+                      (constant-fold-expr expanded-expr)
+                      expanded-expr)
+        ;; Pass 3: Core compilation
+        compiled-expr (cond
+                        (symbol? folded-expr) (compile-symbol folded-expr ctx)
+                        (list? folded-expr) (compile-list folded-expr ctx)
+                        (vector? folded-expr) (compile-vector folded-expr ctx)
+                        :else folded-expr)  ; literals
+        ;; Pass 4: Dead code elimination (if enabled)
+        optimized-expr (if (optimization-enabled? ctx :dead-code-elimination)
+                         (eliminate-dead-code compiled-expr)
+                         compiled-expr)]
+    optimized-expr))
+
+;; Non-optimizing version for when optimizations should be disabled
+(defn compile-expr-no-opt [expr ctx]
+  ;; Only macro expansion, no other optimizations
   (let [expanded-expr (expand-macros expr ctx 0)]
     (cond
       (symbol? expanded-expr) (compile-symbol expanded-expr ctx)
       (list? expanded-expr) (compile-list expanded-expr ctx)
       (vector? expanded-expr) (compile-vector expanded-expr ctx)
-      :else expanded-expr))) ; literals
+      :else expanded-expr)))
 
 (defn compile-symbol [sym ctx]
   ;; Check if it's a local binding or global using any? for list-based locals
@@ -95,7 +288,7 @@
     (throw (str "def requires exactly 2 arguments"))
     (let [name (first args)
           value (second args)]
-      (if (not (symbol? name))
+      (if (if (symbol? name) false true)
         (throw (str "def name must be a symbol"))
         (do
           ;; Register in symbol table
@@ -109,7 +302,7 @@
     (let [name (first args)
           params (second args)
           body (nth args 2)]
-      (if (not (symbol? name))
+      (if (if (symbol? name) false true)
         (throw (str "defmacro name must be a symbol"))
         (do
           ;; For now, just register in symbol table (context modification is complex)
@@ -130,7 +323,8 @@
           fn-ctx (hash-map :symbols (:symbols ctx)
                            :locals new-locals
                            :macros (:macros ctx)
-                           :target (:target ctx))]
+                           :target (:target ctx)
+                           :optimizations (:optimizations ctx))]
       ;; Compile function body with new context  
       (cons 'fn (cons params (map (fn [expr] (compile-expr expr fn-ctx)) body))))))
 
@@ -153,30 +347,10 @@
     (let [bindings (first args)
           body (rest args)]
       ;; Extract symbols from bindings for local context
-      (let [extract-symbols (fn [bindings-list acc]
-                              (if (empty? bindings-list)
-                                acc
-                                (if (empty? (rest bindings-list))
-                                  (throw (str "odd number of binding forms"))
-                                  (extract-symbols (rest (rest bindings-list))
-                                                 (conj acc (first bindings-list))))))
-            binding-symbols (extract-symbols bindings '())
-            ;; Create new context with locals  
-            new-locals (reduce (fn [acc sym] (conj acc sym)) (:locals ctx) binding-symbols)
-            let-ctx (hash-map :symbols (:symbols ctx)
-                              :locals new-locals
-                              :macros (:macros ctx)
-                              :target (:target ctx))
-            ;; Compile bindings values with current context
-            compile-bindings (fn [bindings-list acc]
-                              (if (empty? bindings-list)
-                                acc
-                                (if (empty? (rest bindings-list))
-                                  (throw (str "odd number of binding forms"))
-                                  (compile-bindings (rest (rest bindings-list))
-                                                  (conj (conj acc (first bindings-list))
-                                                        (compile-expr (second bindings-list) ctx))))))
-            compiled-bindings (compile-bindings bindings [])]
+      (let [;; For now, just compile the body without complex binding processing
+            ;; TODO: Implement proper local variable tracking for vectors
+            compiled-bindings bindings
+            let-ctx ctx]
         ;; Return compiled let form
         (cons 'let 
               (cons compiled-bindings

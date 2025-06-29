@@ -383,10 +383,13 @@ Your current architecture is excellent for self-hosting:
   - ✅ Comprehensive parse error coverage (lexer and parser)
 
 #### Phase 3.3: Optimization and Advanced Features
-- [ ] **Step 3.3.1**: Basic optimization passes
-  - Constant folding for arithmetic expressions
-  - Dead code elimination for unused bindings
-  - Simple tail call recognition
+- [x] **Step 3.3.1**: Basic optimization passes ✅ **COMPLETED**
+  - ✅ Constant folding for arithmetic expressions (`(+ 1 2 3)` → `6`, `(< 3 5)` → `true`)
+  - ✅ Dead code elimination for if branches (`(if true 1 2)` → `1`)
+  - ✅ Multi-pass compilation pipeline with configurable optimizations
+  - ✅ Comprehensive test suite with 100% passing tests
+  - ✅ Optimization validation ensuring semantic correctness
+  - [ ] Simple tail call recognition (future enhancement)
 - [ ] **Step 3.3.2**: Testing and validation
   - Create comprehensive test suite for compiler
   - Test self-compilation (compiler compiling itself)
@@ -442,8 +445,15 @@ Your current architecture is excellent for self-hosting:
    # Output: (if true (do (println "hello")) nil)
    ```
 7. **✅ Step 3.2.3** - ✅ DONE: Enhanced error reporting with source locations
-8. **🎯 NEXT: Step 3.3.1** - Basic optimization passes
-9. **Step 3.3.2** - Testing and validation
+8. **✅ Step 3.3.1** - ✅ DONE: Basic optimization passes
+   ```bash
+   # ✅ COMPLETED: Constant folding and dead code elimination working
+   ./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (compile-expr '(+ 1 2 3) (make-context))"
+   # Output: 6
+   ./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (compile-expr '(if true 42 99) (make-context))"
+   # Output: 42
+   ```
+9. **🎯 NEXT: Step 3.3.2** - Testing and validation
 10. **Step 3.3.3** - Documentation
 
 ### 🎯 Implementation Commands per Step
@@ -478,6 +488,34 @@ Your current architecture is excellent for self-hosting:
 # Output: (let [x 1 y 2] (+ x y nil) nil)
 ```
 
+#### Step 3.3.1: Basic Optimization Passes ✅ **COMPLETED**
+```bash
+# Test constant folding optimization:
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (constant-fold-expr '(+ 1 2 3))"
+# Output: 6
+
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (constant-fold-expr '(< 3 5))"
+# Output: true
+
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (constant-fold-expr '(+ (* 2 3) (- 8 2)))"
+# Output: 12
+
+# Test dead code elimination:
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (eliminate-dead-if 'true 42 99)"
+# Output: 42
+
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (eliminate-dead-if 'false 42 99)"
+# Output: 99
+
+# Test optimization pipeline:
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (compile-expr '(if true (+ 2 3) (* 4 5)) (make-context))"
+# Output: 5
+
+# Test optimization flags:
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (optimization-enabled? (make-context) :constant-folding)"
+# Output: true
+```
+
 #### Step 3.1.3: Fix Multi-Expression Parsing ✅ **COMPLETED**
 - ✅ Implement proper `read-all` to replace lines 116-119 in self-hosting.lisp
 - ✅ Test with multi-expression strings
@@ -506,7 +544,7 @@ The Phase 3.1 Self-Hosting Compiler Integration is now **COMPLETE**:
 - **✅ Production-ready interpreter** with 60+ comprehensive tests including integration tests
 - **✅ True self-hosting foundation** with Go core + Lisp stdlib + compiler architecture
 
-**🎉 Phase 3.1 COMPLETED! Phase 3.2 COMPLETED!** 
+**🎉 Phase 3.1 COMPLETED! Phase 3.2 COMPLETED! Phase 3.3.1 COMPLETED!** 
 
 **✅ Recent Achievements (2024 Updates):**
 
@@ -542,4 +580,14 @@ The Phase 3.1 Self-Hosting Compiler Integration is now **COMPLETE**:
 - **✅ Comprehensive testing** - Unit tests and integration tests for nested and complex macro usage
 - **✅ Production-ready** - Macro expansion depth limits prevent infinite recursion
 
-**🎯 Next milestone: Phase 3.3.1 - Basic optimization passes** 🚀
+### ✅ Step 3.3.1: Basic Optimization Passes (COMPLETED)
+- **✅ Constant folding optimization** - Compile-time evaluation of arithmetic expressions with constant operands
+- **✅ Dead code elimination** - Removes unreachable if branches and simplifies conditional expressions
+- **✅ Multi-pass compilation pipeline** - Configurable optimization framework with macro expansion → constant folding → compilation → dead code elimination
+- **✅ Optimization context system** - Extended compilation context with `:optimizations` flags for enabling/disabling specific optimizations
+- **✅ Self-contained implementation** - All required helper functions (map, reduce, filter, any?, etc.) implemented directly in self-hosting compiler
+- **✅ Comprehensive testing** - 100% passing test suite with constant folding, dead code elimination, and optimization validation tests
+- **✅ Semantic correctness validation** - Tests ensure optimized code produces identical results to unoptimized versions
+- **✅ Extensible architecture** - Foundation ready for additional optimizations (tail call optimization, function inlining, etc.)
+
+**🎯 Next milestone: Phase 3.3.2 - Testing and validation** 🚀

@@ -213,6 +213,271 @@ func TestSelfHostingCompilerParsesSelf(t *testing.T) {
 	}
 }
 
+func TestSelfHostingConstantFolding(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	// Load the self-hosting compiler
+	loadExpr, err := core.ReadString("(load-file \"../../lisp/self-hosting.lisp\")")
+	if err != nil {
+		t.Errorf("Parse error loading self-hosting compiler: %v", err)
+		return
+	}
+
+	_, err = core.Eval(loadExpr, env)
+	if err != nil {
+		t.Errorf("Error loading self-hosting compiler: %v", err)
+		return
+	}
+
+	// Test constant folding optimizations
+	tests := []struct {
+		input    string
+		expected string
+		desc     string
+	}{
+		{
+			input:    "(compile-expr '(+ 1 2 3) (make-context))",
+			expected: "6",
+			desc:     "arithmetic constant folding",
+		},
+		{
+			input:    "(compile-expr '(* 2 5) (make-context))",
+			expected: "10",
+			desc:     "multiplication constant folding",
+		},
+		{
+			input:    "(compile-expr '(- 10 3) (make-context))",
+			expected: "7",
+			desc:     "subtraction constant folding",
+		},
+		{
+			input:    "(compile-expr '(< 3 5) (make-context))",
+			expected: "true",
+			desc:     "comparison constant folding true",
+		},
+		{
+			input:    "(compile-expr '(> 3 5) (make-context))",
+			expected: "false",
+			desc:     "comparison constant folding false",
+		},
+		{
+			input:    "(compile-expr '(+ (* 2 3) (- 8 2)) (make-context))",
+			expected: "12",
+			desc:     "nested constant folding",
+		},
+		{
+			input:    "(compile-expr '(+ 1 x) (make-context))",
+			expected: "(+ 1 x)",
+			desc:     "mixed constants and variables",
+		},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for %s: %v", test.desc, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for %s: %v", test.desc, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for %s, got '%s'", test.expected, test.desc, result.String())
+		}
+	}
+}
+
+func TestSelfHostingDeadCodeElimination(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	// Load the self-hosting compiler
+	loadExpr, err := core.ReadString("(load-file \"../../lisp/self-hosting.lisp\")")
+	if err != nil {
+		t.Errorf("Parse error loading self-hosting compiler: %v", err)
+		return
+	}
+
+	_, err = core.Eval(loadExpr, env)
+	if err != nil {
+		t.Errorf("Error loading self-hosting compiler: %v", err)
+		return
+	}
+
+	// Test dead code elimination optimizations
+	tests := []struct {
+		input       string
+		shouldMatch string
+		desc        string
+	}{
+		{
+			input:       "(constant-fold-expr '(+ 5 5))",
+			shouldMatch: "10",
+			desc:        "direct constant folding test",
+		},
+		{
+			input:       "(compile-expr '(if true 1 2) (make-context))",
+			shouldMatch: "1",
+			desc:        "unreachable if branch elimination",
+		},
+		{
+			input:       "(compile-expr '(if false 1 2) (make-context))",
+			shouldMatch: "2",
+			desc:        "unreachable if branch elimination false",
+		},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for %s: %v", test.desc, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for %s: %v", test.desc, err)
+			continue
+		}
+
+		if result.String() != test.shouldMatch {
+			t.Errorf("Expected '%s' for %s, got '%s'", test.shouldMatch, test.desc, result.String())
+		}
+	}
+}
+
+func TestSelfHostingOptimizationContext(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	// Load the self-hosting compiler
+	loadExpr, err := core.ReadString("(load-file \"../../lisp/self-hosting.lisp\")")
+	if err != nil {
+		t.Errorf("Parse error loading self-hosting compiler: %v", err)
+		return
+	}
+
+	_, err = core.Eval(loadExpr, env)
+	if err != nil {
+		t.Errorf("Error loading self-hosting compiler: %v", err)
+		return
+	}
+
+	// Test that optimization flags work correctly
+	tests := []struct {
+		input    string
+		expected string
+		desc     string
+	}{
+		{
+			input:    "(optimization-enabled? (make-context) :constant-folding)",
+			expected: "true",
+			desc:     "constant folding enabled by default",
+		},
+		{
+			input:    "(optimization-enabled? (make-context) :dead-code-elimination)",
+			expected: "true",
+			desc:     "dead code elimination enabled by default",
+		},
+		{
+			input:    "(optimization-enabled? (make-context-with-optimizations {:constant-folding false}) :constant-folding)",
+			expected: "false",
+			desc:     "constant folding can be disabled",
+		},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for %s: %v", test.desc, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for %s: %v", test.desc, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for %s, got '%s'", test.expected, test.desc, result.String())
+		}
+	}
+}
+
+func TestSelfHostingOptimizationValidation(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	// Load the self-hosting compiler
+	loadExpr, err := core.ReadString("(load-file \"../../lisp/self-hosting.lisp\")")
+	if err != nil {
+		t.Errorf("Parse error loading self-hosting compiler: %v", err)
+		return
+	}
+
+	_, err = core.Eval(loadExpr, env)
+	if err != nil {
+		t.Errorf("Error loading self-hosting compiler: %v", err)
+		return
+	}
+
+	// Test that optimized and unoptimized versions produce equivalent results
+	testExprs := []string{
+		"'(+ 1 2 3)",
+		"'(if true (+ 2 3) (* 4 5))",
+		"'(* (+ 1 2) (- 5 3))",
+		"'(< 5 10)",
+	}
+
+	for _, exprStr := range testExprs {
+		// Compile with optimizations
+		optimizedExpr, err := core.ReadString(fmt.Sprintf("(compile-expr %s (make-context))", exprStr))
+		if err != nil {
+			t.Errorf("Parse error for optimized compilation of %s: %v", exprStr, err)
+			continue
+		}
+
+		optimizedResult, err := core.Eval(optimizedExpr, env)
+		if err != nil {
+			t.Errorf("Error compiling optimized %s: %v", exprStr, err)
+			continue
+		}
+
+		// Compile without optimizations
+		unoptimizedExpr, err := core.ReadString(fmt.Sprintf("(compile-expr-no-opt %s (make-context))", exprStr))
+		if err != nil {
+			t.Errorf("Parse error for unoptimized compilation of %s: %v", exprStr, err)
+			continue
+		}
+
+		unoptimizedResult, err := core.Eval(unoptimizedExpr, env)
+		if err != nil {
+			t.Errorf("Error compiling unoptimized %s: %v", exprStr, err)
+			continue
+		}
+
+		// Both should evaluate to the same result when executed
+		optimizedEval, err := core.Eval(optimizedResult, env)
+		if err != nil {
+			t.Errorf("Error evaluating optimized result for %s: %v", exprStr, err)
+			continue
+		}
+
+		unoptimizedEval, err := core.Eval(unoptimizedResult, env)
+		if err != nil {
+			t.Errorf("Error evaluating unoptimized result for %s: %v", exprStr, err)
+			continue
+		}
+
+		if optimizedEval.String() != unoptimizedEval.String() {
+			t.Errorf("Optimization validation failed for %s: optimized=%s, unoptimized=%s", 
+				exprStr, optimizedEval.String(), unoptimizedEval.String())
+		}
+	}
+}
+
 // Helper function to check if a string contains a substring
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) &&
