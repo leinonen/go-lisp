@@ -888,4 +888,306 @@ EOF
 ./bin/golisp -f main.lisp
 ```
 
+## Phase 4: Web Module Implementation 🌐
+
+### Overview
+Implement web server and JSON processing capabilities following GoLisp's self-hosting philosophy: minimal Go primitives + comprehensive self-hosted GoLisp framework.
+
+**Architecture Strategy:**
+- **Go Layer**: `pkg/web/` with ~10-15 essential HTTP/JSON primitives  
+- **GoLisp Layer**: `lisp/stdlib/web.lisp` with high-level web framework
+- **Integration**: Automatic loading via bootstrap, seamless REPL availability
+
+### Phase 4.1: Minimal Go Web Primitives 🔧
+
+**Essential HTTP/JSON Primitives (Go Implementation):**
+
+#### HTTP Server Primitives
+- `http-server-start` - Start HTTP server on port (returns server handle)
+- `http-server-stop` - Stop HTTP server gracefully  
+- `http-route-add` - Add route handler to server
+- `http-request-raw` - Make raw HTTP request (GET, POST, etc.)
+- `http-response-raw` - Create raw HTTP response with status/headers/body
+
+#### JSON Processing Primitives  
+- `json-parse-raw` - Parse JSON string to GoLisp data structures
+- `json-stringify-raw` - Convert GoLisp data to JSON string
+- `json-pretty-raw` - Pretty-print JSON with indentation
+
+#### URL/Utility Primitives
+- `url-parse-raw` - Parse URL into components (scheme, host, path, query)
+- `url-encode-raw` - URL encode string
+- `url-decode-raw` - URL decode string  
+- `time-now-millis` - Current timestamp in milliseconds
+- `uuid-generate` - Generate UUID string
+- `base64-encode` - Base64 encode string
+- `base64-decode` - Base64 decode string
+
+### Phase 4.2: Self-Hosted Web Framework 🚀
+
+**High-Level Web Framework (GoLisp Implementation in `lisp/stdlib/web.lisp`):**
+
+#### HTTP Server Framework
+```lisp
+;; HTTP Server Creation
+(defn http-server [port routes & options]
+  (let [server (http-server-start port)]
+    (setup-routes server routes)
+    (apply-server-options server options)
+    server))
+
+;; Route Definition DSL
+(defn GET [path handler] {:method "GET" :path path :handler handler})
+(defn POST [path handler] {:method "POST" :path path :handler handler})
+(defn PUT [path handler] {:method "PUT" :path path :handler handler})
+(defn DELETE [path handler] {:method "DELETE" :path path :handler handler})
+
+;; Route Matching System
+(defn match-route [request routes]
+  (filter (fn [route] 
+    (and (= (:method route) (:method request))
+         (path-matches? (:path route) (:path request)))) 
+    routes))
+
+(defn path-matches? [pattern path]
+  ;; Support for route parameters like "/users/:id"
+  (route-pattern-match pattern path))
+```
+
+#### JSON Response Framework
+```lisp
+;; JSON Utilities
+(defn json [data] (json-stringify-raw data))
+(defn parse-json [str] (json-parse-raw str))
+
+;; Response Builders
+(defn response [status body & [headers]]
+  {:status status :body body :headers (or headers {})})
+
+(defn json-response [data & [status]]
+  (response (or status 200) (json data) {"Content-Type" "application/json"}))
+
+(defn html-response [html & [status]]
+  (response (or status 200) html {"Content-Type" "text/html"}))
+
+(defn error-response [message & [status]]
+  (json-response {:error message} (or status 400)))
+```
+
+#### Middleware Framework
+```lisp
+;; Middleware System
+(defn apply-middleware [handler middlewares]
+  (reduce (fn [h middleware] (middleware h)) handler middlewares))
+
+;; Common Middleware
+(defn cors-middleware [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (assoc-in response [:headers "Access-Control-Allow-Origin"] "*"))))
+
+(defn auth-middleware [handler auth-fn]
+  (fn [request]
+    (if (auth-fn request)
+      (handler request)
+      (error-response "Unauthorized" 401))))
+
+(defn logging-middleware [handler]
+  (fn [request]
+    (println (str (:method request) " " (:path request)))
+    (handler request)))
+```
+
+#### Request/Response Processing
+```lisp
+;; Request Processing
+(defn parse-request-body [request]
+  (if (= (:content-type request) "application/json")
+    (parse-json (:body request))
+    (:body request)))
+
+(defn extract-params [request route]
+  ;; Extract path parameters like {:id "123"} from "/users/:id"
+  (extract-route-params (:path request) (:path route)))
+
+;; Response Processing  
+(defn render-template [template-name data]
+  ;; Simple template rendering system
+  (template-render template-name data))
+```
+
+### Phase 4.3: Integration & Examples 🔗
+
+#### Bootstrap Integration
+- **Automatic Loading**: `pkg/core/bootstrap.go` loads web primitives and `web.lisp`
+- **REPL Availability**: Web functions available immediately in REPL
+- **File Server**: Built-in static file serving capabilities
+
+#### REST API Example
+```lisp
+;; Example REST API Server
+(ns web-api
+  (:require [web :refer :all]))
+
+(def users-db (atom []))
+
+(defn get-users [request]
+  (json-response @users-db))
+
+(defn create-user [request]
+  (let [user-data (parse-request-body request)
+        new-user (assoc user-data :id (uuid-generate))]
+    (swap! users-db conj new-user)
+    (json-response new-user 201)))
+
+(defn get-user [request]
+  (let [user-id (get-in request [:params :id])
+        user (first (filter #(= (:id %) user-id) @users-db))]
+    (if user
+      (json-response user)
+      (error-response "User not found" 404))))
+
+;; Define routes
+(def routes [
+  (GET "/users" get-users)
+  (POST "/users" create-user)  
+  (GET "/users/:id" get-user)])
+
+;; Start server
+(defn start-api-server []
+  (let [server (http-server 8080 routes)]
+    (println "API server started on http://localhost:8080")
+    server))
+
+;; Usage: (start-api-server)
+```
+
+#### Static File Server Example
+```lisp
+;; Static File Server
+(defn static-file-handler [root-dir]
+  (fn [request]
+    (let [file-path (str root-dir (:path request))]
+      (if (file-exists? file-path)
+        (response 200 (slurp file-path) {"Content-Type" (mime-type file-path)})
+        (error-response "File not found" 404)))))
+
+;; Serve static files from ./public/
+(def static-server
+  (http-server 3000 [(GET "/*" (static-file-handler "./public/"))]))
+```
+
+### Phase 4.4: Testing & Documentation 📋
+
+#### Comprehensive Testing Strategy
+```bash
+# Test Go web primitives
+go test ./pkg/web -v
+
+# Test JSON processing
+./bin/golisp -e "(json-parse-raw \"{\\\"key\\\":\\\"value\\\"}\")"
+./bin/golisp -e "(json-stringify-raw {:key \"value\"})"
+
+# Test HTTP server
+./bin/golisp -e "(load-file \"lisp/stdlib/web.lisp\") (def server (http-server 8080 []))"
+curl -X GET http://localhost:8080/health
+
+# Test web framework
+./bin/golisp -f examples/web-server.lisp
+curl -X GET http://localhost:8080/api/users
+```
+
+#### Web Development Commands
+```bash
+# Build with web support
+make build-web
+
+# Run web server example
+make run-web-example
+
+# Test web functionality  
+make test-web
+
+# Run web integration tests
+make test-web-integration
+```
+
+#### Documentation Updates
+- **CLAUDE.md**: Add web development commands and patterns
+- **README.md**: Update with web server capabilities
+- **docs/WEB_GUIDE.md**: Comprehensive web development guide  
+- **examples/**: Web server, REST API, and JSON processing examples
+
+### Implementation Timeline 📅
+
+#### Phase 4.1: Go Web Primitives (Week 1-2)
+```bash
+# Create web module structure
+mkdir -p pkg/web
+touch pkg/web/primitives.go pkg/web/primitives_test.go
+
+# Implement HTTP server primitives
+# Implement JSON processing primitives  
+# Implement URL/utility primitives
+# Add to bootstrap loading system
+
+# Test primitive functionality
+go test ./pkg/web -v
+```
+
+#### Phase 4.2: Self-Hosted Framework (Week 3-4)  
+```bash
+# Create web framework in GoLisp
+touch lisp/stdlib/web.lisp
+
+# Implement HTTP server framework
+# Implement JSON response framework
+# Implement middleware system
+# Implement request/response processing
+
+# Test framework functionality
+./bin/golisp -f lisp/stdlib/web.lisp
+```
+
+#### Phase 4.3: Integration & Examples (Week 5)
+```bash
+# Update bootstrap system
+# Create comprehensive examples
+# Add REPL integration
+# Test end-to-end functionality
+
+# Test integration
+make test-web-integration
+```
+
+#### Phase 4.4: Testing & Documentation (Week 6)
+```bash
+# Create comprehensive test suite
+# Add performance benchmarks
+# Update documentation
+# Create developer guide
+
+# Validate complete implementation
+make test-all
+```
+
+### Benefits of Web Module Architecture 🌟
+
+1. **Self-Hosting Consistency**: Follows established GoLisp pattern of minimal Go + comprehensive Lisp
+2. **Extensibility**: Web framework can be extended entirely in GoLisp  
+3. **Performance**: Essential operations in Go, higher-level logic in Lisp
+4. **Maintainability**: Clear separation between system-level and application-level code
+5. **Developer Experience**: Rich web framework with minimal learning curve
+6. **Integration**: Seamless with existing GoLisp environment and tools
+
+### Success Criteria ✅
+
+- **HTTP Server**: Can create web servers with routing and middleware
+- **JSON API**: Full JSON request/response processing  
+- **Static Files**: Serve static assets with proper MIME types
+- **Authentication**: Middleware-based auth and session management
+- **Performance**: Handle concurrent requests efficiently
+- **Documentation**: Complete guides and examples for web development
+- **Testing**: Comprehensive test coverage for all web functionality
+
 **🎯 Next milestone: Begin Phase 3.4.1 - Core Module Infrastructure** 🚀
