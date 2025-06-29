@@ -38,7 +38,7 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
   - `eval_io.go` - I/O operations (slurp, spit, println, file-exists?, etc.)
   - `eval_meta.go` - Meta-programming (eval, read-string, macroexpand, gensym, throw, etc.)
   - `eval_special_forms.go` - Special forms (if, fn, def, quote, quasiquote, do, loop, recur, etc.)
-- `repl.go` - Read-Eval-Print-Loop implementation with context-aware error reporting
+- `repl.go` - Enhanced Read-Eval-Print-Loop implementation with multi-line support, dynamic autocomplete, history navigation, and context-aware error reporting
 - `bootstrap.go` - Standard library loader and environment initialization
 
 **`cmd/golisp/main.go`** - CLI entry point supporting:
@@ -238,11 +238,73 @@ The GoLisp interpreter provides comprehensive support for handling multiple expr
   - Used by `compile-file` to parse source files with multiple top-level forms
   - Enables the self-hosting compiler to handle realistic Lisp programs
 
+### Enhanced REPL Features
+
+GoLisp provides a sophisticated Read-Eval-Print-Loop with modern interactive development features:
+
+#### Multi-line Expression Support
+- **Smart Parentheses Balancing**: Automatically detects incomplete expressions and continues multi-line input
+- **Dynamic Prompt Changes**: `GoLisp> ` for new expressions, `      > ` for continuation lines
+- **Comment Handling**: Full support for Lisp comments (`;` to end of line) in multi-line expressions
+- **String Literal Support**: Proper handling of strings with embedded parentheses and escape sequences
+- **Force Evaluation**: Type `)` on an empty line during multi-line input to force evaluation with automatic closing parentheses
+
+#### Dynamic Auto-completion
+- **Environment-Aware**: Completion suggestions based on actually loaded functions and symbols
+- **117+ Symbols**: Includes all built-in functions and standard library functions
+- **Smart Categorization**: Functions get `(functionname` prefix, literals like `nil` get no parentheses
+- **Real-time Updates**: Completion list updates as new symbols are defined (framework ready)
+- **Comprehensive Coverage**: Includes arithmetic (`+`, `-`), collections (`map`, `filter`), I/O (`println`), meta-programming (`eval`), and more
+
+#### History and Navigation
+- **Command History**: Up/down arrow keys to navigate through previous commands
+- **Cursor Movement**: Left/right arrow keys for in-line cursor positioning  
+- **Session Persistence**: History maintained during REPL session
+- **Readline Integration**: Professional terminal handling via `chzyer/readline` library
+
+#### Error Handling and Feedback
+- **Context-Aware Errors**: Professional error reporting with source location and context
+- **Non-Crashing REPL**: Errors don't terminate the interactive session
+- **Input Validation**: Clear feedback for invalid input (e.g., unexpected closing parentheses)
+- **Graceful Cancellation**: Ctrl+C cancels multi-line input without exiting REPL
+
+#### Usage Examples
+```lisp
+GoLisp> (defn factorial [n]
+      >   (if (= n 0)
+      >       1
+      >       (* n (factorial (- n 1)))))
+#<function>
+
+GoLisp> (map +
+      >      (list 1 2 3)
+      >      (list 4 5 6))
+[5 7 9]
+
+GoLisp> (factorial 5)
+120
+
+GoLisp> ; Tab completion demo: type "(ma" + Tab
+GoLisp> (map    ; Auto-completes with opening parenthesis
+```
+
+#### Technical Implementation
+- **Balanced Expression Detection**: Sophisticated algorithm handling nested structures, strings, and comments
+- **Content Analysis**: Distinguishes between meaningful expressions and whitespace/comments
+- **Force Evaluation Logic**: Smart bracket counting for safe completion of incomplete expressions
+- **Comprehensive Testing**: 79 unit tests covering all REPL functionality and edge cases
+
 ### Testing Strategy
 Comprehensive test coverage with 4,500+ lines of tests:
 - Core data types and operations (`types_test.go`)
 - Parser functionality (`reader_test.go`)
 - Evaluation engine with new multi-expression functions (`eval_test.go`)
+- **Enhanced REPL functionality (`repl_test.go`)**: 79 unit tests covering:
+  - Parentheses balancing with 33 test cases (strings, comments, nesting)
+  - Content detection with 19 test cases (whitespace, comments, literals)
+  - Bracket counting for force evaluation (11 test cases)
+  - Evaluation logic with 16 test cases (complete vs incomplete expressions)
+  - REPL integration tests (creation, environment access, evaluation)
 - Standard library functions (`stdlib_test.go`)
 - Integration scenarios (`integration_test.go`)
 - Self-hosting compiler integration (`self_hosting_test.go`)

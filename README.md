@@ -16,9 +16,9 @@ A minimalist, self-hosting Lisp interpreter written in Go, inspired by Clojure. 
 - **Meta-Programming**: Full `eval`/`read-string` capabilities with macro system
 - **Enhanced Error Handling**: Professional-grade error reporting with categorized errors, stack traces, and source context
 - **Self-Hosting Compiler**: Integrated compiler for self-compilation capabilities
-- **REPL**: Interactive development environment
+- **Enhanced REPL**: Interactive development environment with multi-line expressions, dynamic autocomplete, and history navigation
 - **File Operations**: Load and execute Lisp files
-- **Comprehensive Testing**: 4,300+ lines of test coverage
+- **Comprehensive Testing**: 4,500+ lines of test coverage with 79 REPL-specific unit tests
 
 ## Quick Start
 
@@ -41,6 +41,59 @@ make build
 
 # Evaluate expression directly
 ./bin/golisp -e '(+ 1 2 3)'
+```
+
+## Enhanced REPL
+
+GoLisp provides a modern, feature-rich REPL for interactive development:
+
+### Multi-line Expression Support
+The REPL automatically detects incomplete expressions and allows multi-line input:
+
+```lisp
+GoLisp> (defn factorial [n]
+      >   (if (= n 0)
+      >       1
+      >       (* n (factorial (- n 1)))))
+#<function>
+
+GoLisp> (map +
+      >      (list 1 2 3)
+      >      (list 4 5 6))
+[5 7 9]
+```
+
+### Dynamic Auto-completion
+Tab completion is environment-aware and includes all loaded functions:
+
+```lisp
+GoLisp> (ma<TAB>         ; Completes to (map
+GoLisp> (fi<TAB>         ; Completes to (filter
+GoLisp> (red<TAB>        ; Completes to (reduce
+```
+
+**Features:**
+- 117+ available symbols from core and standard library
+- Smart parentheses insertion for functions
+- Real-time updates as new symbols are defined
+
+### History and Navigation
+- **↑/↓ arrows**: Navigate through command history
+- **←/→ arrows**: Move cursor within the current line
+- **Ctrl+C**: Cancel multi-line input or exit REPL
+- **Force evaluation**: Type `)` on empty line to complete incomplete expressions
+
+### Smart Error Handling
+```lisp
+GoLisp> )
+Error: Unexpected closing parenthesis
+
+GoLisp> (+ 1 "hello")
+TypeError: + expects numbers, got core.String
+
+GoLisp> (map + (list 1 2 3
+      > )                    ; Force evaluation - adds missing )
+[1 2 3]
 ```
 
 ## Examples
@@ -169,7 +222,7 @@ GoLisp uses a modular architecture with clear separation between the Go core and
 - **Special Forms**: `def`, `fn`, `defn`, `defmacro`, `cond`, `if`, `let`, `do`, `quote`
 - **Macro System**: Full macro expansion with `defmacro` and macro call evaluation
 - **Error System**: Comprehensive error handling with categorized errors and stack traces
-- **REPL**: Interactive environment with file loading and context-aware error reporting
+- **Enhanced REPL**: Interactive environment with multi-line support, dynamic autocomplete (117+ symbols), history navigation, and context-aware error reporting
 
 ### Standard Library (Lisp Implementation)
 - **Collections**: `map`, `filter`, `reduce`, `sort`, `apply`, `length`
@@ -199,7 +252,8 @@ pkg/core/           # Minimal Go core (~2,700 lines)
 ├── types.go        # Data types and environment
 ├── reader.go       # Parser and lexer
 ├── eval_*.go       # Modular evaluator
-├── repl.go         # Interactive REPL
+├── repl.go         # Enhanced interactive REPL
+├── repl_test.go    # Comprehensive REPL tests (79 unit tests)
 └── bootstrap.go    # Standard library loader
 
 lisp/

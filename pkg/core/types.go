@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -550,6 +551,29 @@ func (env *Environment) Get(sym Symbol) (Value, error) {
 
 func (env *Environment) Set(sym Symbol, value Value) {
 	env.bindings[sym] = value
+}
+
+// GetAllSymbols returns all symbols defined in this environment and its parents
+func (env *Environment) GetAllSymbols() []string {
+	symbols := make(map[string]bool)
+	
+	// Collect symbols from this environment and all parent environments
+	current := env
+	for current != nil {
+		for sym := range current.bindings {
+			symbols[string(sym)] = true
+		}
+		current = current.parent
+	}
+	
+	// Convert to sorted slice
+	result := make([]string, 0, len(symbols))
+	for sym := range symbols {
+		result = append(result, sym)
+	}
+	
+	sort.Strings(result)
+	return result
 }
 
 // Constructors

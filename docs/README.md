@@ -9,13 +9,15 @@ This directory contains comprehensive documentation for the GoLisp self-hosting 
 - **[COMPILER_ARCHITECTURE.md](COMPILER_ARCHITECTURE.md)** - Complete architecture documentation covering design patterns, data structures, compilation pipeline, and integration with the Go core
 - **[COMPILER_API.md](COMPILER_API.md)** - Full API reference with usage examples, function signatures, and practical development scenarios
 - **[SELF_HOSTING_GUIDE.md](SELF_HOSTING_GUIDE.md)** - Developer guide covering setup, workflows, testing, debugging, performance optimization, and contribution guidelines
+- **[REPL.md](REPL.md)** - Comprehensive guide to the enhanced REPL with multi-line support, dynamic autocomplete, and interactive development features
 
 ### Quick Navigation
 
 #### For New Developers
-1. Start with **[COMPILER_ARCHITECTURE.md](COMPILER_ARCHITECTURE.md)** to understand the overall design
-2. Read **[SELF_HOSTING_GUIDE.md](SELF_HOSTING_GUIDE.md)** for development setup and workflows
-3. Reference **[COMPILER_API.md](COMPILER_API.md)** for specific function usage
+1. Start with **[REPL.md](REPL.md)** to get hands-on with the interactive environment
+2. Read **[COMPILER_ARCHITECTURE.md](COMPILER_ARCHITECTURE.md)** to understand the overall design
+3. Follow **[SELF_HOSTING_GUIDE.md](SELF_HOSTING_GUIDE.md)** for development setup and workflows
+4. Reference **[COMPILER_API.md](COMPILER_API.md)** for specific function usage
 
 #### For Contributors
 1. Follow the setup instructions in **[SELF_HOSTING_GUIDE.md](SELF_HOSTING_GUIDE.md)**
