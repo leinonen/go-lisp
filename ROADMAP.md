@@ -405,12 +405,118 @@ Your current architecture is excellent for self-hosting:
   - ✅ Add usage examples and API documentation (`docs/COMPILER_API.md`)
   - ✅ Create self-hosting development guide (`docs/SELF_HOSTING_GUIDE.md`)
 
-#### Phase 3.4: Advanced Language Features (FUTURE)
-- [ ] **Module System**: Namespace support and imports
+#### Phase 3.4: Module System Implementation 🚧
+- [ ] **Phase 3.4.1**: Core Module Infrastructure (Go Core)
+  - [ ] Module data structures and registry (`Module`, `ModuleRegistry`, `Namespace` types)
+  - [ ] Environment extensions for namespace support (module-aware symbol resolution)
+  - [ ] Core module management functions (`create-module`, `load-module`, `module-exists?`)
+  - [ ] Basic module loading and caching with circular dependency detection
+- [ ] **Phase 3.4.2**: Module Syntax and Special Forms
+  - [ ] `ns` special form for namespace declaration with require/export clauses
+  - [ ] `require`/`import` syntax with aliasing (`:as`, `:refer`, `:only`)
+  - [ ] Qualified symbol resolution system (`module.name/symbol`)
+  - [ ] Export/import validation and namespace isolation
+- [ ] **Phase 3.4.3**: Self-Hosting Compiler Integration
+  - [ ] Module-aware compilation context (extend context with module information)
+  - [ ] Module special form compilation (`compile-ns`, `compile-require`)
+  - [ ] Cross-module optimization support (dead code elimination across modules)
+  - [ ] Dependency analysis during compilation for build ordering
+- [ ] **Phase 3.4.4**: Module System Features
+  - [ ] Module discovery and auto-loading (search paths, lazy loading)
+  - [ ] Hierarchical namespace management (`company.project.component`)
+  - [ ] Module metadata and configuration (version, author, dependencies)
+  - [ ] Hot reloading for development workflow
+- [ ] **Phase 3.4.5**: Development Tools and REPL Integration
+  - [ ] REPL module commands (`in-ns`, `require-reload`, `ns-publics`)
+  - [ ] Module introspection utilities (dependency graphs, symbol listings)
+  - [ ] Development workflow tools (module validation, reload tracking)
+  - [ ] Error handling and debugging support (module-specific errors)
+- [ ] **Phase 3.4.6**: Testing and Documentation
+  - [ ] Comprehensive module system tests (unit, integration, performance)
+  - [ ] Performance benchmarks and optimization (loading time, memory usage)
+  - [ ] Complete documentation updates (architecture, API, development guide)
+  - [ ] Example modules and migration guide for existing projects
+
+#### Module System Technical Specifications
+
+**Core Data Structures (Go Implementation):**
+```go
+// Module represents a loaded module with its own namespace
+type Module struct {
+    Name        string                 // Module name (e.g., "myapp.utils.string")
+    Namespace   string                 // Namespace identifier
+    Environment *Environment           // Module's environment
+    Exports     map[Symbol]Value      // Exported symbols
+    Imports     map[string]*Module    // Imported modules
+    Metadata    map[string]Value      // Module metadata (version, author, etc.)
+    LoadState   ModuleLoadState       // Loading state (for cycle detection)
+    FilePath    string                // Source file path
+}
+
+// ModuleRegistry manages all loaded modules globally
+type ModuleRegistry struct {
+    modules     map[string]*Module    // Name -> Module mapping
+    searchPaths []string              // Module search paths
+    mutex       sync.RWMutex         // Thread safety
+}
+
+// Extended Environment with module awareness
+type Environment struct {
+    bindings map[Symbol]Value
+    parent   *Environment
+    module   *Module              // Associated module
+    imports  map[string]*Module   // Imported modules with aliases
+}
+```
+
+**Module Syntax Examples:**
+```lisp
+;; Basic namespace declaration
+(ns myapp.core)
+
+;; Namespace with dependencies and exports
+(ns myapp.utils.string
+  (:require [myapp.core :as core]
+            [clojure.string :refer [join split]]
+            [system.io :refer :all])
+  (:export [string-utils format-name process-text]))
+
+;; Using qualified symbols
+(core/main-function arg1 arg2)
+(myapp.utils.string/format-name "John" "Doe")
+
+;; REPL module commands
+(in-ns 'myapp.core)              ;; Switch namespace
+(require-reload 'myapp.utils)    ;; Reload module
+(ns-publics 'myapp.core)         ;; List public symbols
+(ns-interns 'myapp.core)         ;; List all symbols
+```
+
+**Module Search and Loading:**
+- **Search Paths**: `./modules/`, `~/.golisp/modules/`, `/usr/local/share/golisp/modules/`
+- **Auto-loading**: Modules loaded automatically on first reference
+- **Caching**: Compiled modules cached for performance
+- **Hot Reloading**: Development-time module reloading for iterative development
+
+**Implementation Timeline:**
+- **Weeks 1-2**: Go core infrastructure (Module types, registry, environment extensions)
+- **Weeks 3-4**: Syntax and special forms (`ns`, `require`, qualified symbols)
+- **Weeks 5-6**: Self-hosting compiler integration (module-aware compilation)
+- **Weeks 7-8**: Advanced features (discovery, REPL tools, hot reloading)
+- **Weeks 9-10**: Testing, documentation, and optimization
+
+**Success Criteria:**
+- ✅ **Zero breaking changes**: Existing code continues to work unchanged
+- ✅ **Performance targets**: Module loading < 100ms, linear memory scaling
+- ✅ **Safety features**: Circular dependency detection and prevention
+- ✅ **Developer experience**: REPL integration, clear error messages, hot reloading
+- ✅ **Documentation**: Comprehensive guides, examples, and migration assistance
+
+#### Phase 3.5: Advanced Language Features (FUTURE)
 - [ ] **Pattern Matching**: Destructuring and match expressions
 - [ ] **Exception Handling**: try/catch constructs
 - [ ] **Async Constructs**: Future/promise support
-- [ ] **Package Manager**: Dependency management
+- [ ] **Package Manager**: Dependency management building on module system
 
 ### 🚀 Phase 2: Production Self-Hosting (FUTURE)
 
@@ -460,8 +566,8 @@ Your current architecture is excellent for self-hosting:
    # Output: 42
    ```
 9. **✅ Step 3.3.2** - ✅ DONE: Testing and validation
-10. **🎯 NEXT: Step 3.3.3** - Documentation and finalization
-10. **Step 3.3.3** - Documentation
+10. **✅ Step 3.3.3** - ✅ DONE: Documentation and finalization
+11. **🎯 NEXT: Phase 3.4.1** - Module System Core Infrastructure
 
 ### 🎯 Implementation Commands per Step
 
@@ -597,7 +703,7 @@ The Phase 3.1 Self-Hosting Compiler Integration is now **COMPLETE**:
 - **✅ Semantic correctness validation** - Tests ensure optimized code produces identical results to unoptimized versions
 - **✅ Extensible architecture** - Foundation ready for additional optimizations (tail call optimization, function inlining, etc.)
 
-**🎯 Next milestone: Phase 3.4 - Advanced Language Features** 🚀
+**🎯 Next milestone: Phase 3.4 - Module System Implementation** 🚀
 
 ### 🏆 Phase 3.3.2 Achievement Summary
 
@@ -647,3 +753,139 @@ Step 3.3.3 Documentation is now **COMPLETE** with comprehensive documentation su
 - **Future roadmap** - Clear guidance for extending the compiler with new features and optimizations
 
 **🎉 PHASE 3.3 COMPLETED!** The self-hosting compiler now has complete optimization passes, comprehensive testing validation, and professional documentation - making it ready for advanced language feature development.
+
+## 🎯 Phase 3.4: Module System Implementation Commands
+
+### Phase 3.4.1: Core Infrastructure Testing
+```bash
+# Test module data structures
+go test ./pkg/core -run TestModule -v
+
+# Test module registry
+go test ./pkg/core -run TestModuleRegistry -v
+
+# Test environment extensions  
+go test ./pkg/core -run TestModuleEnvironment -v
+
+# Test module management functions
+./bin/golisp -e "(create-module 'test.module)"
+./bin/golisp -e "(module-exists? 'test.module)"
+./bin/golisp -e "(current-module)"
+```
+
+### Phase 3.4.2: Syntax and Special Forms Testing
+```bash
+# Test basic namespace declaration
+./bin/golisp -e "(ns test.module)"
+
+# Test namespace with requires
+./bin/golisp -e "(ns test (:require [other.module :as other]))"
+
+# Test qualified symbol resolution
+./bin/golisp -e "(other.module/function-name)"
+
+# Test module exports
+./bin/golisp -e "(ns test (:export [public-function util-fn]))"
+
+# Test import validation
+./bin/golisp -e "(ns test (:require [nonexistent.module]))"  # Should error
+```
+
+### Phase 3.4.3: Compiler Integration Testing
+```bash
+# Test module-aware compilation context
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (make-module-context 'test.module)"
+
+# Test namespace compilation
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (compile-expr '(ns test.module) (make-context))"
+
+# Test require compilation
+./bin/golisp -e "(load-file \"lisp/self-hosting.lisp\") (compile-expr '(require test.other) (make-context))"
+
+# Test cross-module compilation
+./bin/golisp -f test-modules/main.lisp
+```
+
+### Phase 3.4.4: Module System Features Testing
+```bash
+# Test module discovery
+./bin/golisp -e "(find-module-file 'myapp.utils)"
+
+# Test auto-loading
+./bin/golisp -e "(myapp.utils/some-function)"  # Should auto-load module
+
+# Test module caching
+./bin/golisp -e "(time (load-module 'large.module))"  # First load
+./bin/golisp -e "(time (load-module 'large.module))"  # Should be cached
+
+# Test hot reloading  
+./bin/golisp -e "(require-reload 'myapp.core)"
+```
+
+### Phase 3.4.5: REPL Integration Testing
+```bash
+# Start REPL and test module commands
+./bin/golisp
+
+# In REPL:
+# (in-ns 'myapp.core)              ;; Switch namespace
+# (require-reload 'myapp.utils)    ;; Force reload
+# (ns-publics 'myapp.core)         ;; List public symbols  
+# (ns-interns 'myapp.core)         ;; List all symbols
+# (find-ns 'myapp.core)            ;; Get namespace object
+# (current-ns)                     ;; Get current namespace
+# (list-modules)                   ;; List all loaded modules
+```
+
+### Phase 3.4.6: Testing and Validation
+```bash
+# Run comprehensive module system tests
+make test-modules
+
+# Run performance benchmarks
+go test ./pkg/core -bench=BenchmarkModule -v
+
+# Test circular dependency detection
+./bin/golisp -f test-modules/circular-a.lisp  # Should error gracefully
+
+# Test error handling
+./bin/golisp -e "(ns invalid..name)"          # Should show clear error
+./bin/golisp -e "(require nonexistent)"       # Should show module not found
+
+# Validate example modules
+./bin/golisp -f examples/module-demo/main.lisp
+```
+
+### Module Development Workflow
+```bash
+# Create new module
+mkdir -p modules/myapp/utils
+cat > modules/myapp/utils/string.lisp << 'EOF'
+(ns myapp.utils.string
+  (:require [myapp.core :as core])
+  (:export [format-name join-words]))
+
+(defn format-name [first last]
+  (str last ", " first))
+
+(defn join-words [words]
+  (core/join words " "))
+EOF
+
+# Create main module using it
+cat > main.lisp << 'EOF'
+(ns main
+  (:require [myapp.utils.string :as str]))
+
+(defn main []
+  (println (str/format-name "John" "Doe"))
+  (println (str/join-words ["Hello" "Module" "World"])))
+
+(main)
+EOF
+
+# Test the module system
+./bin/golisp -f main.lisp
+```
+
+**🎯 Next milestone: Begin Phase 3.4.1 - Core Module Infrastructure** 🚀
