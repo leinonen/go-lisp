@@ -56,8 +56,6 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [x] **`apply`** - Apply function to collection as arguments (up to 4 args)
 
 ### Map/Dictionary Operations (Go Core)
-- [x] **`keys`** - Get map keys (hash-map-keys)
-- [x] **`vals`** - Get map values (hash-map-vals)
 - [x] **`assoc`** - Associate key-value pairs in maps
 - [x] **`dissoc`** - Remove keys from maps
 - [x] **`get`** - Get value from map/vector with default
@@ -90,13 +88,16 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [x] **`or`** - Logical or (short-circuiting, variadic) (Go Core)
 
 ### String Operations (Go Core + Self-hosted)
-- [x] **`str`** - String concatenation
-- [x] **`substring`** - Substring (subs alias)
-- [x] **`string-split`** - Split strings (split alias)
-- [x] **`join`** - Join strings (Self-hosted)
-- [x] **`string-trim`** - Trim whitespace (trim alias)
-- [x] **`string-replace`** - Replace all occurrences (replace alias)
-- [x] **`string-contains?`** - Check if string contains substring
+- [x] **`str`** - String concatenation (Go Core)
+- [x] **`substring`** - Substring extraction (Go Core)
+- [x] **`string-split`** - Split strings by separator (Go Core)
+- [x] **`string-trim`** - Trim whitespace (Go Core)
+- [x] **`string-replace`** - Replace all occurrences (Go Core)
+- [x] **`string-contains?`** - Check if string contains substring (Go Core)
+- [x] **`join`** - Join collection elements with separator (Self-hosted)
+- [x] **`split`** - Alias for string-split (Self-hosted)
+- [x] **`trim`** - Alias for string-trim (Self-hosted)
+- [x] **`replace`** - Alias for string-replace (Self-hosted)
 
 ### Math Operations (Self-hosted)
 - [x] **`inc`** - Increment number
@@ -135,16 +136,20 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [x] **`read-string`** - Parse string as Lisp data
 - [x] **`macroexpand`** - Expand macros for inspection
 - [x] **`gensym`** - Generate unique symbols
-- [x] **`symbol`** - Create symbols programmatically
-- [x] **`keyword`** - Create keywords programmatically
+- [x] **`read-all-string`** - Parse multiple expressions from string
+- [x] **`throw`** - Throw exception with message
 
 ### Enhanced Features (Self-hosted)
-- [x] **`partial`** - Partial function application (comp function)
 - [x] **`comp`** - Function composition
 - [x] **`constantly`** - Return constant function
 - [x] **`identity`** - Identity function
 - [x] **`sort`** - Sort collection using quicksort
 - [x] **`group-by`** - Group collection by key function
+
+### Set Operations (Go Core)
+- [x] **`union`** - Set union
+- [x] **`intersection`** - Set intersection
+- [x] **`difference`** - Set difference
 
 ## 🔄 PARTIALLY IMPLEMENTED / NEEDS IMPROVEMENT
 
@@ -174,36 +179,48 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 
 ## 🚫 NOT YET IMPLEMENTED
 
+### Map/Dictionary Operations
+- [ ] **`keys`** - Get map keys
+- [ ] **`vals`** - Get map values
+- [ ] **`zipmap`** - Create map from keys and values sequences
+
+### Meta Programming
+- [ ] **`symbol`** - Create symbols programmatically
+- [ ] **`keyword`** - Create keywords programmatically
+- [ ] **`name`** - Extract name from symbol/keyword
+
 ### Set Operations
-- [x] **`union`** - Set union (Go Core)
-- [x] **`intersection`** - Set intersection (Go Core)
-- [x] **`difference`** - Set difference (Go Core)
 - [ ] **`subset?`** - Check if set is subset
 - [ ] **`superset?`** - Check if set is superset
 
-### Map Operations
-- [ ] **`zipmap`** - Create map from keys and values sequences
+### String Operations
+- [ ] **`subs`** - Alias for substring
 
 ### Enhanced Features
+- [ ] **`partial`** - Partial function application
 - [ ] **Enhanced `let`** with destructuring
 - [ ] **Enhanced function parameters** with destructuring
 
 ## 📊 IMPLEMENTATION SUMMARY
 
-### ✅ Fully Implemented: ~100+ functions
-- **Go Core**: ~60 essential primitives (including full quasiquote system, logical operations, and set operations)
-- **Self-hosted Standard Library**: ~40+ higher-level functions
+### ✅ Fully Implemented: ~125+ functions
+- **Go Core**: ~72 essential primitives (including full quasiquote system, logical operations, and set operations)
+- **Self-hosted Standard Library**: ~58 higher-level functions
 - **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, logical operations, quasiquote templating, set operations
 
 ### 🔄 Partial/Needs Work: ~11 functions
 - Mostly variations or enhanced versions of existing functionality
 - Some naming consistency issues (e.g., every? vs all?)
 
-### 🚫 Missing: ~5 functions
-- Remaining set operations (subset?, superset?)
+### 🚫 Missing: ~12 functions
+- Map operations (keys, vals, zipmap)
+- Meta programming (symbol, keyword, name)
+- Enhanced features (partial)
+- Set operations (subset?, superset?)
+- String aliases (subs)
 - Destructuring support
 - Infinite sequence generators
 
-### Overall Completion: **95-96%** of core Clojure functionality implemented
+### Overall Completion: **91-92%** of core Clojure functionality implemented
 
 GoLisp has successfully implemented the vast majority of essential Clojure features, with a robust self-hosting standard library that demonstrates the language's expressiveness and completeness.
