@@ -37,7 +37,7 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
   - `eval_strings.go` - String operations (string-split, substring, string-trim, etc.)
   - `eval_io.go` - I/O operations (slurp, spit, println, file-exists?, etc.)
   - `eval_meta.go` - Meta-programming (eval, read-string, macroexpand, gensym, throw, etc.)
-  - `eval_special_forms.go` - Special forms (if, fn, def, quote, quasiquote, do, etc.)
+  - `eval_special_forms.go` - Special forms (if, fn, def, quote, quasiquote, do, loop, recur, etc.)
 - `repl.go` - Read-Eval-Print-Loop implementation with context-aware error reporting
 - `bootstrap.go` - Standard library loader and environment initialization
 
@@ -57,11 +57,12 @@ GoLisp is a minimalist, self-hosting Lisp interpreter written in Go, inspired by
 
 1. **Value Interface**: All Lisp values implement the `Value` interface with a `String()` method
 2. **Environment Chain**: Lexical scoping through linked environments
-3. **Special Forms**: Core language constructs (if, fn, def, quote, quasiquote, etc.) handled separately from function calls
+3. **Special Forms**: Core language constructs (if, fn, def, quote, quasiquote, loop, recur, etc.) handled separately from function calls
 4. **Modular Evaluation**: Core primitives split into focused modules for maintainability
 5. **Self-Hosting**: Standard library functions implemented in Lisp using core primitives
 6. **Enhanced Error Handling**: Professional-grade error reporting with categorized errors, stack traces, and source context
 7. **Bootstrapped REPL**: REPL automatically loads self-hosted standard library
+8. **Tail-Call Optimization**: Loop/recur provides efficient tail recursion without stack growth
 
 ### Enhanced Error Handling System
 
@@ -165,6 +166,34 @@ Examples:
 `{:a ~x :b 2}   ; → {:a 42 :b 2}
 ```
 
+#### Loop/Recur System
+GoLisp implements efficient tail-call optimization through `loop` and `recur` special forms:
+- **Syntax**: `(loop [binding-vector] body...)` and `(recur new-values...)`
+- **Tail optimization**: `recur` jumps back to enclosing `loop` or function without stack growth
+- **Arity validation**: `recur` must provide exact number of values as loop bindings
+- **Function support**: `recur` works in both `loop` forms and user-defined functions
+- **Error handling**: Clear validation of binding syntax and argument arity
+
+Examples:
+```lisp
+;; Factorial using loop/recur
+(loop [n 5 acc 1]
+  (if (= n 0)
+    acc
+    (recur (- n 1) (* acc n))))  ; → 120
+
+;; Tail-recursive function
+(defn factorial [n acc]
+  (if (= n 0) acc (recur (- n 1) (* acc n))))
+(factorial 6 1)  ; → 720
+
+;; Countdown example
+(loop [i 3]
+  (if (= i 0)
+    "done"
+    (recur (- i 1))))  ; → "done"
+```
+
 ### Core Primitives (Go Implementation)
 The minimal core provides ~50 essential primitives:
 
@@ -177,6 +206,7 @@ The minimal core provides ~50 essential primitives:
 **Meta**: `eval`, `read-string`, `read-all-string`, `macroexpand`, `gensym`, `throw`
 **Special**: `symbol`, `keyword`, `name`, `throw`
 **Quasiquote**: `quasiquote` (`` ` ``), `unquote` (`~`), `unquote-splicing` (`~@`)
+**Control Flow**: `loop`, `recur` (tail-call optimization)
 
 ### Self-Hosted Standard Library
 Higher-level functions implemented in Lisp:
@@ -220,6 +250,7 @@ Comprehensive test coverage with 4,500+ lines of tests:
 - Enhanced error handling system with categorized error testing
 - Error context preservation and stack trace functionality
 - Parse error reporting with source location and visual context
+- Loop/recur tail-call optimization with comprehensive test coverage
 - Self-hosting capabilities
 
 ### Self-Hosting Features

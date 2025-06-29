@@ -348,6 +348,106 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 
 		// Should never reach here
 		return Nil{}, nil
+
+	case "loop":
+		argSlice := listToSlice(args)
+		if len(argSlice) < 2 {
+			return nil, fmt.Errorf("loop expects at least 2 arguments (bindings body...)")
+		}
+
+		// Create new environment for loop bindings
+		loopEnv := NewEnvironment(env)
+
+		// Process bindings (similar to let)
+		bindings := argSlice[0]
+		var bindingList []Value
+
+		switch b := bindings.(type) {
+		case *List:
+			bindingList = listToSlice(b)
+		case *Vector:
+			for i := 0; i < b.Count(); i++ {
+				bindingList = append(bindingList, b.Get(i))
+			}
+		default:
+			return nil, fmt.Errorf("loop expects vector or list for bindings")
+		}
+
+		if len(bindingList)%2 != 0 {
+			return nil, fmt.Errorf("loop bindings must be even number of forms")
+		}
+
+		// Extract parameter names for recur
+		var paramNames []Symbol
+		for i := 0; i < len(bindingList); i += 2 {
+			sym, ok := bindingList[i].(Symbol)
+			if !ok {
+				return nil, fmt.Errorf("loop binding names must be symbols")
+			}
+			paramNames = append(paramNames, sym)
+		}
+
+		// Initial binding values
+		var initialValues []Value
+		for i := 1; i < len(bindingList); i += 2 {
+			value, err := Eval(bindingList[i], env)
+			if err != nil {
+				return nil, err
+			}
+			initialValues = append(initialValues, value)
+		}
+
+		// Loop execution with recur handling
+		currentValues := initialValues
+		for {
+			// Bind current values
+			for i, sym := range paramNames {
+				loopEnv.Set(sym, currentValues[i])
+			}
+
+			// Evaluate body expressions
+			var result Value = Nil{}
+			for _, expr := range argSlice[1:] {
+				var err error
+				result, err = Eval(expr, loopEnv)
+				if err != nil {
+					return nil, err
+				}
+
+				// Check if result is a recur
+				if recurVal, ok := result.(*RecurValue); ok {
+					// Validate recur arity
+					if len(recurVal.Values) != len(paramNames) {
+						return nil, fmt.Errorf("recur expects %d arguments, got %d", len(paramNames), len(recurVal.Values))
+					}
+					// Update values for next iteration
+					currentValues = recurVal.Values
+					goto continueLoop
+				}
+			}
+
+			// No recur found, return the final result
+			return result, nil
+
+		continueLoop:
+			// Continue to next iteration
+		}
+
+	case "recur":
+		argSlice := listToSlice(args)
+		
+		// Evaluate all arguments
+		var values []Value
+		for _, arg := range argSlice {
+			value, err := Eval(arg, env)
+			if err != nil {
+				return nil, err
+			}
+			values = append(values, value)
+		}
+
+		// Return a RecurValue to be caught by loop
+		return &RecurValue{Values: values}, nil
 	}
 
 	return nil, fmt.Errorf("unknown special form: %s", sym)
@@ -356,7 +456,7 @@ func evalSpecialForm(sym Symbol, args *List, env *Environment) (Value, error) {
 // isSpecialForm checks if a symbol is a special form
 func isSpecialForm(sym Symbol) bool {
 	switch sym {
-	case "quote", "quasiquote", "if", "def", "fn", "do", "let", "defmacro", "defn", "cond", "and", "or":
+	case "quote", "quasiquote", "if", "def", "fn", "do", "let", "defmacro", "defn", "cond", "and", "or", "loop", "recur":
 		return true
 	default:
 		return false

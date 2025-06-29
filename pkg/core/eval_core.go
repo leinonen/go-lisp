@@ -39,17 +39,60 @@ type Macro struct {
 }
 
 func (uf *UserFunction) Call(args []Value, env *Environment) (Value, error) {
-	// Create new environment for function execution
-	fnEnv := NewEnvironment(uf.Env)
-
-	// Bind parameters to arguments
-	err := bindParams(uf.Params, args, fnEnv)
-	if err != nil {
-		return nil, err
+	// Get parameter list for recur validation
+	paramList := listToSlice(uf.Params)
+	
+	// Filter out variadic parameter markers for recur counting
+	var paramCount int
+	for _, param := range paramList {
+		if sym, ok := param.(Symbol); ok && sym == "&" {
+			break // Don't count & and rest parameter for recur
+		}
+		paramCount++
 	}
 
-	// Evaluate function body
-	return Eval(uf.Body, fnEnv)
+	// Function execution with recur support
+	currentArgs := args
+	for {
+		// Create new environment for function execution
+		fnEnv := NewEnvironment(uf.Env)
+
+		// Bind parameters to arguments
+		err := bindParams(uf.Params, currentArgs, fnEnv)
+		if err != nil {
+			return nil, err
+		}
+
+		// Evaluate function body
+		result, err := Eval(uf.Body, fnEnv)
+		if err != nil {
+			return nil, err
+		}
+
+		// Check if result is a recur
+		if recurVal, ok := result.(*RecurValue); ok {
+			// Validate recur arity for non-variadic functions
+			if len(paramList) >= 2 && paramList[len(paramList)-2] == Symbol("&") {
+				// Variadic function - check minimum args
+				minArgs := paramCount
+				if len(recurVal.Values) < minArgs {
+					return nil, fmt.Errorf("recur expects at least %d arguments, got %d", minArgs, len(recurVal.Values))
+				}
+			} else {
+				// Regular function - exact arity
+				if len(recurVal.Values) != paramCount {
+					return nil, fmt.Errorf("recur expects %d arguments, got %d", paramCount, len(recurVal.Values))
+				}
+			}
+			
+			// Update arguments for next iteration
+			currentArgs = recurVal.Values
+			continue
+		}
+
+		// No recur found, return the result
+		return result, nil
+	}
 }
 
 func (uf *UserFunction) String() string {

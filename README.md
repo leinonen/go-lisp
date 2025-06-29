@@ -11,6 +11,7 @@ A minimalist, self-hosting Lisp interpreter written in Go, inspired by Clojure. 
 - **Rich Data Types**: Numbers, strings, symbols, keywords, lists, vectors, hash-maps, sets
 - **Functional Programming**: First-class functions, closures, and higher-order functions
 - **Advanced Language Features**: `defn`, `defmacro`, `cond`, multiple body expressions
+- **Tail-Call Optimization**: Efficient `loop`/`recur` for recursive algorithms without stack growth
 - **Macro System**: Full macro expansion with `defmacro` and quasiquote support
 - **Meta-Programming**: Full `eval`/`read-string` capabilities with macro system
 - **Enhanced Error Handling**: Professional-grade error reporting with categorized errors, stack traces, and source context
@@ -94,6 +95,17 @@ For comprehensive examples of all standard library functions, see [docs/examples
   (def result (* x x))
   (println "Result:" result)
   result)
+
+;; Tail-call optimization with loop/recur
+(loop [n 5 acc 1]
+  (if (= n 0)
+    acc
+    (recur (- n 1) (* acc n))))         ; 120 (factorial of 5)
+
+;; Recur in functions 
+(defn factorial [n acc]
+  (if (= n 0) acc (recur (- n 1) (* acc n))))
+(factorial 6 1)                         ; 720
 ```
 
 ### Higher-Order Functions (Self-Hosted)

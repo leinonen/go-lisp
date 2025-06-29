@@ -6,6 +6,7 @@ This document provides working examples for all functions, variables, and macros
 
 - [Core Library Functions](#core-library-functions) (from `lisp/stdlib/core.lisp`)
 - [Enhanced Library Functions](#enhanced-library-functions) (from `lisp/stdlib/enhanced.lisp`)
+- [Control Flow](#control-flow) (loop/recur tail-call optimization)
 - [Running Examples](#running-examples)
 
 ## Core Library Functions
@@ -44,6 +45,63 @@ Conditional execution: executes body when condition is falsy.
 
 (unless true (println "This won't print"))
 ; => nil
+```
+
+### Control Flow
+
+#### `loop` and `recur`
+Efficient tail-call optimization for recursive algorithms without stack growth.
+
+```lisp
+;; Basic loop with binding vector
+(loop [x 5] x)
+; => 5
+
+;; Factorial using loop/recur
+(loop [n 5 acc 1]
+  (if (= n 0)
+    acc
+    (recur (- n 1) (* acc n))))
+; => 120
+
+;; Countdown example
+(loop [i 3]
+  (if (= i 0)
+    "done"
+    (recur (- i 1))))
+; => "done"
+
+;; Sum from 1 to n
+(loop [n 5 sum 0]
+  (if (= n 0)
+    sum
+    (recur (- n 1) (+ sum n))))
+; => 15
+
+;; Fibonacci sequence
+(loop [n 6 a 0 b 1]
+  (if (= n 0)
+    a
+    (recur (- n 1) b (+ a b))))
+; => 8
+
+;; Recur in user-defined functions
+(defn factorial [n acc]
+  (if (= n 0)
+    acc
+    (recur (- n 1) (* acc n))))
+
+(factorial 6 1)
+; => 720
+
+;; Tail-recursive function for fibonacci
+(defn fib-helper [n a b]
+  (if (= n 0)
+    a
+    (recur (- n 1) b (+ a b))))
+
+(fib-helper 7 0 1)
+; => 13
 ```
 
 ### Collection Operations

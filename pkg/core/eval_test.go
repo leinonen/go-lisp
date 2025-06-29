@@ -1438,3 +1438,179 @@ func TestLogicalOperations(t *testing.T) {
 		}
 	}
 }
+
+func TestEvalLoopRecur(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Basic loop with no recur - just returns final expression
+		{"(loop [x 5] x)", "5"},
+		{"(loop [x 1 y 2] (+ x y))", "3"},
+		
+		// Simple factorial using loop/recur
+		{"(loop [n 5 acc 1] (if (= n 0) acc (recur (- n 1) (* acc n))))", "120"},
+		
+		// Countdown to zero
+		{"(loop [i 3] (if (= i 0) \"done\" (recur (- i 1))))", "\"done\""},
+		
+		// Sum from 1 to n
+		{"(loop [n 5 sum 0] (if (= n 0) sum (recur (- n 1) (+ sum n))))", "15"},
+		
+		// Fibonacci using loop/recur
+		{"(loop [n 6 a 0 b 1] (if (= n 0) a (recur (- n 1) b (+ a b))))", "8"},
+		
+		// Loop with multiple body expressions
+		{"(loop [x 10] (def temp x) (if (= temp 0) \"zero\" (recur (- temp 1))))", "\"zero\""},
+		
+		// Empty loop body
+		{"(loop [] 42)", "42"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}
+
+func TestEvalLoopRecurErrors(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	errorTests := []struct {
+		input       string
+		expectedErr string
+	}{
+		// Loop with wrong binding format
+		{"(loop [x] x)", "loop bindings must be even number of forms"},
+		{"(loop [x 1 y] x)", "loop bindings must be even number of forms"},
+		{"(loop [1 2] 3)", "loop binding names must be symbols"},
+		
+		// Loop with wrong number of arguments
+		{"(loop)", "loop expects at least 2 arguments"},
+		{"(loop [x 1])", "loop expects at least 2 arguments"},
+		
+		// Loop with wrong binding types
+		{"(loop 5 x)", "loop expects vector or list for bindings"},
+		{"(loop \"bindings\" x)", "loop expects vector or list for bindings"},
+		
+		// Recur with wrong arity
+		{"(loop [x 1] (recur 1 2))", "recur expects 1 arguments, got 2"},
+		{"(loop [x 1 y 2] (recur 1))", "recur expects 2 arguments, got 1"},
+		
+		// Recur outside of loop context (should still work but will be caught by function)
+		{"(recur 1)", "#<recur>"},  // This should return the RecurValue since no enclosing loop
+	}
+
+	for _, test := range errorTests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if test.expectedErr == "#<recur>" {
+			// Special case - expecting RecurValue return
+			if err != nil {
+				t.Errorf("Expected RecurValue for '%s', got error: %v", test.input, err)
+				continue
+			}
+			if result.String() != test.expectedErr {
+				t.Errorf("Expected '%s' for '%s', got '%s'", test.expectedErr, test.input, result.String())
+			}
+		} else {
+			// Expecting an error
+			if err == nil {
+				t.Errorf("Expected error for '%s', got result: %s", test.input, result.String())
+				continue
+			}
+			if !strings.Contains(err.Error(), test.expectedErr) {
+				t.Errorf("Expected error containing '%s' for '%s', got: %v", test.expectedErr, test.input, err)
+			}
+		}
+	}
+}
+
+func TestEvalRecurInFunction(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	// Test recur in user-defined functions
+	tests := []struct {
+		setup    string
+		input    string
+		expected string
+	}{
+		// Factorial function using recur
+		{
+			"(defn factorial [n] (if (= n 0) 1 (* n (factorial (- n 1)))))",
+			"(factorial 5)",
+			"120",
+		},
+		// Tail-recursive factorial using recur
+		{
+			"(defn factorial-recur [n acc] (if (= n 0) acc (recur (- n 1) (* acc n))))",
+			"(factorial-recur 5 1)",
+			"120",
+		},
+		// Countdown function with recur
+		{
+			"(defn countdown [n] (if (= n 0) \"done\" (recur (- n 1))))",
+			"(countdown 3)",
+			"\"done\"",
+		},
+		// Fibonacci with recur
+		{
+			"(defn fib-helper [n a b] (if (= n 0) a (recur (- n 1) b (+ a b))))",
+			"(fib-helper 6 0 1)",
+			"8",
+		},
+	}
+
+	for _, test := range tests {
+		// Setup function definition
+		if test.setup != "" {
+			setupExpr, err := core.ReadString(test.setup)
+			if err != nil {
+				t.Errorf("Parse error for setup '%s': %v", test.setup, err)
+				continue
+			}
+			_, err = core.Eval(setupExpr, env)
+			if err != nil {
+				t.Errorf("Setup error for '%s': %v", test.setup, err)
+				continue
+			}
+		}
+
+		// Test the function call
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}

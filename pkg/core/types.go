@@ -628,3 +628,12 @@ func InternKeyword(name string) Keyword {
 	keywordInternTable[name] = kw
 	return kw
 }
+
+// RecurValue represents a recur call with new values for loop/function parameters
+type RecurValue struct {
+	Values []Value
+}
+
+func (r *RecurValue) String() string {
+	return "#<recur>"
+}
