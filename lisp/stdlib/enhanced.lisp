@@ -12,6 +12,7 @@
 (def split string-split)
 (def trim string-trim)
 (def replace string-replace)
+(def subs substring)
 ;; Note: contains? is already defined in core for hash-maps/sets
 ;; string-contains? remains available for string operations
 

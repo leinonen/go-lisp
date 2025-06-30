@@ -101,6 +101,7 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [x] **`split`** - Alias for string-split (Self-hosted)
 - [x] **`trim`** - Alias for string-trim (Self-hosted)
 - [x] **`replace`** - Alias for string-replace (Self-hosted)
+- [x] **`subs`** - Alias for substring (Self-hosted)
 
 ### Math Operations (Self-hosted)
 - [x] **`inc`** - Increment number
@@ -188,29 +189,25 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 
 ## 🚫 NOT YET IMPLEMENTED
 
-### String Operations
-- [ ] **`subs`** - Alias for substring
-
 ### Enhanced Features
 - [ ] **Enhanced `let`** with destructuring
 - [ ] **Enhanced function parameters** with destructuring
 
 ## 📊 IMPLEMENTATION SUMMARY
 
-### ✅ Fully Implemented: ~134+ functions
+### ✅ Fully Implemented: ~135+ functions
 - **Go Core**: ~80 essential primitives (including full quasiquote system, logical operations, set operations, and complete map/meta-programming support)
-- **Self-hosted Standard Library**: ~59 higher-level functions
+- **Self-hosted Standard Library**: ~60 higher-level functions
 - **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, logical operations, quasiquote templating, set operations, map introspection
 
 ### 🔄 Partial/Needs Work: ~11 functions
 - Mostly variations or enhanced versions of existing functionality
 - Some naming consistency issues (e.g., every? vs all?)
 
-### 🚫 Missing: ~3 functions
-- String aliases (subs)
+### 🚫 Missing: ~2 functions
 - Destructuring support
 - Infinite sequence generators
 
-### Overall Completion: **98%** of core Clojure functionality implemented
+### Overall Completion: **99%** of core Clojure functionality implemented
 
 GoLisp has successfully implemented the vast majority of essential Clojure features, with a robust self-hosting standard library that demonstrates the language's expressiveness and completeness.

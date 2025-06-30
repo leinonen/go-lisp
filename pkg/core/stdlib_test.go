@@ -297,6 +297,56 @@ func TestPartialFunction(t *testing.T) {
 	}
 }
 
+func TestSubsFunction(t *testing.T) {
+	// Create bootstrapped environment with stdlib loaded
+	env, err := core.CreateBootstrappedEnvironment()
+	if err != nil {
+		t.Fatalf("Failed to create bootstrapped environment: %v", err)
+	}
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		// Basic subs functionality (should work exactly like substring)
+		{"subs-basic", "(subs \"hello\" 1 4)", "\"ell\""},
+		{"subs-full-string", "(subs \"world\" 0 5)", "\"world\""},
+		{"subs-end-part", "(subs \"test\" 2 4)", "\"st\""},
+		{"subs-from-start", "(subs \"hello\" 0 3)", "\"hel\""},
+		
+		// Two-argument form (from start to end of string)
+		{"subs-to-end", "(subs \"hello\" 2)", "\"llo\""},
+		{"subs-from-zero", "(subs \"world\" 0)", "\"world\""},
+		{"subs-from-middle", "(subs \"testing\" 4)", "\"ing\""},
+		
+		// Edge cases
+		{"subs-empty-result", "(subs \"hello\" 3 3)", "\"\""},
+		{"subs-single-char", "(subs \"hello\" 1 2)", "\"e\""},
+		{"subs-last-char", "(subs \"hello\" 4 5)", "\"o\""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			expr, err := core.ReadString(test.input)
+			if err != nil {
+				t.Errorf("Parse error for '%s': %v", test.input, err)
+				return
+			}
+
+			result, err := core.Eval(expr, env)
+			if err != nil {
+				t.Errorf("Eval error for '%s': %v", test.input, err)
+				return
+			}
+
+			if result.String() != test.expected {
+				t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
+			}
+		})
+	}
+}
+
 func TestStdlibErrorHandling(t *testing.T) {
 	// Create bootstrapped environment with stdlib loaded
 	env, err := core.CreateBootstrappedEnvironment()
