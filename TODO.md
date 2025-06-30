@@ -151,6 +151,7 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [x] **`identity`** - Identity function
 - [x] **`sort`** - Sort collection using quicksort
 - [x] **`group-by`** - Group collection by key function
+- [x] **`partial`** - Partial function application
 
 ### Set Operations (Go Core)
 - [x] **`union`** - Set union
@@ -191,27 +192,25 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [ ] **`subs`** - Alias for substring
 
 ### Enhanced Features
-- [ ] **`partial`** - Partial function application
 - [ ] **Enhanced `let`** with destructuring
 - [ ] **Enhanced function parameters** with destructuring
 
 ## 📊 IMPLEMENTATION SUMMARY
 
-### ✅ Fully Implemented: ~133+ functions
+### ✅ Fully Implemented: ~134+ functions
 - **Go Core**: ~80 essential primitives (including full quasiquote system, logical operations, set operations, and complete map/meta-programming support)
-- **Self-hosted Standard Library**: ~58 higher-level functions
+- **Self-hosted Standard Library**: ~59 higher-level functions
 - **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, logical operations, quasiquote templating, set operations, map introspection
 
 ### 🔄 Partial/Needs Work: ~11 functions
 - Mostly variations or enhanced versions of existing functionality
 - Some naming consistency issues (e.g., every? vs all?)
 
-### 🚫 Missing: ~4 functions
-- Enhanced features (partial)
+### 🚫 Missing: ~3 functions
 - String aliases (subs)
 - Destructuring support
 - Infinite sequence generators
 
-### Overall Completion: **97%** of core Clojure functionality implemented
+### Overall Completion: **98%** of core Clojure functionality implemented
 
 GoLisp has successfully implemented the vast majority of essential Clojure features, with a robust self-hosting standard library that demonstrates the language's expressiveness and completeness.

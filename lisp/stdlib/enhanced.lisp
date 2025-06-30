@@ -190,3 +190,8 @@
       (if (list? (first coll))
           (concat (flatten (first coll)) (flatten (rest coll)))
           (cons (first coll) (flatten (rest coll))))))
+
+;; Partial function application
+(defn partial [f & partial-args]
+  (fn [& remaining-args]
+    (apply f (concat partial-args remaining-args))))

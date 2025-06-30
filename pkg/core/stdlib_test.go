@@ -230,6 +230,73 @@ func TestStdlibComplexOperations(t *testing.T) {
 	}
 }
 
+func TestPartialFunction(t *testing.T) {
+	// Create bootstrapped environment with stdlib loaded
+	env, err := core.CreateBootstrappedEnvironment()
+	if err != nil {
+		t.Fatalf("Failed to create bootstrapped environment: %v", err)
+	}
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		// Basic partial application with arithmetic
+		{"partial-add-one", "((partial + 1) 2)", "3"},
+		{"partial-add-two", "((partial + 1 2) 3)", "6"},
+		{"partial-add-three", "((partial + 1 2 3) 4)", "10"},
+		
+		// Partial application with multiplication
+		{"partial-multiply", "((partial * 2) 5)", "10"},
+		{"partial-multiply-multi", "((partial * 2 3) 4)", "24"},
+		
+		// Partial application with comparison functions
+		{"partial-greater", "((partial > 5) 3)", "true"},
+		{"partial-less", "((partial < 2) 5)", "true"},
+		
+		// Partial application with collection functions
+		{"partial-cons", "((partial cons 1) (list 2 3))", "(1 2 3)"},
+		{"partial-conj", "((partial conj (list 1 2)) 3)", "(3 1 2)"},
+		
+		// Partial application with map
+		{"partial-map-inc", "(map (partial + 1) (list 1 2 3))", "(2 3 4)"},
+		{"partial-map-mult", "(map (partial * 2) (list 1 2 3))", "(2 4 6)"},
+		
+		// Multiple partial applications (create add5 function)
+		{"partial-add5", "((partial + 5) 3)", "8"},
+		
+		// Partial with filter
+		{"partial-filter", "(filter (partial > 3) (list 1 2 3 4 5))", "(1 2)"},
+		
+		// Partial with no additional args (should work like identity for function)
+		{"partial-no-args", "((partial +) 1 2 3)", "6"},
+		
+		// Partial application with string functions
+		{"partial-str", "((partial str \"Hello \") \"World\")", "\"Hello World\""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			expr, err := core.ReadString(test.input)
+			if err != nil {
+				t.Errorf("Parse error for '%s': %v", test.input, err)
+				return
+			}
+
+			result, err := core.Eval(expr, env)
+			if err != nil {
+				t.Errorf("Eval error for '%s': %v", test.input, err)
+				return
+			}
+
+			if result.String() != test.expected {
+				t.Errorf("Expected '%s' for input '%s', got '%s'", test.expected, test.input, result.String())
+			}
+		})
+	}
+}
+
 func TestStdlibErrorHandling(t *testing.T) {
 	// Create bootstrapped environment with stdlib loaded
 	env, err := core.CreateBootstrappedEnvironment()
