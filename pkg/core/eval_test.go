@@ -1614,3 +1614,203 @@ func TestEvalRecurInFunction(t *testing.T) {
 		}
 	}
 }
+
+func TestMapOperations(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// keys function
+		{"(keys {})", "()"},
+		{"(keys {:a 1})", "(:a)"},
+		{"(keys {:a 1 :b 2 :c 3})", "(:a :b :c)"},
+		
+		// vals function
+		{"(vals {})", "()"},
+		{"(vals {:a 1})", "(1)"},
+		{"(vals {:a 1 :b 2 :c 3})", "(1 2 3)"},
+		
+		// zipmap function
+		{"(zipmap [] [])", "{}"},
+		{"(zipmap [:a] [1])", "{:a 1}"},
+		{"(zipmap [:a :b :c] [1 2 3])", "{:a 1 :b 2 :c 3}"},
+		{"(zipmap [:a :b :c] [1 2])", "{:a 1 :b 2}"},
+		{"(zipmap [:a :b] [1 2 3])", "{:a 1 :b 2}"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}
+
+func TestMetaProgrammingConstructors(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// symbol function
+		{"(symbol \"test\")", "test"},
+		{"(symbol \"foo-bar\")", "foo-bar"},
+		{"(symbol 'existing)", "existing"},
+		
+		// keyword function
+		{"(keyword \"test\")", ":test"},
+		{"(keyword \"foo-bar\")", ":foo-bar"},
+		{"(keyword \":already\")", ":already"},
+		{"(keyword 'sym)", ":sym"},
+		{"(keyword :existing)", ":existing"},
+		
+		// name function
+		{"(name 'test)", "\"test\""},
+		{"(name :keyword)", "\"keyword\""},
+		{"(name \":prefixed\")", "\"prefixed\""},
+		{"(name \"string\")", "\"string\""},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}
+
+func TestSetSubsetSuperset(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// subset? function
+		{"(subset? #{} #{})", "true"},
+		{"(subset? #{} #{1 2})", "true"},
+		{"(subset? #{1} #{1 2})", "true"},
+		{"(subset? #{1 2} #{1 2 3})", "true"},
+		{"(subset? #{1 2} #{1 2})", "true"},
+		{"(subset? #{1 3} #{1 2})", "nil"},
+		{"(subset? #{1 2 3} #{1 2})", "nil"},
+		
+		// superset? function
+		{"(superset? #{} #{})", "true"},
+		{"(superset? #{1 2} #{})", "true"},
+		{"(superset? #{1 2} #{1})", "true"},
+		{"(superset? #{1 2 3} #{1 2})", "true"},
+		{"(superset? #{1 2} #{1 2})", "true"},
+		{"(superset? #{1 2} #{1 3})", "nil"},
+		{"(superset? #{1 2} #{1 2 3})", "nil"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			t.Errorf("Parse error for '%s': %v", test.input, err)
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if err != nil {
+			t.Errorf("Eval error for '%s': %v", test.input, err)
+			continue
+		}
+
+		if result.String() != test.expected {
+			t.Errorf("Expected '%s' for '%s', got '%s'", test.expected, test.input, result.String())
+		}
+	}
+}
+
+func TestNewFunctionErrors(t *testing.T) {
+	env := core.NewCoreEnvironment()
+
+	tests := []struct {
+		input       string
+		shouldError bool
+		errorMatch  string
+	}{
+		// keys errors
+		{"(keys)", true, "keys expects 1 argument"},
+		{"(keys 1 2)", true, "keys expects 1 argument"},
+		{"(keys \"not-a-map\")", true, "keys expects hash-map"},
+		
+		// vals errors
+		{"(vals)", true, "vals expects 1 argument"},
+		{"(vals 1 2)", true, "vals expects 1 argument"},
+		{"(vals [1 2 3])", true, "vals expects hash-map"},
+		
+		// zipmap errors
+		{"(zipmap)", true, "zipmap expects 2 arguments"},
+		{"(zipmap [])", true, "zipmap expects 2 arguments"},
+		{"(zipmap [] [] [])", true, "zipmap expects 2 arguments"},
+		{"(zipmap \"not-collection\" [])", true, "expected collection"},
+		
+		// symbol errors
+		{"(symbol)", true, "symbol expects 1 argument"},
+		{"(symbol 1)", true, "symbol expects string or symbol"},
+		
+		// keyword errors
+		{"(keyword)", true, "keyword expects 1 argument"},
+		{"(keyword 123)", true, "keyword expects string, symbol, or keyword"},
+		
+		// name errors
+		{"(name)", true, "name expects 1 argument"},
+		{"(name 123)", true, "name expects symbol, keyword, or string"},
+		
+		// subset?/superset? errors
+		{"(subset?)", true, "subset? expects 2 arguments"},
+		{"(subset? #{})", true, "subset? expects 2 arguments"},
+		{"(subset? #{} \"not-set\")", true, "subset? expects two sets"},
+		{"(superset? #{})", true, "superset? expects 2 arguments"},
+		{"(superset? #{} [1 2])", true, "superset? expects two sets"},
+	}
+
+	for _, test := range tests {
+		expr, err := core.ReadString(test.input)
+		if err != nil {
+			if !test.shouldError {
+				t.Errorf("Unexpected parse error for '%s': %v", test.input, err)
+			}
+			continue
+		}
+
+		result, err := core.Eval(expr, env)
+		if test.shouldError {
+			if err == nil {
+				t.Errorf("Expected error for '%s', but got result: %v", test.input, result)
+			} else if !strings.Contains(err.Error(), test.errorMatch) {
+				t.Errorf("Expected error containing '%s' for '%s', got: %v", test.errorMatch, test.input, err)
+			}
+		} else if err != nil {
+			t.Errorf("Unexpected error for '%s': %v", test.input, err)
+		}
+	}
+}

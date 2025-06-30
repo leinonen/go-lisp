@@ -5,6 +5,9 @@ This document provides working examples for all functions, variables, and macros
 ## Table of Contents
 
 - [Core Library Functions](#core-library-functions) (from `lisp/stdlib/core.lisp`)
+- [Hash Map Operations](#hash-map-operations) (keys, vals, zipmap)
+- [Meta Programming](#meta-programming) (symbol, keyword, name)
+- [Set Operations](#set-operations) (subset?, superset?)
 - [Enhanced Library Functions](#enhanced-library-functions) (from `lisp/stdlib/enhanced.lisp`)
 - [Control Flow](#control-flow) (loop/recur tail-call optimization)
 - [Running Examples](#running-examples)
@@ -173,12 +176,97 @@ Maps function over two collections simultaneously.
 
 ### Hash Map Operations
 
+#### `keys`
+Returns a list of all keys in a hash map.
+
+```lisp
+(keys {:a 1 :b 2 :c 3})  ; => (:a :b :c)
+(keys {})                 ; => ()
+(keys {"x" 10 "y" 20})    ; => ("x" "y")
+```
+
+#### `vals`
+Returns a list of all values in a hash map.
+
+```lisp
+(vals {:a 1 :b 2 :c 3})  ; => (1 2 3)
+(vals {})                 ; => ()
+(vals {"x" 10 "y" 20})    ; => (10 20)
+```
+
+#### `zipmap`
+Creates a hash map from separate collections of keys and values.
+
+```lisp
+(zipmap [:a :b :c] [1 2 3])        ; => {:a 1 :b 2 :c 3}
+(zipmap ["x" "y"] [10 20])         ; => {"x" 10 "y" 20}
+(zipmap [:a :b :c] [1 2])          ; => {:a 1 :b 2} (shorter collection wins)
+(zipmap [] [])                     ; => {}
+```
+
 #### `hash-map-put`
 Associates a key-value pair in a hash map (wrapper around `assoc`).
 
 ```lisp
 (hash-map-put {:a 1 :b 2} :c 3)  ; => {:a 1 :b 2 :c 3}
 (hash-map-put {} :name "Alice")   ; => {:name "Alice"}
+```
+
+### Meta Programming
+
+#### `symbol`
+Creates a symbol from a string or returns an existing symbol.
+
+```lisp
+(symbol "test")        ; => test
+(symbol "foo-bar")     ; => foo-bar
+(symbol 'existing)     ; => existing
+```
+
+#### `keyword`
+Creates a keyword from a string, symbol, or returns an existing keyword.
+
+```lisp
+(keyword "test")       ; => :test
+(keyword "foo-bar")    ; => :foo-bar
+(keyword ":already")   ; => :already (handles : prefix)
+(keyword 'sym)         ; => :sym
+(keyword :existing)    ; => :existing
+```
+
+#### `name`
+Extracts the name string from symbols, keywords, or strings.
+
+```lisp
+(name 'test)           ; => "test"
+(name :keyword)        ; => "keyword"
+(name ":prefixed")     ; => "prefixed" (strips : prefix)
+(name "string")        ; => "string"
+```
+
+### Set Operations
+
+#### `subset?`
+Tests if the first set is a subset of the second set.
+
+```lisp
+(subset? #{} #{})           ; => true
+(subset? #{} #{1 2})        ; => true (empty set is subset of any set)
+(subset? #{1} #{1 2 3})     ; => true
+(subset? #{1 2} #{1 2 3})   ; => true
+(subset? #{1 2} #{1 2})     ; => true (set is subset of itself)
+(subset? #{1 3} #{1 2})     ; => nil (3 not in second set)
+```
+
+#### `superset?`
+Tests if the first set is a superset of the second set.
+
+```lisp
+(superset? #{} #{})           ; => true
+(superset? #{1 2} #{})        ; => true (any set is superset of empty set)
+(superset? #{1 2 3} #{1 2})   ; => true
+(superset? #{1 2} #{1 2})     ; => true (set is superset of itself)
+(superset? #{1 2} #{1 3})     ; => nil (second set has 3, first doesn't)
 ```
 
 ### Utility Variables
@@ -587,6 +675,9 @@ To run these examples, you can:
 ## Function Categories Summary
 
 - **Collection Operations**: `map`, `filter`, `reduce`, `reverse`, `take`, `drop`, `concat`, `sort`, etc.
+- **Hash Map Operations**: `keys`, `vals`, `zipmap`, `hash-map-put`, `assoc`, `dissoc`, `get`, `contains?`
+- **Set Operations**: `subset?`, `superset?`, `union`, `intersection`, `difference`
+- **Meta Programming**: `symbol`, `keyword`, `name`, `eval`, `read-string`, `macroexpand`, `gensym`
 - **Predicates**: `nil?`, `even?`, `odd?`, `zero?`, `pos?`, `neg?`, `all?`, `any?`, etc.  
 - **String Operations**: `join`, `split`, `trim`, `replace`
 - **Math Operations**: `inc`, `dec`, `abs`, `min`, `max`

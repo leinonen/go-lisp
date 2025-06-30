@@ -60,6 +60,9 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [x] **`dissoc`** - Remove keys from maps
 - [x] **`get`** - Get value from map/vector with default
 - [x] **`contains?`** - Check if collection contains key/element
+- [x] **`keys`** - Get map keys
+- [x] **`vals`** - Get map values
+- [x] **`zipmap`** - Create map from keys and values sequences
 
 ### Type Predicates (Go Core)
 - [x] **`nil?`** - Check if value is nil
@@ -138,6 +141,9 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [x] **`gensym`** - Generate unique symbols
 - [x] **`read-all-string`** - Parse multiple expressions from string
 - [x] **`throw`** - Throw exception with message
+- [x] **`symbol`** - Create symbols programmatically
+- [x] **`keyword`** - Create keywords programmatically
+- [x] **`name`** - Extract name from symbol/keyword
 
 ### Enhanced Features (Self-hosted)
 - [x] **`comp`** - Function composition
@@ -150,6 +156,8 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 - [x] **`union`** - Set union
 - [x] **`intersection`** - Set intersection
 - [x] **`difference`** - Set difference
+- [x] **`subset?`** - Check if set is subset
+- [x] **`superset?`** - Check if set is superset
 
 ## 🔄 PARTIALLY IMPLEMENTED / NEEDS IMPROVEMENT
 
@@ -179,20 +187,6 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 
 ## 🚫 NOT YET IMPLEMENTED
 
-### Map/Dictionary Operations
-- [ ] **`keys`** - Get map keys
-- [ ] **`vals`** - Get map values
-- [ ] **`zipmap`** - Create map from keys and values sequences
-
-### Meta Programming
-- [ ] **`symbol`** - Create symbols programmatically
-- [ ] **`keyword`** - Create keywords programmatically
-- [ ] **`name`** - Extract name from symbol/keyword
-
-### Set Operations
-- [ ] **`subset?`** - Check if set is subset
-- [ ] **`superset?`** - Check if set is superset
-
 ### String Operations
 - [ ] **`subs`** - Alias for substring
 
@@ -203,24 +197,21 @@ This document outlines the functions to implement to bring Go Lisp closer to Clo
 
 ## 📊 IMPLEMENTATION SUMMARY
 
-### ✅ Fully Implemented: ~125+ functions
-- **Go Core**: ~72 essential primitives (including full quasiquote system, logical operations, and set operations)
+### ✅ Fully Implemented: ~133+ functions
+- **Go Core**: ~80 essential primitives (including full quasiquote system, logical operations, set operations, and complete map/meta-programming support)
 - **Self-hosted Standard Library**: ~58 higher-level functions
-- **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, logical operations, quasiquote templating, set operations
+- **Complete coverage**: Arithmetic, collections, strings, I/O, meta-programming, functional programming, logical operations, quasiquote templating, set operations, map introspection
 
 ### 🔄 Partial/Needs Work: ~11 functions
 - Mostly variations or enhanced versions of existing functionality
 - Some naming consistency issues (e.g., every? vs all?)
 
-### 🚫 Missing: ~12 functions
-- Map operations (keys, vals, zipmap)
-- Meta programming (symbol, keyword, name)
+### 🚫 Missing: ~4 functions
 - Enhanced features (partial)
-- Set operations (subset?, superset?)
 - String aliases (subs)
 - Destructuring support
 - Infinite sequence generators
 
-### Overall Completion: **91-92%** of core Clojure functionality implemented
+### Overall Completion: **97%** of core Clojure functionality implemented
 
 GoLisp has successfully implemented the vast majority of essential Clojure features, with a robust self-hosting standard library that demonstrates the language's expressiveness and completeness.

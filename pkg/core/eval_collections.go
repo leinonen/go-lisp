@@ -500,6 +500,82 @@ func setupCollectionOperations(env *Environment) {
 		},
 	})
 
+	// Map keys and values functions
+	env.Set(Intern("keys"), &BuiltinFunction{
+		Name: "keys",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("keys expects 1 argument")
+			}
+
+			switch coll := args[0].(type) {
+			case *HashMap:
+				if coll.Count() == 0 {
+					return (*List)(nil), nil
+				}
+				return NewList(coll.keys...), nil
+			default:
+				return nil, fmt.Errorf("keys expects hash-map, got %T", args[0])
+			}
+		},
+	})
+
+	env.Set(Intern("vals"), &BuiltinFunction{
+		Name: "vals",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("vals expects 1 argument")
+			}
+
+			switch coll := args[0].(type) {
+			case *HashMap:
+				if coll.Count() == 0 {
+					return (*List)(nil), nil
+				}
+				values := make([]Value, 0, len(coll.keys))
+				for _, key := range coll.keys {
+					values = append(values, coll.Get(key))
+				}
+				return NewList(values...), nil
+			default:
+				return nil, fmt.Errorf("vals expects hash-map, got %T", args[0])
+			}
+		},
+	})
+
+	env.Set(Intern("zipmap"), &BuiltinFunction{
+		Name: "zipmap",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("zipmap expects 2 arguments")
+			}
+
+			// Convert both arguments to slices of values
+			keys, err := collectionToSlice(args[0])
+			if err != nil {
+				return nil, fmt.Errorf("zipmap expects collection as first argument: %v", err)
+			}
+
+			values, err := collectionToSlice(args[1])
+			if err != nil {
+				return nil, fmt.Errorf("zipmap expects collection as second argument: %v", err)
+			}
+
+			// Create hash-map from key-value pairs
+			result := NewHashMap()
+			minLen := len(keys)
+			if len(values) < minLen {
+				minLen = len(values)
+			}
+
+			for i := 0; i < minLen; i++ {
+				result.Set(keys[i], values[i])
+			}
+
+			return result, nil
+		},
+	})
+
 	// Set operations
 	env.Set(Intern("union"), &BuiltinFunction{
 		Name: "union",
@@ -604,6 +680,52 @@ func setupCollectionOperations(env *Environment) {
 			return result, nil
 		},
 	})
+
+	env.Set(Intern("subset?"), &BuiltinFunction{
+		Name: "subset?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("subset? expects 2 arguments")
+			}
+
+			set1, ok1 := args[0].(*Set)
+			set2, ok2 := args[1].(*Set)
+			if !ok1 || !ok2 {
+				return nil, fmt.Errorf("subset? expects two sets")
+			}
+
+			// Check if all elements in set1 are in set2
+			for _, elem := range set1.order {
+				if !set2.Contains(elem) {
+					return Nil{}, nil
+				}
+			}
+			return Symbol("true"), nil
+		},
+	})
+
+	env.Set(Intern("superset?"), &BuiltinFunction{
+		Name: "superset?",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("superset? expects 2 arguments")
+			}
+
+			set1, ok1 := args[0].(*Set)
+			set2, ok2 := args[1].(*Set)
+			if !ok1 || !ok2 {
+				return nil, fmt.Errorf("superset? expects two sets")
+			}
+
+			// Check if all elements in set2 are in set1
+			for _, elem := range set2.order {
+				if !set1.Contains(elem) {
+					return Nil{}, nil
+				}
+			}
+			return Symbol("true"), nil
+		},
+	})
 }
 
 // Helper function to convert a value to a list
@@ -620,4 +742,34 @@ func toList(v Value) *List {
 	}
 	// For other types, treat as empty list
 	return nil
+}
+
+// Helper function to convert collection to slice of values
+func collectionToSlice(coll Value) ([]Value, error) {
+	switch c := coll.(type) {
+	case *List:
+		var result []Value
+		current := c
+		for current != nil && !current.IsEmpty() {
+			result = append(result, current.First())
+			current = current.Rest()
+		}
+		return result, nil
+	case *Vector:
+		result := make([]Value, c.Count())
+		for i := 0; i < c.Count(); i++ {
+			result[i] = c.Get(i)
+		}
+		return result, nil
+	case *Set:
+		result := make([]Value, 0, c.Count())
+		for _, elem := range c.order {
+			result = append(result, elem)
+		}
+		return result, nil
+	case Nil:
+		return []Value{}, nil
+	default:
+		return nil, fmt.Errorf("expected collection, got %T", coll)
+	}
 }

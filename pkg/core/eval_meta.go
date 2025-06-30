@@ -196,6 +196,74 @@ func setupMetaProgramming(env *Environment) {
 			return Nil{}, nil
 		},
 	})
+
+	// Symbol and keyword constructors
+	env.Set(Intern("symbol"), &BuiltinFunction{
+		Name: "symbol",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("symbol expects 1 argument")
+			}
+
+			switch arg := args[0].(type) {
+			case String:
+				return Symbol(string(arg)), nil
+			case Symbol:
+				return arg, nil
+			default:
+				return nil, fmt.Errorf("symbol expects string or symbol, got %T", args[0])
+			}
+		},
+	})
+
+	env.Set(Intern("keyword"), &BuiltinFunction{
+		Name: "keyword",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("keyword expects 1 argument")
+			}
+
+			switch arg := args[0].(type) {
+			case String:
+				name := string(arg)
+				if len(name) > 0 && name[0] == ':' {
+					return Keyword(name[1:]), nil // Remove the : prefix since Keyword.String() adds it
+				}
+				return Keyword(name), nil
+			case Symbol:
+				return Keyword(string(arg)), nil
+			case Keyword:
+				return arg, nil
+			default:
+				return nil, fmt.Errorf("keyword expects string, symbol, or keyword, got %T", args[0])
+			}
+		},
+	})
+
+	env.Set(Intern("name"), &BuiltinFunction{
+		Name: "name",
+		Fn: func(args []Value, env *Environment) (Value, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("name expects 1 argument")
+			}
+
+			switch arg := args[0].(type) {
+			case Symbol:
+				return String(string(arg)), nil
+			case Keyword:
+				// Keyword type stores the name without the : prefix
+				return String(string(arg)), nil
+			case String:
+				name := string(arg)
+				if len(name) > 0 && name[0] == ':' {
+					return String(name[1:]), nil // Strip : prefix from strings
+				}
+				return arg, nil
+			default:
+				return nil, fmt.Errorf("name expects symbol, keyword, or string, got %T", args[0])
+			}
+		},
+	})
 }
 
 // macroExpand performs macro expansion on an expression
